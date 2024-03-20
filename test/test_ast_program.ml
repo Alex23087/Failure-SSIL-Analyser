@@ -9,12 +9,12 @@ let counter = ref 0
 
 (* Annotate a node with a unique integer *)
 let annotate (node: 'a): 'a ASTRC.annotated_node =
-  let out: 'a ASTRC.annotated_node = {node; annotation = !counter} in
+  let out: 'a ASTRC.annotated_node = ASTRC.addAnnotation node !counter in
   counter := !counter + 1;
   out
 
 let () =
-  (* Create an AST corresponding to the RegCmd:  x = 1; (x < 10?; x = x + 1)*; !(x < 10)?    
+  (* Create an AST corresponding to the RegCmd:  x = 1; (x < 10?; x = x + 1)*; !(x < 10)?
      This encodes the command:  x = 1; while(x<10){x = x + 1}  *)
   let root = annotate (ASTRC.RegularCommand.Sequence(
     annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.AtomicCommand.Assignment("x", annotate (ASTRC.ArithmeticExpression.Literal 1))))),
