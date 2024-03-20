@@ -19,6 +19,7 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
   type t = Annotation.t
   type identifier = string [@@deriving show]
   type 'a annotated_node = {node: 'a; annotation: t [@opaque]} [@@deriving show]
+  let addAnnotation (node: 'a) (annotation: t) = {node; annotation}
   let getAnnotation (node: 'a annotated_node) = node.annotation
   let removeAnnotation (node: 'a annotated_node) = node.node
 
