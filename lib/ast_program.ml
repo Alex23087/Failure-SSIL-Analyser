@@ -1,7 +1,7 @@
 (* Grammar:
-   RegularCommand ::=  BasicCommand  |  RegularCommand; RegularCommand  |  RegularCommand + RegularCommand  |  RegularCommand*
+   RegularCommand ::=  AtomicCommand  |  RegularCommand; RegularCommand  |  RegularCommand + RegularCommand  |  RegularCommand*
    
-   BasicCommand ::=  SKIP  |  Identifier = ArithmeticExpression  |  BooleanExpression ?
+   AtomicCommand ::=  SKIP  |  Identifier = ArithmeticExpression  |  BooleanExpression ?
    
    BooleanExpression ::=  TRUE  |  FALSE  |  !BooleanExpression  |  BooleanExpression && BooleanExpression  |  BooleanExpression || BooleanExpression  |  ArithmeticExpression BooleanComparison ArithmeticExpression
    
@@ -63,7 +63,7 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
     [@@deriving show]
   end
 
-  module BasicCommand = struct
+  module AtomicCommand = struct
     type t_node =
       | Skip
       | Assignment of identifier * ArithmeticExpression.t
@@ -74,7 +74,7 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
 
   module RegularCommand = struct
     type t_node =
-      | Command of BasicCommand.t
+      | Command of AtomicCommand.t
       | Sequence of t * t
       | NondeterministicChoice of t * t
       | Star of t

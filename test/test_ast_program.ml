@@ -17,17 +17,17 @@ let () =
   (* Create an AST corresponding to the RegCmd:  x = 1; (x < 10?; x = x + 1)*; !(x < 10)?    
      This encodes the command:  x = 1; while(x<10){x = x + 1}  *)
   let root = annotate (ASTRC.RegularCommand.Sequence(
-    annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.BasicCommand.Assignment("x", annotate (ASTRC.ArithmeticExpression.Literal 1))))),
+    annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.AtomicCommand.Assignment("x", annotate (ASTRC.ArithmeticExpression.Literal 1))))),
 
     annotate (ASTRC.RegularCommand.Sequence(
       annotate (ASTRC.RegularCommand.Star(
         annotate (ASTRC.RegularCommand.Sequence(
-          annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.BasicCommand.Guard(annotate (ASTRC.BooleanExpression.Comparison(
+          annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.AtomicCommand.Guard(annotate (ASTRC.BooleanExpression.Comparison(
             ASTRC.BooleanComparison.LessThan,
             annotate (ASTRC.ArithmeticExpression.Variable "x"),
             annotate (ASTRC.ArithmeticExpression.Literal 10)
           )))))),
-          annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.BasicCommand.Assignment("x", annotate (
+          annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.AtomicCommand.Assignment("x", annotate (
             ASTRC.ArithmeticExpression.BinaryOperation(
               ASTRC.ArithmeticOperation.Plus,
               annotate (ASTRC.ArithmeticExpression.Variable "x"),
@@ -35,7 +35,7 @@ let () =
         ))
       )),
 
-      annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.BasicCommand.Guard(annotate (ASTRC.BooleanExpression.Not(annotate (ASTRC.BooleanExpression.Comparison(
+      annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.AtomicCommand.Guard(annotate (ASTRC.BooleanExpression.Not(annotate (ASTRC.BooleanExpression.Comparison(
         ASTRC.BooleanComparison.LessThan,
         annotate (ASTRC.ArithmeticExpression.Variable "x"),
         annotate (ASTRC.ArithmeticExpression.Literal 10)
