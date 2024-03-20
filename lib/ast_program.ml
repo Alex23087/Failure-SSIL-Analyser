@@ -23,7 +23,7 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
   let removeAnnotation (node: 'a annotated_node) = node.node
 
   module ArithmeticOperation = struct
-    type arithmeticOperation =
+    type t =
       | Plus
       | Minus
       | Times
@@ -32,7 +32,7 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
   end
 
   module BooleanComparison = struct
-    type comparison =
+    type t =
       | Equal
       | NotEqual
       | LessThan
@@ -43,44 +43,44 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
   end
 
   module ArithmeticExpression = struct
-    type arithmeticExpression_node =
+    type t_node =
       | Literal of int
       | Variable of identifier
-      | BinaryOperation of ArithmeticOperation.arithmeticOperation * arithmeticExpression * arithmeticExpression
-    and arithmeticExpression = arithmeticExpression_node annotated_node
+      | BinaryOperation of ArithmeticOperation.t * t * t
+    and t = t_node annotated_node
     [@@deriving show]
   end
 
   module BooleanExpression = struct
-    type booleanExpression_node =
+    type t_node =
       | True
       | False
-      | Not of booleanExpression
-      | And of booleanExpression * booleanExpression
-      | Or of booleanExpression * booleanExpression
-      | Comparison of BooleanComparison.comparison * ArithmeticExpression.arithmeticExpression * ArithmeticExpression.arithmeticExpression
-    and booleanExpression = booleanExpression_node annotated_node
+      | Not of t
+      | And of t * t
+      | Or of t * t
+      | Comparison of BooleanComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
+    and t = t_node annotated_node
     [@@deriving show]
   end
 
   module BasicCommand = struct
-    type basicCommand_node =
+    type t_node =
       | Skip
-      | Assignment of identifier * ArithmeticExpression.arithmeticExpression
-      | Guard of BooleanExpression.booleanExpression
-    and basicCommand = basicCommand_node annotated_node
+      | Assignment of identifier * ArithmeticExpression.t
+      | Guard of BooleanExpression.t
+    and t = t_node annotated_node
     [@@deriving show]
   end
 
   module RegularCommand = struct
-    type regularCommand_node =
-      | Command of BasicCommand.basicCommand
-      | Sequence of regularCommand * regularCommand
-      | NondeterministicChoice of regularCommand * regularCommand
-      | Star of regularCommand
-    and regularCommand = regularCommand_node annotated_node
+    type t_node =
+      | Command of BasicCommand.t
+      | Sequence of t * t
+      | NondeterministicChoice of t * t
+      | Star of t
+    and t = t_node annotated_node
     [@@deriving show]
   end
 
-  let show = RegularCommand.show_regularCommand
+  let show = RegularCommand.show
 end
