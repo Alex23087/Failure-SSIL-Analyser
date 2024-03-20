@@ -1,73 +1,86 @@
 (* Grammar:
-   RCmd ::=  ACmd  |  RCmd; RCmd  |  RCmd + RCmd  |  RCmd*
+   RegularCommand ::=  BasicCommand  |  RegularCommand; RegularCommand  |  RegularCommand + RegularCommand  |  RegularCommand*
    
-   ACmd ::=  SKIP  |  Ident = AExp  |  BExp ?
+   BasicCommand ::=  SKIP  |  Identifier = ArithmeticExpression  |  BooleanExpression ?
    
-   BExp ::=  TRUE  |  FALSE  |  !Bexp  |  BExp && BExp  |  BExp || BExp  |  AExp Comp AExp
+   BooleanExpression ::=  TRUE  |  FALSE  |  !BooleanExpression  |  BooleanExpression && BooleanExpression  |  BooleanExpression || BooleanExpression  |  ArithmeticExpression BooleanComparison ArithmeticExpression
    
-   Comp ::=  =  |  !=  |  <  |  <=  |  >  |  >=
+   BooleanComparison ::=  =  |  !=  |  <  |  <=  |  >  |  >=
    
-   AExp ::=  INT(n)  |  Ident  |  AExp Binop AExp
+   ArithmeticExpression ::=  INT(n)  |  Identifier  |  ArithmeticExpression BinaryOperator ArithmeticExpression
    
-   Binop ::=  +  |  -  |  *  |  /  
+   BinaryOperator ::=  +  |  -  |  *  |  /  
 *)
-
 module type AnnotationType = sig
   type t
 end
 
-module ASTRegularCommands(Annot: AnnotationType) = struct
-  type t = Annot.t
+module ASTRegularCommands(Annotation: AnnotationType) = struct
+  type t = Annotation.t
   type identifier = string [@@deriving show]
   type 'a annotated_node = {node: 'a; annotation: t [@opaque]} [@@deriving show]
-  let (@@) node = match node with {node = _; annotation} -> annotation
-  let (@!) node = match node with {node; annotation = _} -> node
+  let getAnnotation (node: 'a annotated_node) = node.annotation
+  let removeAnnotation (node: 'a annotated_node) = node.node
 
-  type aop =
-    | Plus
-    | Minus
-    | Times
-    | Div
-  [@@deriving show]
+  module ArithmeticOperation = struct
+    type arithmeticOperation =
+      | Plus
+      | Minus
+      | Times
+      | Division
+    [@@deriving show]
+  end
 
-  type comp =
-    | Eq
-    | Neq
-    | Lt
-    | Le
-    | Gt
-    | Ge
-  [@@deriving show]
+  module BooleanComparison = struct
+    type comparison =
+      | Equal
+      | NotEqual
+      | LessThan
+      | LessOrEqual
+      | GreaterThan
+      | GreaterOrEqual
+    [@@deriving show]
+  end
 
-  type aexp_node =
-    | Literal of int
-    | Var of identifier
-    | Binop of aop * aexp * aexp
-  and aexp = aexp_node annotated_node
-  [@@deriving show]
+  module ArithmeticExpression = struct
+    type arithmeticExpression_node =
+      | Literal of int
+      | Variable of identifier
+      | BinaryOperation of ArithmeticOperation.arithmeticOperation * arithmeticExpression * arithmeticExpression
+    and arithmeticExpression = arithmeticExpression_node annotated_node
+    [@@deriving show]
+  end
 
-  type bexp_node =
-    | True
-    | False
-    | Not of bexp
-    | And of bexp * bexp
-    | Or of bexp * bexp
-    | Comp of comp * aexp * aexp
-  and bexp = bexp_node annotated_node
-  [@@deriving show]
+  module BooleanExpression = struct
+    type booleanExpression_node =
+      | True
+      | False
+      | Not of booleanExpression
+      | And of booleanExpression * booleanExpression
+      | Or of booleanExpression * booleanExpression
+      | Comparison of BooleanComparison.comparison * ArithmeticExpression.arithmeticExpression * ArithmeticExpression.arithmeticExpression
+    and booleanExpression = booleanExpression_node annotated_node
+    [@@deriving show]
+  end
 
-  type acmd_node =
-    | Skip
-    | Assign of identifier * aexp
-    | Guard of bexp
-  and acmd = acmd_node annotated_node
-  [@@deriving show]
+  module BasicCommand = struct
+    type basicCommand_node =
+      | Skip
+      | Assignment of identifier * ArithmeticExpression.arithmeticExpression
+      | Guard of BooleanExpression.booleanExpression
+    and basicCommand = basicCommand_node annotated_node
+    [@@deriving show]
+  end
 
-  type rcmd_node =
-    | Command of acmd
-    | Seq of rcmd * rcmd
-    | Nondet of rcmd * rcmd
-    | Star of rcmd
-  and rcmd = rcmd_node annotated_node
-  [@@deriving show]
+  module RegularCommand = struct
+    type regularCommand_node =
+      | Command of BasicCommand.basicCommand
+      | Sequence of regularCommand * regularCommand
+      | NondeterministicChoice of regularCommand * regularCommand
+      | Star of regularCommand
+    and regularCommand = regularCommand_node annotated_node
+    [@@deriving show]
+  end
+
+  let show = RegularCommand.show_regularCommand
 end
