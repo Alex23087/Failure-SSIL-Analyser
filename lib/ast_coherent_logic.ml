@@ -1,15 +1,22 @@
 (* Grammar:
-   CL ::=  TRUE | FALSE | exists CL | CL && CL | CL || CL | ArithmeticExpression BinaryComparison ArithmeticExpression | TemporalExpression
+   CL ::=  TRUE | FALSE | exists Identifier CL | CL && CL | CL || CL | ArithmeticExpression BinaryComparison ArithmeticExpression | TemporalExpression
    BinaryComparison ::= < | > | <= | >= | == | !=
    ArithmeticExpression ::= INT(n)  |  Identifier  |  ArithmeticExpression BinaryOperator ArithmeticExpression
    BinaryOperator ::=  + | - | * | / | % | ^
    TemporalExpression ::= TODO
-*)
+ *)
+
+
+
+
+
+
+
 module type AnnotationType = sig
   type t
 end
 
-module ASTRegularCommands(Annotation: AnnotationType) = struct
+module ASTCoherentCommands(Annotation: AnnotationType) = struct
   type t = Annotation.t
   type identifier = string [@@deriving show]
   type 'a annotated_node = {node: 'a; annotation: t [@opaque]} [@@deriving show]
@@ -38,14 +45,13 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
   end
 
   module BinaryComparison = struct
-    type t_node =
+    type t =
       | LessThan
       | GreaterThan
       | LessOrEqual
       | GreaterOrEqual
-      | Equal
-      | NotEqual
-    and t = t_node annotated_node
+      | Equals
+      | NotEquals
     [@@deriving show]
   end
 
@@ -59,7 +65,7 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
     type t_node =
       | True
       | False
-      | Exists of t
+      | Exists of identifier * t
       | And of t * t
       | Or of t * t
       | Comparison of BinaryComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
