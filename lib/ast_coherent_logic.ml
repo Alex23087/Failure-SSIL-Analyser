@@ -3,14 +3,7 @@
    BinaryComparison ::= < | > | <= | >= | == | !=
    ArithmeticExpression ::= INT(n)  |  Identifier  |  ArithmeticExpression BinaryOperator ArithmeticExpression
    BinaryOperator ::=  + | - | * | / | % | ^
-   TemporalExpression ::= TODO
  *)
-
-
-
-
-
-
 
 module type AnnotationType = sig
   type t
@@ -55,12 +48,6 @@ module ASTCoherentCommands(Annotation: AnnotationType) = struct
     [@@deriving show]
   end
 
-  module TemporalExpression = struct
-    type t =
-      | TODO
-    [@@deriving show]
-  end
-
   module CoherentCommand = struct
     type t_node =
       | True
@@ -69,7 +56,6 @@ module ASTCoherentCommands(Annotation: AnnotationType) = struct
       | And of t * t
       | Or of t * t
       | Comparison of BinaryComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
-      | Temporal of TemporalExpression.t
     and t = t_node annotated_node
     [@@deriving show]
   end
