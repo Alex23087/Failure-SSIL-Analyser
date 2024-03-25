@@ -1,15 +1,15 @@
-open Lisproject.Ast_program
+open Lisproject.Prelude
 
 (* Instantiate the AST with the annotation type *)
-module ASTRC = ASTRegularCommands(struct
+module ASTRC = Ast.RegularCommands(struct
   type t = int (* int annotations *)
 end)
 
 let counter = ref 0
 
 (* Annotate a node with a unique integer *)
-let annotate (node: 'a): 'a ASTRC.annotated_node =
-  let out: 'a ASTRC.annotated_node = ASTRC.addAnnotation node !counter in
+let annotate (node: 'a): 'a ASTRC.AnnotatedNode.t =
+  let out = ASTRC.AnnotatedNode.make node !counter in
   counter := !counter + 1;
   out
 
@@ -42,9 +42,9 @@ let () =
       ))))))))
     ))
   )) in
-  match ASTRC.removeAnnotation root with
-    | Command(a) -> (match ASTRC.removeAnnotation a with
-      | Guard(a) -> (match ASTRC.removeAnnotation a with
+  match ASTRC.AnnotatedNode.node root with
+    | Command(a) -> (match ASTRC.AnnotatedNode.node a with
+      | Guard(a) -> (match ASTRC.AnnotatedNode.node a with
         | Comparison(a, b, c) -> (match (a, b.node, c.node) with
           | (Equal, Variable(x), Literal(y)) -> print_endline ("Equal: " ^ x ^ " = " ^ (string_of_int y))
           | _ -> print_endline "Not Equal")

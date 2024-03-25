@@ -5,17 +5,8 @@
    BinaryOperator ::=  + | - | * | / | % | ^
  *)
 
-module type AnnotationType = sig
-  type t
-end
-
-module ASTCoherentCommands(Annotation: AnnotationType) = struct
-  type t = Annotation.t
-  type identifier = string [@@deriving show]
-  type 'a annotated_node = {node: 'a; annotation: t [@opaque]} [@@deriving show]
-  let addAnnotation (node: 'a) (annotation: t) = {node; annotation}
-  let getAnnotation (node: 'a annotated_node) = node.annotation
-  let removeAnnotation (node: 'a annotated_node) = node.node
+module CoherentFormulas(Annotation: Base.AnnotationType) = struct
+  module AnnotatedNode = Base.AnnotatedNode(Annotation)
 
   module BinaryOperator = struct
     type t =
@@ -31,9 +22,9 @@ module ASTCoherentCommands(Annotation: AnnotationType) = struct
   module ArithmeticExpression = struct
     type t_node =
       | Literal of int
-      | Variable of identifier
+      | Variable of Base.identifier
       | Operation of BinaryOperator.t * t * t
-    and t = t_node annotated_node
+    and t = t_node AnnotatedNode.t
     [@@deriving show]
   end
 
@@ -48,17 +39,17 @@ module ASTCoherentCommands(Annotation: AnnotationType) = struct
     [@@deriving show]
   end
 
-  module CoherentCommand = struct
+  module CoherentFormula = struct
     type t_node =
       | True
       | False
-      | Exists of identifier * t
+      | Exists of Base.identifier * t
       | And of t * t
       | Or of t * t
       | Comparison of BinaryComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
-    and t = t_node annotated_node
+    and t = t_node AnnotatedNode.t
     [@@deriving show]
   end
 
-  let show = CoherentCommand.show
+  let show = CoherentFormula.show
 end

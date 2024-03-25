@@ -11,17 +11,9 @@
    
    BinaryOperator ::=  +  |  -  |  *  |  /  
 *)
-module type AnnotationType = sig
-  type t
-end
 
-module ASTRegularCommands(Annotation: AnnotationType) = struct
-  type t = Annotation.t
-  type identifier = string [@@deriving show]
-  type 'a annotated_node = {node: 'a; annotation: t [@opaque]} [@@deriving show]
-  let addAnnotation (node: 'a) (annotation: t) = {node; annotation}
-  let getAnnotation (node: 'a annotated_node) = node.annotation
-  let removeAnnotation (node: 'a annotated_node) = node.node
+module RegularCommands(Annotation: Base.AnnotationType) = struct
+  module AnnotatedNode = Base.AnnotatedNode(Annotation)
 
   module ArithmeticOperation = struct
     type t =
@@ -46,9 +38,9 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
   module ArithmeticExpression = struct
     type t_node =
       | Literal of int
-      | Variable of identifier
+      | Variable of Base.identifier
       | BinaryOperation of ArithmeticOperation.t * t * t
-    and t = t_node annotated_node
+    and t = t_node AnnotatedNode.t
     [@@deriving show]
   end
 
@@ -60,16 +52,16 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
       | And of t * t
       | Or of t * t
       | Comparison of BooleanComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
-    and t = t_node annotated_node
+    and t = t_node AnnotatedNode.t
     [@@deriving show]
   end
 
   module AtomicCommand = struct
     type t_node =
       | Skip
-      | Assignment of identifier * ArithmeticExpression.t
+      | Assignment of Base.identifier * ArithmeticExpression.t
       | Guard of BooleanExpression.t
-    and t = t_node annotated_node
+    and t = t_node AnnotatedNode.t
     [@@deriving show]
   end
 
@@ -79,7 +71,7 @@ module ASTRegularCommands(Annotation: AnnotationType) = struct
       | Sequence of t * t
       | NondeterministicChoice of t * t
       | Star of t
-    and t = t_node annotated_node
+    and t = t_node AnnotatedNode.t
     [@@deriving show]
   end
 
