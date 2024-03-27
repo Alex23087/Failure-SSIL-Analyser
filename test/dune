@@ -2,9 +2,19 @@
  (name test_lisproject)
  (modules test_lisproject))
 
+
 (test
   (name test_ast_program)
   (libraries lisproject)
   (modules test_ast_program)
   (preprocess
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq)))
+
+
+(test
+ (name test_cl_program)
+ (libraries lisproject)
+ (modules test_cl_program)
+ (preprocess
+ (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq))
+)
