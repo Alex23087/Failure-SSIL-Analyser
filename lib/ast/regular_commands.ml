@@ -1,17 +1,19 @@
-(* Grammar:
-   RegularCommand ::=  AtomicCommand  |  RegularCommand; RegularCommand  |  RegularCommand + RegularCommand  |  RegularCommand*
-   
-   AtomicCommand ::=  SKIP  |  Identifier = ArithmeticExpression  |  BooleanExpression ?
-   
-   BooleanExpression ::=  TRUE  |  FALSE  |  !BooleanExpression  |  BooleanExpression && BooleanExpression  |  BooleanExpression || BooleanExpression  |  ArithmeticExpression BooleanComparison ArithmeticExpression
-   
-   BooleanComparison ::=  =  |  !=  |  <  |  <=  |  >  |  >=
-   
-   ArithmeticExpression ::=  INT(n)  |  Identifier  |  ArithmeticExpression BinaryOperator ArithmeticExpression
-   
-   BinaryOperator ::=  +  |  -  |  *  |  /  
-*)
+(**{1 Regular Commands}*)
 
+(**This is the Abstract Syntax Tree which represents the programs we want to analyze.
+  The data structure allows to add generic annotations to most of the grammar nodes, which
+  in out case will be used to store position information in the source files and logic formulas
+  associated to a specific command.
+
+  The following is the grammar definition for our programs: 
+  
+  - {{! RegularCommands.RegularCommand}RegularCommand} ::= AtomicCommand | RegularCommand; RegularCommand | RegularCommand + RegularCommand | RegularCommand*
+  - {{! RegularCommands.AtomicCommand}AtomicCommand} ::= skip | Identifier = ArithmeticExpression | BooleanExpression ?
+  - {{! RegularCommands.BooleanExpression}BooleanExpression} ::= True | False | !BooleanExpression | BooleanExpression && BooleanExpression  |  BooleanExpression || BooleanExpression  |  ArithmeticExpression BooleanComparison ArithmeticExpression
+  - {{! RegularCommands.BooleanComparison}BooleanComparison} ::= == | != | < | <= | > | >=
+  - {{! RegularCommands.ArithmeticExpression}ArithmeticExpression} ::= Int(n) | Identifier | ArithmeticExpression BinaryOperator ArithmeticExpression
+  - {{! RegularCommands.ArithmeticOperation}BinaryOperator} ::= + | - | * | / | %
+*)
 module RegularCommands(Annotation: Base.AnnotationType) = struct
   module AnnotatedNode = Base.AnnotatedNode(Annotation)
 
@@ -21,6 +23,7 @@ module RegularCommands(Annotation: Base.AnnotationType) = struct
       | Minus
       | Times
       | Division
+      | Modulo
     [@@deriving show]
   end
 
