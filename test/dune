@@ -2,6 +2,7 @@
  (name test_lisproject)
  (modules test_lisproject))
 
+(include_subdirs unqualified)
 
 (test
   (name test_ast_program)
@@ -12,9 +13,9 @@
 
 
 (test
- (name test_cl_program)
+ (name test_logic_program)
  (libraries lisproject)
- (modules test_cl_program)
+ (modules test_logic_program)
  (preprocess
  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq))
 )

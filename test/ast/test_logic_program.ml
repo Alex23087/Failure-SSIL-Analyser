@@ -1,11 +1,11 @@
 open Lisproject.Ast.Prelude
 
 (* Instantiate the AST with the annotation type *)
-module ASTCC = CoherentFormulas(struct
+module ASTLogic = AnnotationLogic(struct
   type t = int (* int annotations *)
 end)
 
-open ASTCC
+open ASTLogic
 
 let counter = ref 0
 
@@ -18,14 +18,14 @@ let annotate (node: 'a): 'a AnnotatedNode.t =
 
 let () =
   (* Create an AST corresponding to:  ((x<5) and (x+1==y%2)) or (exists p.(p<=x or p>=y*2)) *)
-  let root =  annotate (CoherentFormula.Or(
-                annotate (CoherentFormula.And(
-                  annotate (CoherentFormula.Comparison(
+  let root =  annotate (LogicFormula.Or(
+                annotate (LogicFormula.And(
+                  annotate (LogicFormula.Comparison(
                     BinaryComparison.LessThan,
                     annotate (ArithmeticExpression.Variable "x"),
                     annotate (ArithmeticExpression.Literal 5)
                   )),
-                  annotate (CoherentFormula.Comparison(
+                  annotate (LogicFormula.Comparison(
                     BinaryComparison.Equals,
                     annotate (ArithmeticExpression.Operation(
                       BinaryOperator.Plus,
@@ -39,15 +39,15 @@ let () =
                     ))
                   ))
                 )),
-                annotate (CoherentFormula.Exists(
+                annotate (LogicFormula.Exists(
                   "p",
-                  annotate (CoherentFormula.Or(
-                    annotate (CoherentFormula.Comparison(
+                  annotate (LogicFormula.Or(
+                    annotate (LogicFormula.Comparison(
                       BinaryComparison.LessOrEqual,
                       annotate (ArithmeticExpression.Variable "p"),
                       annotate (ArithmeticExpression.Variable "x")
                     )),
-                    annotate (CoherentFormula.Comparison(
+                    annotate (LogicFormula.Comparison(
                       BinaryComparison.GreaterOrEqual,
                       annotate (ArithmeticExpression.Variable "p"),
                       annotate (ArithmeticExpression.Operation(

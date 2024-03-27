@@ -5,7 +5,7 @@
    BinaryOperator ::=  + | - | * | / | % | ^
  *)
 
-module CoherentFormulas(Annotation: Base.AnnotationType) = struct
+module AnnotationLogic(Annotation: Base.AnnotationType) = struct
   module AnnotatedNode = Base.AnnotatedNode(Annotation)
 
   module BinaryOperator = struct
@@ -15,7 +15,6 @@ module CoherentFormulas(Annotation: Base.AnnotationType) = struct
       | Times
       | Division
       | Modulo
-      | Exponent
     [@@deriving show]
   end
 
@@ -39,7 +38,7 @@ module CoherentFormulas(Annotation: Base.AnnotationType) = struct
     [@@deriving show]
   end
 
-  module CoherentFormula = struct
+  module LogicFormula = struct
     type t_node =
       | True
       | False
@@ -51,7 +50,7 @@ module CoherentFormulas(Annotation: Base.AnnotationType) = struct
     [@@deriving show]
   end
 
-  type t = CoherentFormula.t
-  let pp = CoherentFormula.pp
-  let show = CoherentFormula.show
+  type t = LogicFormula.t
+  let pp = LogicFormula.pp
+  let show = LogicFormula.show
 end
