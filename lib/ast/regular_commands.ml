@@ -75,5 +75,7 @@ module RegularCommands(Annotation: Base.AnnotationType) = struct
     [@@deriving show]
   end
 
+  type t = RegularCommand.t
+  let pp = RegularCommand.pp
   let show = RegularCommand.show
 end

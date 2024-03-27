@@ -1,65 +1,67 @@
-open Lisproject.Prelude
+open Lisproject.Ast.Prelude
 
 (* Instantiate the AST with the annotation type *)
-module ASTCC = Ast.CoherentFormulas(struct
+module ASTCC = CoherentFormulas(struct
   type t = int (* int annotations *)
 end)
+
+open ASTCC
 
 let counter = ref 0
 
 (* Annotate a node with a unique integer *)
-let annotate (node: 'a): 'a ASTCC.AnnotatedNode.t =
-  let out = ASTCC.AnnotatedNode.make node !counter in
+let annotate (node: 'a): 'a AnnotatedNode.t =
+  let out = AnnotatedNode.make node !counter in
   counter := !counter + 1;
   out
 
 
 let () =
   (* Create an AST corresponding to:  ((x<5) and (x+1==y%2)) or (exists p.(p<=x or p>=y*2)) *)
-  let root = annotate (ASTCC.CoherentFormula.Or(
-                 annotate (ASTCC.CoherentFormula.And(
-                     annotate (ASTCC.CoherentFormula.Comparison(
-                         ASTCC.BinaryComparison.LessThan,
-                         annotate (ASTCC.ArithmeticExpression.Variable "x"),
-                         annotate (ASTCC.ArithmeticExpression.Literal 5)
-                       )),
-                     annotate (ASTCC.CoherentFormula.Comparison(
-                         ASTCC.BinaryComparison.Equals,
-                         annotate (ASTCC.ArithmeticExpression.Operation(
-                             ASTCC.BinaryOperator.Plus,
-                             annotate (ASTCC.ArithmeticExpression.Variable "x"),
-                             annotate (ASTCC.ArithmeticExpression.Literal 1)
-                           )),
-                         annotate (ASTCC.ArithmeticExpression.Operation(
-                             ASTCC.BinaryOperator.Modulo,
-                             annotate (ASTCC.ArithmeticExpression.Variable "y"),
-                             annotate (ASTCC.ArithmeticExpression.Literal 2)
-                           ))
-                       ))
-                   )),
-                 annotate (ASTCC.CoherentFormula.Exists(
-                     "p",
-                     annotate (ASTCC.CoherentFormula.Or(
-                         annotate (ASTCC.CoherentFormula.Comparison(
-                             ASTCC.BinaryComparison.LessOrEqual,
-                             annotate (ASTCC.ArithmeticExpression.Variable "p"),
-                             annotate (ASTCC.ArithmeticExpression.Variable "x")
-                           )),
-                         annotate (ASTCC.CoherentFormula.Comparison(
-                             ASTCC.BinaryComparison.GreaterOrEqual,
-                             annotate (ASTCC.ArithmeticExpression.Variable "p"),
-                             annotate (ASTCC.ArithmeticExpression.Operation(
-                                 ASTCC.BinaryOperator.Times,
-                                 annotate (ASTCC.ArithmeticExpression.Variable "y"),
-                                 annotate (ASTCC.ArithmeticExpression.Literal 2)
-                               ))
-                           ))
-                       ))
-                   ))
-  )) in
-  match ASTCC.AnnotatedNode.node root with
-    | Or(a, _) -> (match ASTCC.AnnotatedNode.node a with
-      | And(a, _) -> (match ASTCC.AnnotatedNode.node a with
+  let root =  annotate (CoherentFormula.Or(
+                annotate (CoherentFormula.And(
+                  annotate (CoherentFormula.Comparison(
+                    BinaryComparison.LessThan,
+                    annotate (ArithmeticExpression.Variable "x"),
+                    annotate (ArithmeticExpression.Literal 5)
+                  )),
+                  annotate (CoherentFormula.Comparison(
+                    BinaryComparison.Equals,
+                    annotate (ArithmeticExpression.Operation(
+                      BinaryOperator.Plus,
+                      annotate (ArithmeticExpression.Variable "x"),
+                      annotate (ArithmeticExpression.Literal 1)
+                    )),
+                    annotate (ArithmeticExpression.Operation(
+                      BinaryOperator.Modulo,
+                      annotate (ArithmeticExpression.Variable "y"),
+                      annotate (ArithmeticExpression.Literal 2)
+                    ))
+                  ))
+                )),
+                annotate (CoherentFormula.Exists(
+                  "p",
+                  annotate (CoherentFormula.Or(
+                    annotate (CoherentFormula.Comparison(
+                      BinaryComparison.LessOrEqual,
+                      annotate (ArithmeticExpression.Variable "p"),
+                      annotate (ArithmeticExpression.Variable "x")
+                    )),
+                    annotate (CoherentFormula.Comparison(
+                      BinaryComparison.GreaterOrEqual,
+                      annotate (ArithmeticExpression.Variable "p"),
+                      annotate (ArithmeticExpression.Operation(
+                        BinaryOperator.Times,
+                        annotate (ArithmeticExpression.Variable "y"),
+                        annotate (ArithmeticExpression.Literal 2)
+                      ))
+                    ))
+                  ))
+                ))
+              )) in
+  match root.node with
+    | Or(a, _) -> (match a.node with
+      | And(a, _) -> (match a.node with
         | Comparison(a, b, c) -> (match (a, b.node, c.node) with
           | (LessThan, Variable(x), Literal(y)) -> print_endline ("Less: " ^ x ^ " < " ^ (string_of_int y))
           | _ -> print_endline "Not Less")
@@ -67,5 +69,5 @@ let () =
       | _ -> print_endline "Not And")
     | _ -> print_endline "Not Or";
 
-  (* Print it with ASTCC.show_rcmd *)
-  print_endline (ASTCC.show root)
+  (* Print it with show_rcmd *)
+  print_endline (show root)

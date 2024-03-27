@@ -1,50 +1,52 @@
-open Lisproject.Prelude
+open Lisproject.Ast.Prelude
 
 (* Instantiate the AST with the annotation type *)
-module ASTRC = Ast.RegularCommands(struct
+module ASTRC = RegularCommands(struct
   type t = int (* int annotations *)
 end)
+
+open ASTRC
 
 let counter = ref 0
 
 (* Annotate a node with a unique integer *)
-let annotate (node: 'a): 'a ASTRC.AnnotatedNode.t =
-  let out = ASTRC.AnnotatedNode.make node !counter in
+let annotate (node: 'a): 'a AnnotatedNode.t =
+  let out = AnnotatedNode.make node !counter in
   counter := !counter + 1;
   out
 
 let () =
   (* Create an AST corresponding to the RegCmd:  x = 1; (x < 10?; x = x + 1)*; !(x < 10)?
      This encodes the command:  x = 1; while(x<10){x = x + 1}  *)
-  let root = annotate (ASTRC.RegularCommand.Sequence(
-    annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.AtomicCommand.Assignment("x", annotate (ASTRC.ArithmeticExpression.Literal 1))))),
+  let root = annotate (RegularCommand.Sequence(
+    annotate (RegularCommand.Command(annotate (AtomicCommand.Assignment("x", annotate (ArithmeticExpression.Literal 1))))),
 
-    annotate (ASTRC.RegularCommand.Sequence(
-      annotate (ASTRC.RegularCommand.Star(
-        annotate (ASTRC.RegularCommand.Sequence(
-          annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.AtomicCommand.Guard(annotate (ASTRC.BooleanExpression.Comparison(
-            ASTRC.BooleanComparison.LessThan,
-            annotate (ASTRC.ArithmeticExpression.Variable "x"),
-            annotate (ASTRC.ArithmeticExpression.Literal 10)
+    annotate (RegularCommand.Sequence(
+      annotate (RegularCommand.Star(
+        annotate (RegularCommand.Sequence(
+          annotate (RegularCommand.Command(annotate (AtomicCommand.Guard(annotate (BooleanExpression.Comparison(
+            BooleanComparison.LessThan,
+            annotate (ArithmeticExpression.Variable "x"),
+            annotate (ArithmeticExpression.Literal 10)
           )))))),
-          annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.AtomicCommand.Assignment("x", annotate (
-            ASTRC.ArithmeticExpression.BinaryOperation(
-              ASTRC.ArithmeticOperation.Plus,
-              annotate (ASTRC.ArithmeticExpression.Variable "x"),
-              annotate (ASTRC.ArithmeticExpression.Literal 1)))))))
+          annotate (RegularCommand.Command(annotate (AtomicCommand.Assignment("x", annotate (
+            ArithmeticExpression.BinaryOperation(
+              ArithmeticOperation.Plus,
+              annotate (ArithmeticExpression.Variable "x"),
+              annotate (ArithmeticExpression.Literal 1)))))))
         ))
       )),
 
-      annotate (ASTRC.RegularCommand.Command(annotate (ASTRC.AtomicCommand.Guard(annotate (ASTRC.BooleanExpression.Not(annotate (ASTRC.BooleanExpression.Comparison(
-        ASTRC.BooleanComparison.LessThan,
-        annotate (ASTRC.ArithmeticExpression.Variable "x"),
-        annotate (ASTRC.ArithmeticExpression.Literal 10)
+      annotate (RegularCommand.Command(annotate (AtomicCommand.Guard(annotate (BooleanExpression.Not(annotate (BooleanExpression.Comparison(
+        BooleanComparison.LessThan,
+        annotate (ArithmeticExpression.Variable "x"),
+        annotate (ArithmeticExpression.Literal 10)
       ))))))))
     ))
   )) in
-  match ASTRC.AnnotatedNode.node root with
-    | Command(a) -> (match ASTRC.AnnotatedNode.node a with
-      | Guard(a) -> (match ASTRC.AnnotatedNode.node a with
+  match root.node with
+    | Command(a) -> (match a.node with
+      | Guard(a) -> (match a.node with
         | Comparison(a, b, c) -> (match (a, b.node, c.node) with
           | (Equal, Variable(x), Literal(y)) -> print_endline ("Equal: " ^ x ^ " = " ^ (string_of_int y))
           | _ -> print_endline "Not Equal")
@@ -52,5 +54,5 @@ let () =
       | _ -> print_endline "Not Seq")
     | _ -> print_endline "Not Star";
 
-  (* Print it with ASTRC.show_rcmd *)
-  print_endline (ASTRC.show root)
+  (* Print it with show_rcmd *)
+  print_endline (show root)

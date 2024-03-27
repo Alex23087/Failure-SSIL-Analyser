@@ -51,5 +51,7 @@ module CoherentFormulas(Annotation: Base.AnnotationType) = struct
     [@@deriving show]
   end
 
+  type t = CoherentFormula.t
+  let pp = CoherentFormula.pp
   let show = CoherentFormula.show
 end
