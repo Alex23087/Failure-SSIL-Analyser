@@ -1,4 +1,4 @@
-open Lisproject.Ast.Prelude
+open Lisproject.Ast
 
 (* Instantiate the AST with the annotation type *)
 module ASTRC = RegularCommands(struct
