@@ -4,6 +4,9 @@ build:
 test:
 	dune test
 
+test-rerun:
+	dune test --force
+
 doc:
 	dune build @doc
 
