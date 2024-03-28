@@ -11,6 +11,7 @@
   - {{! AnnotationLogic.BinaryOperator}BinaryOperator} ::= + | - | * | / | %
 *)
 module AnnotationLogic(Annotation: Base.AnnotationType) = struct
+  open Base
   module AnnotatedNode = Base.AnnotatedNode(Annotation)
 
   module BinaryOperator = struct
@@ -26,7 +27,7 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
   module ArithmeticExpression = struct
     type t_node =
       | Literal of int
-      | Variable of Base.identifier
+      | Variable of identifier
       | Operation of BinaryOperator.t * t * t
     and t = t_node AnnotatedNode.t
     [@@deriving show]
@@ -47,7 +48,7 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
     type t_node =
       | True
       | False
-      | Exists of Base.identifier * t
+      | Exists of identifier * t
       | And of t * t
       | Or of t * t
       | Comparison of BinaryComparison.t * ArithmeticExpression.t * ArithmeticExpression.t

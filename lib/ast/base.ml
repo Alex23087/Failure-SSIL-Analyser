@@ -13,3 +13,8 @@ module AnnotatedNode(Annotation: AnnotationType) = struct
 
   let make (node: 'a) (annotation: annotation) = {node; annotation}
 end
+
+module IdentifierSet = Set.Make(struct
+  type t = identifier
+  let compare = compare
+end)

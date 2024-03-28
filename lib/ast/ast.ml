@@ -4,6 +4,6 @@
   the analysis is run.
 *)
 
-include Regular_commands
+include Heap_regular_commands
 include Annotation_logic
 include Base

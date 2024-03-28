@@ -1,35 +1,35 @@
 open Lisproject.Ast
 
 (* Instantiate the AST with the annotation type *)
-module ASTRC = RegularCommands(struct
+module ASTHRC = HeapRegularCommands(struct
   type t = int (* int annotations *)
 end)
-
-open ASTRC
 
 let counter = ref 0
 
 (* Annotate a node with a unique integer *)
-let annotate (node: 'a): 'a AnnotatedNode.t =
-  let out = AnnotatedNode.make node !counter in
+let annotate (node: 'a): 'a ASTHRC.AnnotatedNode.t =
+  let out = ASTHRC.AnnotatedNode.make node !counter in
   counter := !counter + 1;
   out
+
+open ASTHRC
 
 let () =
   (* Create an AST corresponding to the RegCmd:  x = 1; (x < 10?; x = x + 1)*; !(x < 10)?
      This encodes the command:  x = 1; while(x<10){x = x + 1}  *)
-  let root = annotate (RegularCommand.Sequence(
-    annotate (RegularCommand.Command(annotate (AtomicCommand.Assignment("x", annotate (ArithmeticExpression.Literal 1))))),
+  let root = annotate (HeapRegularCommand.Sequence(
+    annotate (HeapRegularCommand.Command(annotate (HeapAtomicCommand.Assignment("x", annotate (ArithmeticExpression.Literal 1))))),
 
-    annotate (RegularCommand.Sequence(
-      annotate (RegularCommand.Star(
-        annotate (RegularCommand.Sequence(
-          annotate (RegularCommand.Command(annotate (AtomicCommand.Guard(annotate (BooleanExpression.Comparison(
+    annotate (HeapRegularCommand.Sequence(
+      annotate (HeapRegularCommand.Star(
+        annotate (HeapRegularCommand.Sequence(
+          annotate (HeapRegularCommand.Command(annotate (HeapAtomicCommand.Guard(annotate (BooleanExpression.Comparison(
             BooleanComparison.LessThan,
             annotate (ArithmeticExpression.Variable "x"),
             annotate (ArithmeticExpression.Literal 10)
           )))))),
-          annotate (RegularCommand.Command(annotate (AtomicCommand.Assignment("x", annotate (
+          annotate (HeapRegularCommand.Command(annotate (HeapAtomicCommand.Assignment("x", annotate (
             ArithmeticExpression.BinaryOperation(
               ArithmeticOperation.Plus,
               annotate (ArithmeticExpression.Variable "x"),
@@ -37,7 +37,7 @@ let () =
         ))
       )),
 
-      annotate (RegularCommand.Command(annotate (AtomicCommand.Guard(annotate (BooleanExpression.Not(annotate (BooleanExpression.Comparison(
+      annotate (HeapRegularCommand.Command(annotate (HeapAtomicCommand.Guard(annotate (BooleanExpression.Not(annotate (BooleanExpression.Comparison(
         BooleanComparison.LessThan,
         annotate (ArithmeticExpression.Variable "x"),
         annotate (ArithmeticExpression.Literal 10)
@@ -55,4 +55,15 @@ let () =
     | _ -> print_endline "Not Star";
 
   (* Print it with show_rcmd *)
-  print_endline (show root)
+  print_endline (show root);
+
+  let root = annotate (HeapRegularCommand.Sequence(
+    (annotate (HeapRegularCommand.Command(annotate (HeapAtomicCommand.Allocation("x"))))),
+    (annotate (HeapRegularCommand.Sequence (
+    (annotate (HeapRegularCommand.Command (annotate(HeapAtomicCommand.WriteHeap("x", annotate (ArithmeticExpression.Literal 1)))))),
+    (annotate (HeapRegularCommand.Command (annotate(HeapAtomicCommand.ReadHeap("y", "x")))))
+    ))
+    )
+  )) in
+  print_endline (show root);
+  print_endline (modifiedVariables root |> IdentifierSet.elements |> String.concat ", ");
