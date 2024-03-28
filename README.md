@@ -24,3 +24,4 @@
 
 ### Documentation
 - `dune build @doc`
+- The built documentation can be found at `_build/default/_doc/_html/index.html`
