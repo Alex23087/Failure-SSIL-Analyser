@@ -8,3 +8,10 @@
   (modules test_ast_program)
   (preprocess
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq)))
+
+(test
+  (name test_cfg)
+  (libraries lisproject)
+  (modules test_cfg)
+  (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq)))
