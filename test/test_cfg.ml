@@ -1,4 +1,4 @@
-open Lisproject.CFG.Node
+open Lisproject.CFG.Node.CFG_Node
 
 let n = Node.make "root" [
   (Node.make "left" []);
@@ -16,7 +16,7 @@ let cfg = CFG.make n
 let () = Printf.printf "\n%s\n" (CFG.show (fun fmt -> Format.fprintf fmt "%s") cfg ) 
 
 let () = Printf.printf "\n%s\n" (
-  CFG.show_ht_item (fun fmt -> Format.fprintf fmt "%s") 
+  CFG.show_item (fun fmt -> Format.fprintf fmt "%s") 
   (CFG.get cfg 2)
 )
 
