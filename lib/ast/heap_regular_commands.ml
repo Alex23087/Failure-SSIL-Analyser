@@ -8,7 +8,7 @@
   The following is the grammar definition for our programs: 
   
   - {{! HeapRegularCommands.HeapRegularCommand}HeapRegularCommand} ::= HeapAtomicCommand | HeapRegularCommand; HeapRegularCommand | HeapRegularCommand + HeapRegularCommand | HeapRegularCommand*
-  - {{! HeapRegularCommands.HeapAtomicCommand}HeapAtomicCommand} ::= skip | Identifier = ArithmeticExpression | BooleanExpression ? | Identifier = alloc() | free(Identifier) | x = '['y']'  | '['x']' = ArithmeticExpression
+  - {{! HeapRegularCommands.HeapAtomicCommand}HeapAtomicCommand} ::= skip | Identifier = ArithmeticExpression | BooleanExpression ? | Identifier = alloc() | free(Identifier) | Identifier = \[Identifier\]  | \[Identifier\] = ArithmeticExpression
   - {{! HeapRegularCommands.BooleanExpression}BooleanExpression} ::= True | False | !BooleanExpression | BooleanExpression && BooleanExpression	 |  BooleanExpression || BooleanExpression  |  ArithmeticExpression BooleanComparison ArithmeticExpression
   - {{! HeapRegularCommands.BooleanComparison}BooleanComparison} ::= == | != | < | <= | > | >=
   - {{! HeapRegularCommands.ArithmeticExpression}ArithmeticExpression} ::= Int(n) | Identifier | ArithmeticExpression BinaryOperator ArithmeticExpression
