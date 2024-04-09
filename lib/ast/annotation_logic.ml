@@ -4,8 +4,8 @@
   The data structure allows to add generic annotations to most of the grammar nodes, which
   in out case will be used to store position information in the source files.
   
-  The following is the grammar definition for our programs: 
-  - {{! AnnotationLogic.LogicFormula}Formula} ::= True | False | Exists Identifier Formula | Formula && Formula | Formula || Formula | ArithmeticExpression BinaryComparison ArithmeticExpression
+  The following is the grammar definition for our programs:
+  - {{! AnnotationLogic.Formula}Formula} ::= True | False | Exists Identifier Formula | Formula && Formula | Formula || Formula | ArithmeticExpression BinaryComparison ArithmeticExpression | Emp | x -> y | x -/> | Formula * Formula
   - {{! AnnotationLogic.BinaryComparison}BinaryComparison} ::= < | > | <= | >= | == | !=
   - {{! AnnotationLogic.ArithmeticExpression}ArithmeticExpression} ::= Int(n) | Identifier | ArithmeticExpression BinaryOperator ArithmeticExpression
   - {{! AnnotationLogic.BinaryOperator}BinaryOperator} ::= + | - | * | / | %
@@ -44,7 +44,7 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
     [@@deriving show]
   end
 
-  module LogicFormula = struct
+  module Formula = struct
     type t_node =
       | True
       | False
@@ -52,11 +52,17 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
       | And of t * t
       | Or of t * t
       | Comparison of BinaryComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
+
+      (* Spatial Formulas *)
+      | EmpH
+      | NonAlloc of identifier
+      | Alloc of identifier * ArithmeticExpression.t
+      | SepAnd of t * t
     and t = t_node AnnotatedNode.t
     [@@deriving show]
   end
 
-  type t = LogicFormula.t
-  let pp = LogicFormula.pp
-  let show = LogicFormula.show
+  type t = Formula.t
+  let pp = Formula.pp
+  let show = Formula.show
 end
