@@ -19,7 +19,7 @@ let annotate (node: 'a): 'a AnnotatedNode.t =
 let () =
   (* Create an AST corresponding to:  (((x<5) and (x+1==y%2)) or (exists p.(p<=x or p>=y*2)) * (x -> _ and y -> 12)) *)
   let root =
-    annotate (Formula.SepAnd(
+    annotate (Formula.AndSeparately(
       annotate (Formula.Or(
         annotate (Formula.And(
           annotate (Formula.Comparison(
@@ -64,12 +64,12 @@ let () =
       annotate (Formula.And(
         annotate (Formula.Exists(
           "v",
-          annotate (Formula.Alloc(
+          annotate (Formula.Allocation(
             "x",
             annotate (ArithmeticExpression.Variable "v")
           ))
         )),
-        annotate (Formula.Alloc(
+        annotate (Formula.Allocation(
           "y",
           annotate (ArithmeticExpression.Literal 12)
         ))

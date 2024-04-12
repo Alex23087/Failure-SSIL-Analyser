@@ -54,10 +54,10 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
       | Comparison of BinaryComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
 
       (* Spatial Formulas *)
-      | EmpH
-      | NonAlloc of identifier
-      | Alloc of identifier * ArithmeticExpression.t
-      | SepAnd of t * t
+      | EmptyHeap
+      | NonAllocated of identifier
+      | Allocation of identifier * ArithmeticExpression.t
+      | AndSeparately of t * t
     and t = t_node AnnotatedNode.t
     [@@deriving show]
   end
