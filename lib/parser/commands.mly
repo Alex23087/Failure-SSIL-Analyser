@@ -25,3 +25,4 @@
 %token <string> IDENTIFIER
 %token <string> HEAPIDENTIFIER
 %token NONDET
+%token EOF
