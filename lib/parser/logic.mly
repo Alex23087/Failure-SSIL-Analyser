@@ -12,3 +12,34 @@
 %token <int> Integer
 %token Plus Minus Times Div Mod
 %token EOF
+
+/* Starting symbol */
+
+%start formula
+
+%%
+
+/* Grammar specification */
+
+formula:
+    | True           { Ast.Formula.True }
+    | False          { Ast.Formula.False }
+    // | Exists Identifier formula
+    // | formula And formula
+    // | formula Or formula
+    // | formula LT formula
+    // | formula GT formula
+    // | formula LE formula
+    // | formula GE formula
+    // | formula EQ formula
+    // | formula NE formula
+    | Emp           { Ast.Formula.EmptyHeap }
+    // | formula Star formula
+    // | Integer
+    // | Identifier
+    // | formula Plus formula
+    // | formula Minus formula
+    // | formula Times formula
+    // | formula Div formula
+    // | formula Mod formula
+    ;

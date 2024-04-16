@@ -3,7 +3,7 @@
 (**This is the Abstract Syntax Tree which represents the logic formulas used to annotate our programs.
   The data structure allows to add generic annotations to most of the grammar nodes, which
   in out case will be used to store position information in the source files.
-  
+
   The following is the grammar definition for our programs:
   - {{! AnnotationLogic.Formula}Formula} ::= True | False | Exists Identifier Formula | Formula && Formula | Formula || Formula | ArithmeticExpression BinaryComparison ArithmeticExpression | Emp | x -> y | x -/> | Formula * Formula
   - {{! AnnotationLogic.BinaryComparison}BinaryComparison} ::= < | > | <= | >= | == | !=
