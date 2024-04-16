@@ -11,3 +11,4 @@
 %token LT GT LE GE EQ NE
 %token <int> Integer
 %token Plus Minus Times Div Mod
+%token EOF
