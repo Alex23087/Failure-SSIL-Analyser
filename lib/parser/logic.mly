@@ -15,7 +15,7 @@
 
 /* Starting symbol */
 
-%start formula
+%start <Ast.ASTL.Formula.t>formula
 
 %%
 

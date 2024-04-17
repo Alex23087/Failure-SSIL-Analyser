@@ -1,3 +1,7 @@
+%{
+  open Ast.ASTHRC
+%}
+
 %token PLUS
 %token MINUS
 %token TIMES
@@ -25,30 +29,33 @@
 %token <string> IDENTIFIER
 %token <string> HEAPIDENTIFIER
 %token NONDET
+%token STAR
 %token EOF
 
-%start program
+%start <Ast.ASTHRC.HeapRegularCommands.t>program
+
+%%
 
 program:
   | toplevel_command EOF      { $1 }
 
 toplevel_command:
-  | atomic_command            { Ast.HeapRegularCommand.Command($1) }
-  | sequence                  { Ast.HeapRegularCommand.Sequence($1) }
-  | nondetchoice                    { Ast.HeapRegularCommand.NondeterministicChoice($1) }
-  | star                      { Ast.HeapRegularCommand.Star($1) }
+  | atomic_command            { Ast.ASTHRC.HeapRegularCommand.Command($1) }
+  | sequence                  { Ast.ASTHRC.HeapRegularCommand.Sequence($1) }
+  | nondetchoice                    { Ast.ASTHRC.HeapRegularCommand.NondeterministicChoice($1) }
+  | star                      { Ast.ASTHRC.HeapRegularCommand.Star($1) }
 ;
 
 atomic_command:
-  | SKIP                      { Ast.HeapAtomicCommand.Skip }
-  | id = IDENTIFIER NONDET    { Ast.HeapAtomicCommand.NonDet($1) }
+  | SKIP                      { Ast.ASTHRC.HeapAtomicCommand.Skip }
+  | id = IDENTIFIER NONDET    { Ast.ASTHRC.HeapAtomicCommand.NonDet(id) }
 
 
 sequence:
-  | atomic_command SEMICOLON atomic_command { Ast.HeapRegularCommand.Sequence($1, $3) }
+  | atomic_command SEMICOLON atomic_command { Ast.ASTHRC.HeapRegularCommand.Sequence($1, $3) }
 
 nondetchoice:
-  | toplevel_command PLUS toplevel_command { Ast.HeapRegularCommand.NondeterministicChoice($1, $3) }
+  | toplevel_command PLUS toplevel_command { Ast.ASTHRC.HeapRegularCommand.NondeterministicChoice($1, $3) }
 
 star:
-  | atomic_command STAR { Ast.HeapRegularCommand.Star($1) }
+  | atomic_command STAR { Ast.ASTHRC.HeapRegularCommand.Star($1) }

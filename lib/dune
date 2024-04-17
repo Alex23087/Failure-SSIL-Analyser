@@ -6,8 +6,3 @@
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq sedlex.ppx)))
 
 (include_subdirs qualified)
-
-(menhir
- (modules commands)
- (explain true)
- (flags --dump --strict))

@@ -1,0 +1,4 @@
+(menhir
+ (modules commands)
+ (explain true)
+ (flags --dump --strict))
