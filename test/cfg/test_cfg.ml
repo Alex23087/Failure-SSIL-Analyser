@@ -1,4 +1,4 @@
-open Lisproject.CFG.Node.CFG_Node
+open Lisproject.Cfg
 
 let n = Node.make "root" [
   (Node.make "left" []);

@@ -47,12 +47,31 @@ module Ast = struct
       type t = regular_formulas_annotation
     end)
 
+    let make_annotation line column formula : AnnotatedNode.annotation =
+      let position = make_position line column in
+      {position; logic_formula = formula}
+
     (** Utility function to build Commands' annotated nodes*)
     let annotate command line column formula =
-      let make_annotation line column formula : AnnotatedNode.annotation =
-        let position = make_position line column in
-        {position; logic_formula = formula}
-      in
       AnnotatedNode.make command (make_annotation line column formula)
+
+    (** Utility function to update a Command's logic formula*)
+    let update_formula annotated_node new_formula =
+      let node, annotation = AnnotatedNode.unpack annotated_node in 
+      let position = annotation.position in
+      AnnotatedNode.make node (make_annotation position.line position.column new_formula)
   end
+end
+
+module Cfg = struct
+  type cfg_block = {
+    visit_count: int;
+    precondition: Ast.LogicFormulas.t option;
+    statements: Ast.Commands.HeapAtomicCommand.t list;
+  }
+
+  include Cfg.CFG
+
+  type cfg = cfg_block Cfg.CFG.t
+  type cfg_item = cfg_block Cfg.CFG.item
 end
