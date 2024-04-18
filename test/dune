@@ -5,13 +5,21 @@
   (libraries lisproject)
   (modules test_ast_program)
   (preprocess
-  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq)))
-
+  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq))
+)
 
 (test
- (name test_logic_program)
- (libraries lisproject)
- (modules test_logic_program)
- (preprocess
- (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq))
+  (name test_logic_program)
+  (libraries lisproject)
+  (modules test_logic_program)
+  (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq))
+)
+
+(test
+  (name test_ast_prelude)
+  (libraries lisproject)
+  (modules test_ast_prelude)
+  (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq))
 )
