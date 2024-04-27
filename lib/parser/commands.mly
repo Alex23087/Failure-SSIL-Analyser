@@ -8,6 +8,7 @@
 %token DIV
 %token MOD
 %token EQ
+%token EQEQ
 %token NEQ
 %token LT
 %token LE
@@ -83,7 +84,7 @@ boolean_expression:
 ;
 
 boolean_comparison_op:
-  | EQ                                                                                      { Ast.ASTHRC.BooleanComparison.Equal }
+  | EQEQ                                                                                    { Ast.ASTHRC.BooleanComparison.Equal }
   | NEQ                                                                                     { Ast.ASTHRC.BooleanComparison.NotEqual }
   | LT                                                                                      { Ast.ASTHRC.BooleanComparison.LessThan }
   | LE                                                                                      { Ast.ASTHRC.BooleanComparison.LessOrEqual }
