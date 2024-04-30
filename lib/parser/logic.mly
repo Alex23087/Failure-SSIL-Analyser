@@ -1,10 +1,14 @@
-// Formula ::= True | False | Exists Identifier Formula | Formula && Formula | Formula || Formula | ArithmeticExpression BinaryComparison ArithmeticExpression | Emp | x -> y | x -/> | Formula * Formula
-// BinaryComparison ::= < | > | <= | >= | == | !=
-// ArithmeticExpression ::= Int(n) | Identifier | ArithmeticExpression BinaryOperator ArithmeticExpression
-// BinaryOperator ::= + | - | * | / | %
-
 %{
   open Prelude.Ast.LogicFormulas
+
+  open Prelude.Ast
+
+  let from_menhir_pos (position) =
+    let line = position.Lexing.pos_lnum in
+    let column = position.Lexing.pos_cnum in
+    make_position line column
+
+  let annotate formula position = Prelude.Ast.LogicFormulas.annotate formula (from_menhir_pos position)
 %}
 
 %token True
@@ -40,10 +44,10 @@ the_formula:
     | arithmetic_expression GE arithmetic_expression                    { Formula.Comparison(BinaryComparison.GreaterOrEqual, $1, $3) }
     | arithmetic_expression EQ arithmetic_expression                    { Formula.Comparison(BinaryComparison.Equals, $1, $3) }
     | arithmetic_expression NE arithmetic_expression                    { Formula.Comparison(BinaryComparison.NotEquals, $1, $3) }
-    | Emp                                                               { Formula.EmptyHeap }
-    | Identifier Arrow arithmetic_expression                            { Formula.Allocation($1, $3) }
-    | Identifier Void                                                   { Formula.Deallocation($1) }
-    | the_formula Star the_formula                                      { Formula.Separation($1, $3) }
+    | Emp                                                               { annotate (Formula.EmptyHeap) $startpos }
+    | Identifier Arrow arithmetic_expression                            { annotate (Formula.Allocation($1, $3)) $startpos }
+    | Identifier Void                                                   { annotate (Formula.NonAllocated($1)) $startpos }
+    | the_formula Star the_formula                                      { annotate (Formula.AndSeparately($1, $3)) $startpos }
     ;
 
 arithmetic_expression:
