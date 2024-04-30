@@ -21,9 +21,22 @@
 %token Plus Minus Times Div Mod
 %token EOF /*end of formula */
 
+
+/* precedences */
+%left Or
+%left And
+%left Star
+%left Plus Minus
+%left Times Div Mod
+%nonassoc PREC
+
+
 /* Starting symbol */
 
-%start <Formula.t>formula
+%start <Formula.t> formula
+%type <Formula.t> the_formula
+%type <ArithmeticExpression.t> arithmetic_expression
+
 
 %%
 
@@ -33,29 +46,49 @@ formula:
   | the_formula EOF                                                     { $1 }
 
 the_formula:
-    | True                                                              { Formula.True }
-    | False                                                             { Formula.False }
-    | Exists Identifier the_formula                                     { Formula.Exists($2, $3) }
-    | the_formula And the_formula                                       { Formula.And($1, $3) }
-    | the_formula Or the_formula                                        { Formula.Or($1, $3) }
-    | arithmetic_expression LT arithmetic_expression                    { Formula.Comparison(BinaryComparison.LessThan, $1, $3) }
-    | arithmetic_expression GT arithmetic_expression                    { Formula.Comparison(BinaryComparison.GreaterThan, $1, $3) }
-    | arithmetic_expression LE arithmetic_expression                    { Formula.Comparison(BinaryComparison.LessOrEqual, $1, $3) }
-    | arithmetic_expression GE arithmetic_expression                    { Formula.Comparison(BinaryComparison.GreaterOrEqual, $1, $3) }
-    | arithmetic_expression EQ arithmetic_expression                    { Formula.Comparison(BinaryComparison.Equals, $1, $3) }
-    | arithmetic_expression NE arithmetic_expression                    { Formula.Comparison(BinaryComparison.NotEquals, $1, $3) }
-    | Emp                                                               { annotate (Formula.EmptyHeap) $startpos }
-    | Identifier Arrow arithmetic_expression                            { annotate (Formula.Allocation($1, $3)) $startpos }
-    | Identifier Void                                                   { annotate (Formula.NonAllocated($1)) $startpos }
-    | the_formula Star the_formula                                      { annotate (Formula.AndSeparately($1, $3)) $startpos }
+    | True
+      { annotate (Formula.True) $startpos }
+    | False
+      { annotate (Formula.False) $startpos }
+    | Exists Identifier the_formula
+      { annotate (Formula.Exists($2, $3)) $startpos } %prec PREC
+    | the_formula And the_formula
+      { annotate (Formula.And($1, $3)) $startpos }
+    | the_formula Or the_formula
+      { annotate (Formula.Or($1, $3)) $startpos }
+    | arithmetic_expression BinaryComparison arithmetic_expression
+      { annotate (Formula.Comparison($2, $1, $3)) $startpos }
+    | Emp
+      { annotate (Formula.EmptyHeap) $startpos }
+    | Identifier Arrow arithmetic_expression
+      { annotate (Formula.Allocation($1, $3)) $startpos }
+    | Identifier Void
+      { annotate (Formula.NonAllocated($1)) $startpos }
+    | the_formula Star the_formula
+      { annotate (Formula.AndSeparately($1, $3)) $startpos }
     ;
 
 arithmetic_expression:
-    | Integer                                                           { ArithmeticExpression.Literal($1) }
-    | Identifier                                                        { ArithmeticExpression.Variable($1) }
-    | arithmetic_expression Plus arithmetic_expression                  { ArithmeticExpression.Operation(BinaryOperator.Plus, $1, $3) }
-    | arithmetic_expression Minus arithmetic_expression                 { ArithmeticExpression.Operation(BinaryOperator.Minus, $1, $3) }
-    | arithmetic_expression Times arithmetic_expression                 { ArithmeticExpression.Operation(BinaryOperator.Times, $1, $3) }
-    | arithmetic_expression Div arithmetic_expression                   { ArithmeticExpression.Operation(BinaryOperator.Div, $1, $3) }
-    | arithmetic_expression Mod arithmetic_expression                   { ArithmeticExpression.Operation(BinaryOperator.Mod, $1, $3) }
-    ;
+    | Integer
+      { annotate (ArithmeticExpression.Literal($1)) $startpos }
+    | Identifier
+      { annotate (ArithmeticExpression.Variable($1)) $startpos }
+    | arithmetic_expression BinaryOperator arithmetic_expression
+      { annotate ($2, $1, $3) $startpos }
+
+%inline BinaryComparison:
+  | LT { BinaryComparison.LessThan }
+  | GT { BinaryComparison.GreaterThan }
+  | LE { BinaryComparison.LessOrEqual }
+  | GE { BinaryComparison.GreaterOrEqual }
+  | EQ { BinaryComparison.Equals }
+  | NE { BinaryComparison.NotEquals }
+  ;
+
+%inline BinaryOperator:
+  | Plus  { BinaryOperator.Plus }
+  | Minus { BinaryOperator.Minus }
+  | Times { BinaryOperator.Times }
+  | Div   { BinaryOperator.Division }
+  | Mod   { BinaryOperator.Modulo }
+  ;
