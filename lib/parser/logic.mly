@@ -3,6 +3,10 @@
 // ArithmeticExpression ::= Int(n) | Identifier | ArithmeticExpression BinaryOperator ArithmeticExpression
 // BinaryOperator ::= + | - | * | / | %
 
+%{
+  open Ast.ASTLogic
+%}
+
 %token True
 %token False
 %token Exists
@@ -11,35 +15,43 @@
 %token LT GT LE GE EQ NE
 %token <int> Integer
 %token Plus Minus Times Div Mod
-%token EOF
+%token EOF /*end of formula */
 
 /* Starting symbol */
 
-%start <Ast.ASTL.Formula.t>formula
+%start <Formula.t>formula
 
 %%
 
 /* Grammar specification */
 
 formula:
-    | True           { Ast.Formula.True }
-    | False          { Ast.Formula.False }
-    // | Exists Identifier formula
-    // | formula And formula
-    // | formula Or formula
-    // | formula LT formula
-    // | formula GT formula
-    // | formula LE formula
-    // | formula GE formula
-    // | formula EQ formula
-    // | formula NE formula
-    | Emp           { Ast.Formula.EmptyHeap }
-    // | formula Star formula
-    // | Integer
-    // | Identifier
-    // | formula Plus formula
-    // | formula Minus formula
-    // | formula Times formula
-    // | formula Div formula
-    // | formula Mod formula
+  | the_formula EOF                                                     { $1 }
+
+the_formula:
+    | True                                                              { Formula.True }
+    | False                                                             { Formula.False }
+    | Exists Identifier the_formula                                     { Formula.Exists($2, $3) }
+    | the_formula And the_formula                                       { Formula.And($1, $3) }
+    | the_formula Or the_formula                                        { Formula.Or($1, $3) }
+    | arithmetic_expression LT arithmetic_expression                    { Formula.Comparison(BinaryComparison.LessThan, $1, $3) }
+    | arithmetic_expression GT arithmetic_expression                    { Formula.Comparison(BinaryComparison.GreaterThan, $1, $3) }
+    | arithmetic_expression LE arithmetic_expression                    { Formula.Comparison(BinaryComparison.LessOrEqual, $1, $3) }
+    | arithmetic_expression GE arithmetic_expression                    { Formula.Comparison(BinaryComparison.GreaterOrEqual, $1, $3) }
+    | arithmetic_expression EQ arithmetic_expression                    { Formula.Comparison(BinaryComparison.Equals, $1, $3) }
+    | arithmetic_expression NE arithmetic_expression                    { Formula.Comparison(BinaryComparison.NotEquals, $1, $3) }
+    | Emp                                                               { Formula.EmptyHeap }
+    | Identifier Arrow arithmetic_expression                            { Formula.Allocation($1, $3) }
+    | Identifier Void                                                   { Formula.Deallocation($1) }
+    | the_formula Star the_formula                                      { Formula.Separation($1, $3) }
+    ;
+
+arithmetic_expression:
+    | Integer                                                           { ArithmeticExpression.Literal($1) }
+    | Identifier                                                        { ArithmeticExpression.Variable($1) }
+    | arithmetic_expression Plus arithmetic_expression                  { ArithmeticExpression.Operation(BinaryOperator.Plus, $1, $3) }
+    | arithmetic_expression Minus arithmetic_expression                 { ArithmeticExpression.Operation(BinaryOperator.Minus, $1, $3) }
+    | arithmetic_expression Times arithmetic_expression                 { ArithmeticExpression.Operation(BinaryOperator.Times, $1, $3) }
+    | arithmetic_expression Div arithmetic_expression                   { ArithmeticExpression.Operation(BinaryOperator.Div, $1, $3) }
+    | arithmetic_expression Mod arithmetic_expression                   { ArithmeticExpression.Operation(BinaryOperator.Mod, $1, $3) }
     ;
