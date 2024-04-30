@@ -4,7 +4,7 @@
 // BinaryOperator ::= + | - | * | / | %
 
 %{
-  open Ast.ASTLogic
+  open Prelude.Ast.LogicFormulas
 %}
 
 %token True
