@@ -25,12 +25,8 @@ module Ast = struct
     end)
 
     (** Utility function to build Logic Formulas' annotated nodes*)
-    let annotate formula line column =
-      let make_annotation line column : AnnotatedNode.annotation =
-        let position = make_position line column in
-        {position}
-      in
-      AnnotatedNode.make formula (make_annotation line column)
+    let annotate formula position =
+      AnnotatedNode.make formula { position }
   end
 
   type regular_formulas_annotation = {
@@ -40,7 +36,7 @@ module Ast = struct
   [@@deriving show]
 
   (** Concrete implementation of the Regular Commands, with source-position and logic formula in the annotation.
-      
+
       Note that the logic formula annotates after the command, not before. *)
   module Commands = struct
     include Ast.HeapRegularCommands(struct
@@ -48,11 +44,7 @@ module Ast = struct
     end)
 
     (** Utility function to build Commands' annotated nodes*)
-    let annotate command line column formula =
-      let make_annotation line column formula : AnnotatedNode.annotation =
-        let position = make_position line column in
-        {position; logic_formula = formula}
-      in
-      AnnotatedNode.make command (make_annotation line column formula)
+    let annotate command position formula =
+      AnnotatedNode.make command {position; logic_formula = formula}
   end
 end
