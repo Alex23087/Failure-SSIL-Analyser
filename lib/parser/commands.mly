@@ -54,94 +54,97 @@ program:
 
 toplevel_command:
   | atomic_command
-    { annotateEmpty(HeapRegularCommand.Command($1), $startpos) }
-  | sequence                                                                                { $1 }
-  | nondetchoice                                                                            { $1 }
-  | star                                                                                    { $1 }
+    { annotateEmpty (HeapRegularCommand.Command($1)) $startpos }
+  | sequence
+    { $1 }
+  | nondetchoice
+    { $1 }
+  | star
+    { $1 }
 ;
 
 atomic_command:
   | SKIP
-    { annotateEmpty(HeapAtomicCommand.Skip, $startpos) }
+    { annotateEmpty (HeapAtomicCommand.Skip) $startpos }
   | id = IDENTIFIER EQ a = arithmentic_expression
-    { annotateEmpty(HeapAtomicCommand.Assignment(id, a), $startpos) }
+    { annotateEmpty (HeapAtomicCommand.Assignment(id, a)) $startpos }
   | id = IDENTIFIER NONDET
-    { annotateEmpty(HeapAtomicCommand.NonDet(id), $startpos) }
+    { annotateEmpty (HeapAtomicCommand.NonDet(id)) $startpos }
   | b = boolean_expression QUESTION
-    { annotateEmpty(HeapAtomicCommand.Guard(b), $startpos) }
+    { annotateEmpty (HeapAtomicCommand.Guard(b)) $startpos }
   | id = IDENTIFIER EQ ALLOC
-    { annotateEmpty(HeapAtomicCommand.Allocation(id), $startpos) }
+    { annotateEmpty (HeapAtomicCommand.Allocation(id)) $startpos }
   | FREE LPAREN id = IDENTIFIER RPAREN
-    { annotateEmpty(HeapAtomicCommand.Deallocation(id), $startpos) }
+    { annotateEmpty (HeapAtomicCommand.Deallocation(id)) $startpos }
   | id1 = IDENTIFIER EQ LBRACKET id2 = IDENTIFIER RBRACKET
-    { annotateEmpty(HeapAtomicCommand.Dereference(id1, id2), $startpos) }
+    { annotateEmpty (HeapAtomicCommand.ReadHeap(id1, id2)) $startpos }
   | LBRACKET id1 = IDENTIFIER RBRACKET EQ a = arithmentic_expression
-    { annotateEmpty(HeapAtomicCommand.Reference(id1, id2), $startpos) }
+    { annotateEmpty (HeapAtomicCommand.WriteHeap(id1, a)) $startpos }
 ;
 
 arithmentic_expression:
   | INT
-    { annotateEmpty(ArithmenticExpression.Literal($1), $startpos) }
+    { annotateEmpty (ArithmenticExpression.Literal($1)) $startpos }
   | id = IDENTIFIER
-    { annotateEmpty(ArithmenticExpression.Variable(id), $startpos) }
+    { annotateEmpty (ArithmenticExpression.Variable(id)) $startpos }
   | a1 = arithmentic_expression o = arithmetic_operator a2 = arithmentic_expression
-    { annotateEmpty(ArithmenticExpression.BinaryOperation(o, a1, a2), $startpos) }
+    { annotateEmpty (ArithmenticExpression.BinaryOperation(o, a1, a2)) $startpos }
 ;
 
 arithmetic_operator:
   | PLUS
-    { annotateEmpty(ArithmeticOperation.Plus, $startpos) }
+    { annotateEmpty (ArithmeticOperation.Plus) $startpos }
   | MINUS
-    { annotateEmpty(ArithmeticOperation.Minus, $startpos) }
+    { annotateEmpty (ArithmeticOperation.Minus) $startpos }
   | TIMES
-    { annotateEmpty(ArithmeticOperation.Times, $startpos) }
+    { annotateEmpty (ArithmeticOperation.Times) $startpos }
   | DIV
-    { annotateEmpty(ArithmeticOperation.Division, $startpos) }
+    { annotateEmpty (ArithmeticOperation.Division) $startpos }
   | MOD
-    { annotateEmpty(ArithmeticOperation.Modulo, $startpos) }
+    { annotateEmpty (ArithmeticOperation.Modulo) $startpos }
 ;
 
 boolean_expression:
   | TRUE
-    { annotateEmpty(BooleanExpression.True, $startpos) }
+    { annotateEmpty (BooleanExpression.True) $startpos }
   | FALSE
-    { annotateEmpty(BooleanExpression.False, $startpos) }
+    { annotateEmpty (BooleanExpression.False) $startpos }
   | NOT b = boolean_expression
-    { annotateEmpty(BooleanExpression.Not(b), $startpos) }
+    { annotateEmpty (BooleanExpression.Not(b)) $startpos }
   | b1 = boolean_expression AND b2 = boolean_expression
-    { annotateEmpty(BooleanExpression.And(b1, b2), $startpos) }
+    { annotateEmpty (BooleanExpression.And(b1, b2)) $startpos }
   | b1 = boolean_expression OR b2 = boolean_expression
-    { annotateEmpty(BooleanExpression.Or(b1, b2), $startpos) }
+    { annotateEmpty (BooleanExpression.Or(b1, b2)) $startpos }
   | a1 = arithmentic_expression c = boolean_comparison_op a2 = arithmentic_expression
-    { annotateEmpty(BooleanExpression.Comparison(c, a1, a2), $startpos) }
+    { annotateEmpty (BooleanExpression.Comparison(c, a1, a2)) $startpos }
 ;
 
 boolean_comparison_op:
   | EQEQ
-    { annotateEmpty(BooleanComparison.Equal, $startpos) }
+    { BooleanComparison.Equal }
   | NEQ
-    { annotateEmpty(BooleanComparison.NotEqual, $startpos) }
+    { BooleanComparison.NotEqual }
   | LT
-    { annotateEmpty(BooleanComparison.LessThan, $startpos) }
+    { BooleanComparison.LessThan }
   | LE
-    { annotateEmpty(BooleanComparison.LessOrEqual, $startpos) }
+    { BooleanComparison.LessOrEqual }
   | GT
-    { annotateEmpty(BooleanComparison.GreaterThan, $startpos) }
+    { BooleanComparison.GreaterThan }
   | GE
-    { annotateEmpty(BooleanComparison.GreaterOrEqual, $startpos) }
+    { BooleanComparison.GreaterOrEqual }
 ;
 
 sequence:
-  | atomic_command SEMICOLON atomic_command
-    {annotateEmpty(HeapRegularCommand.Sequence($1, $3), $startpos) }
+  | toplevel_command SEMICOLON toplevel_command
+    {annotateEmpty (HeapRegularCommand.Sequence($1, $3)) $startpos }
 ;
 
 nondetchoice:
   | toplevel_command PLUS toplevel_command
-    { annotateEmpty(HeapRegularCommand.NondeterministicChoice($1, $3),$startpos) }
+    { annotateEmpty (HeapRegularCommand.NondeterministicChoice($1, $3)) $startpos }
 ;
 
 star:
-  | atomic_command STAR
-    { annotateEmpty(HeapRegularCommand.Star($1), $startpos)  }
+  | toplevel_command STAR
+    { annotateEmpty (HeapRegularCommand.Star($1)) $startpos  }
 ;
