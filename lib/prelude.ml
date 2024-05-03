@@ -8,6 +8,9 @@
     - {{! Ast.Commands}Commands} - Regular Commands concrete implementation, with {{! Ast.regular_formulas_annotation} annotations}
     *)
 module Ast = struct
+  type identifier = Ast.identifier
+  module IdentifierSet = struct include Ast.IdentifierSet end
+
   (** Position record, which holds where the given command or annotation is in the source files.*)
   type position = {line: int; column: int} [@@deriving show]
 
@@ -24,13 +27,21 @@ module Ast = struct
       type t = logic_formulas_annotation
     end)
 
-    (** Utility function to build Logic Formulas' annotated nodes*)
-    let annotate formula line column =
+    (** Utility functions to build Logic Formulas' annotated nodes*)
+    let annotate formula annotation =
+      AnnotatedNode.make formula annotation
+      
+    let annotate_parser formula line column =
       let make_annotation line column : AnnotatedNode.annotation =
         let position = make_position line column in
         {position}
       in
       AnnotatedNode.make formula (make_annotation line column)
+
+    (** Utility function to update a logic formula*)
+    let update_formula annotated_node new_formula =
+      let _, annotation = AnnotatedNode.unpack annotated_node in 
+      AnnotatedNode.make new_formula annotation
   end
 
   type regular_formulas_annotation = {
@@ -51,8 +62,11 @@ module Ast = struct
       let position = make_position line column in
       {position; logic_formula = formula}
 
-    (** Utility function to build Commands' annotated nodes*)
-    let annotate command line column formula =
+    (** Utility functions to build Commands' annotated nodes*)
+    let annotate formula annotation =
+      AnnotatedNode.make formula annotation
+
+    let annotate_parser command line column formula =
       AnnotatedNode.make command (make_annotation line column formula)
 
     (** Utility function to update a Command's logic formula*)
