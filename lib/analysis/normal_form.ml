@@ -72,10 +72,11 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
     let ids = List.fold_left (fun acc ids -> IdentifierSet.union acc ids) IdentifierSet.empty ids in
     IdentifierSet.diff ids formula.variables
   in
-  let rename_variable_in_disjoints (var: identifier) (disjoints: Formula.t list) (phantom_id: int) =
+  let rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) (disjoints: Formula.t list) (phantom_id: int) =
     let (new_var, phantom_id) = new_variable_name var phantom_id in
+    let variables = IdentifierSet.add new_var (IdentifierSet.remove var variables) in
     let disjoints = List.map (fun x -> rename_variable_in_formula x var new_var) disjoints in
-    (disjoints, phantom_id)
+    (variables, disjoints, phantom_id)
   in
   let common_free_variables (lformula: normal_form) (rformula: normal_form) =
     let lformula_free = normal_form_free_variables lformula in
@@ -83,15 +84,32 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
     IdentifierSet.inter lformula_free rformula_free
   in
   let rename_common_free_variables (lformula: normal_form) (rformula: normal_form) (last_phantom_id: int) =
-    (* find the set of common free variables, to be renamed them in one of the subformulas *)
-    let common_free_variables = common_free_variables lformula rformula in 
+    let lformula_free, lformula_bound = normal_form_free_variables lformula, lformula.variables in
+    let rformula_free, rformula_bound = normal_form_free_variables rformula, rformula.variables in
 
-    (* rename the common free variables in the rsubformulas *)
-    let (rformula_disjoints, last_phantom_id) =
-      IdentifierSet.fold (fun elem (disjoints, phantom_id) -> rename_variable_in_disjoints elem disjoints phantom_id)
-      common_free_variables (rformula.disjoints, last_phantom_id)
+    (* rename the free variables in lformula that are bound in rformula *)
+    let lformula_vars_to_rename = IdentifierSet.inter lformula_free rformula_bound in
+    let (variables, disjoints, last_phantom_id) =
+      IdentifierSet.fold (fun elem (variables, disjoints, phantom_id) -> rename_variable_in_disjoints elem variables disjoints phantom_id)
+      lformula_vars_to_rename (lformula.variables, lformula.disjoints, last_phantom_id)
     in
-    let rformula = make_normal_form rformula.variables rformula_disjoints rformula.annotation last_phantom_id in
+    let lformula = make_normal_form variables disjoints lformula.annotation last_phantom_id in
+    
+    (* rename the free variables in rformula that are bound in lformula *)
+    let rformula_vars_to_rename = IdentifierSet.inter rformula_free lformula_bound in
+    let (variables, disjoints, last_phantom_id) =
+      IdentifierSet.fold (fun elem (variables, disjoints, phantom_id) -> rename_variable_in_disjoints elem variables disjoints phantom_id)
+      rformula_vars_to_rename (rformula.variables, rformula.disjoints, last_phantom_id)
+    in
+    let rformula = make_normal_form variables disjoints rformula.annotation last_phantom_id in
+
+    (* rename the common free variables only in the rformulas (it would have been indifferent if were renamed them in lformulas) *)
+    let common_vars_to_rename = IdentifierSet.inter lformula_free rformula_free in 
+    let (variables, disjoints, last_phantom_id) =
+      IdentifierSet.fold (fun elem (variables, disjoints, phantom_id) -> rename_variable_in_disjoints elem variables disjoints phantom_id)
+      common_vars_to_rename (rformula.variables, rformula.disjoints, last_phantom_id)
+    in
+    let rformula = make_normal_form variables disjoints rformula.annotation last_phantom_id in
     (lformula, rformula, last_phantom_id)
   in
 
