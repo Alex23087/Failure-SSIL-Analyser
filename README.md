@@ -8,7 +8,7 @@
 - `bash -c "sh <(curl -fsSL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)"`
 - `opam init`
 - `opam update`
-- `opam install dune ppx_deriving odoc`
+- `opam install dune ppx_deriving ppx_inline_test odoc`
 
 ### Building and running
 - `make build`

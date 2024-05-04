@@ -27,15 +27,14 @@ module Ast = struct
       type t = logic_formulas_annotation
     end)
 
+    let make_annotation line column : AnnotatedNode.annotation =
+      let position = make_position line column in {position}
+
     (** Utility functions to build Logic Formulas' annotated nodes*)
     let annotate formula annotation =
       AnnotatedNode.make formula annotation
       
     let annotate_parser formula line column =
-      let make_annotation line column : AnnotatedNode.annotation =
-        let position = make_position line column in
-        {position}
-      in
       AnnotatedNode.make formula (make_annotation line column)
 
     (** Utility function to update a logic formula*)
