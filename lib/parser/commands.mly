@@ -105,7 +105,7 @@ toplevel_command:
   | star
     { $1 }
   | formula
-    { annotateEmptyCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos }
+    { annotateCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos (Some $1) }
 ;
 
 atomic_command:
