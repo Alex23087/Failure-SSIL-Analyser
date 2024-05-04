@@ -2,10 +2,9 @@
     and the Logic Formulas
     
     Important definitions:
-    - {{! Ast.type-position}position} - position record to represent locations in source
-     files
-    - {{! Ast.LogicFormulas}LogicFormulas} - Logic Formulas concrete implementation, with {{! Ast.logic_formulas_annotation} annotations}
-    - {{! Ast.Commands}Commands} - Regular Commands concrete implementation, with {{! Ast.regular_formulas_annotation} annotations}
+    - {{! Ast.type-position}position} - position record to represent locations in source files.
+    - {{! Ast.LogicFormulas}LogicFormulas} - Logic Formulas concrete implementation, with {{! Ast.logic_formulas_annotation} annotations}.
+    - {{! Ast.Commands}Commands} - Regular Commands concrete implementation, with {{! Ast.regular_formulas_annotation} annotations}.
     *)
 module Ast = struct
   type identifier = Ast.identifier
@@ -76,7 +75,15 @@ module Ast = struct
   end
 end
 
+(** This module contains the concrete implementation of the Control Flow Graph data structures.
+
+    Important definitions:
+    - {{! Cfg.cfg_block}block} - CFG block record to represent sequences of atomic commands in source.
+    - {{! Cfg.cfg}cfg} - Control Flow Graph, instanced on the blocks' record.
+    - {{! Cfg.cfg_item}item} - Control Flow Graph's node, which represent a block of commands, with their predecessor and successor blocks.
+    *)
 module Cfg = struct
+  (** Control Flow Graph nodes' content. *)
   type cfg_block = {
     visit_count: int;
     precondition: Ast.LogicFormulas.t option;
@@ -85,6 +92,9 @@ module Cfg = struct
 
   include Cfg.CFG
 
+  (** Control Flow Graph. *)
   type cfg = cfg_block Cfg.CFG.t
+  
+  (** Control Flow Graphs' node item. *)
   type cfg_item = cfg_block Cfg.CFG.item
 end
