@@ -58,7 +58,7 @@
 %start <Prelude.Ast.Commands.HeapRegularCommand.t> program
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> toplevel_command
 %type <Prelude.Ast.Commands.HeapAtomicCommand.t> atomic_command
-%type <Prelude.Ast.Commands.ArithmeticExpression.t> arithmentic_expression
+%type <Prelude.Ast.Commands.ArithmeticExpression.t> arithmetic_expression
 %type <Prelude.Ast.Commands.BooleanExpression.t> boolean_expression
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> sequence
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> nondetchoice
@@ -83,7 +83,7 @@ toplevel_command:
 atomic_command:
   | SKIP
     { annotateEmpty (HeapAtomicCommand.Skip) $startpos }
-  | id = IDENTIFIER EQ a = arithmentic_expression
+  | id = IDENTIFIER EQ a = arithmetic_expression
     { annotateEmpty (HeapAtomicCommand.Assignment(id, a)) $startpos }
   | id = IDENTIFIER NONDET
     { annotateEmpty (HeapAtomicCommand.NonDet(id)) $startpos }
@@ -95,16 +95,16 @@ atomic_command:
     { annotateEmpty (HeapAtomicCommand.Free(id)) $startpos }
   | id1 = IDENTIFIER EQ LBRACKET id2 = IDENTIFIER RBRACKET
     { annotateEmpty (HeapAtomicCommand.ReadHeap(id1, id2)) $startpos }
-  | LBRACKET id1 = IDENTIFIER RBRACKET EQ a = arithmentic_expression
+  | LBRACKET id1 = IDENTIFIER RBRACKET EQ a = arithmetic_expression
     { annotateEmpty (HeapAtomicCommand.WriteHeap(id1, a)) $startpos }
 ;
 
-arithmentic_expression:
+arithmetic_expression:
   | INT
     { annotateEmpty (ArithmeticExpression.Literal($1)) $startpos }
   | id = IDENTIFIER
     { annotateEmpty (ArithmeticExpression.Variable(id)) $startpos }
-  | a1 = arithmentic_expression o = arithmetic_operator a2 = arithmentic_expression
+  | a1 = arithmetic_expression o = arithmetic_operator a2 = arithmetic_expression
     { annotateEmpty (ArithmeticExpression.BinaryOperation(o, a1, a2)) $startpos }
 ;
 
@@ -132,7 +132,7 @@ boolean_expression:
     { annotateEmpty (BooleanExpression.And(b1, b2)) $startpos }
   | b1 = boolean_expression OR b2 = boolean_expression
     { annotateEmpty (BooleanExpression.Or(b1, b2)) $startpos }
-  | a1 = arithmentic_expression c = boolean_comparison_op a2 = arithmentic_expression
+  | a1 = arithmetic_expression c = boolean_comparison_op a2 = arithmetic_expression
     { annotateEmpty (BooleanExpression.Comparison(c, a1, a2)) $startpos }
 ;
 
