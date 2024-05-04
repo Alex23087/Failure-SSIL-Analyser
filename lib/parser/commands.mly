@@ -87,7 +87,7 @@
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> star
 
 %type <Prelude.Ast.LogicFormulas.Formula.t> formula
-// %type <Prelude.Ast.LogicFormulas.Formula.t option> option(formula)
+%type <Prelude.Ast.LogicFormulas.Formula.t option> option(formula)
 %type <Prelude.Ast.LogicFormulas.ArithmeticExpression.t> arithmetic_expression_f
 
 %%
@@ -96,8 +96,8 @@ program:
   | toplevel_command EOF                                                                    { $1 }
 
 toplevel_command:
-  | atomic_command
-    { annotateEmptyCommand (HeapRegularCommand.Command($1)) $startpos }
+  | option(formula) atomic_command
+    { annotateCommand (HeapRegularCommand.Command($2)) $startpos $1 }
   | sequence
     { $1 }
   | nondetchoice
