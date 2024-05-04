@@ -2,6 +2,10 @@ open Prelude.Ast.LogicFormulas
 open NormalForm
 open Utils
 
+let annot_cmd command =
+  let annotation = Prelude.Ast.Commands.make_annotation 0 0 None in
+  Prelude.Ast.Commands.annotate command annotation
+
 let annot formula =
   let annotation = make_annotation 0 0 in
   annotate formula annotation
