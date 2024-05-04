@@ -16,7 +16,7 @@ let rename_variable_in_set (variables: IdentifierSet.t) (var: identifier) (new_n
 
 let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_name: identifier) =
   let rename_variable_name (var: identifier) (old_name: identifier) (new_name: identifier) =
-    if var == old_name then new_name else var
+    if var = old_name then new_name else var
   in
   let rec rename_variable_in_expression (expr: ArithmeticExpression.t) (var: identifier) (new_name: identifier) =
     match expr.node with

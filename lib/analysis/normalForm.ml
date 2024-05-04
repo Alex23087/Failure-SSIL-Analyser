@@ -26,7 +26,7 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
     let substr = String.split_on_char '$' old_var in
     if List.length substr > 2 then
       raise (Failure "Found more than two $ characters in a variable name")
-    else if List.length substr == 2 then
+    else if List.length substr = 2 then
       let var_name = List.nth substr 1 in
       ((string_of_int phantom_id) ^ "$" ^ var_name, phantom_id + 1)
     else
@@ -78,33 +78,28 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
     let disjoints = List.map (fun x -> rename_variable_in_formula x var new_var) disjoints in
     (variables, disjoints, phantom_id)
   in
-  let common_free_variables (lformula: normal_form) (rformula: normal_form) =
-    let lformula_free = normal_form_free_variables lformula in
-    let rformula_free = normal_form_free_variables rformula in
-    IdentifierSet.inter lformula_free rformula_free
-  in
   let rename_common_free_variables (lformula: normal_form) (rformula: normal_form) (last_phantom_id: int) =
     let lformula_free, lformula_bound = normal_form_free_variables lformula, lformula.variables in
     let rformula_free, rformula_bound = normal_form_free_variables rformula, rformula.variables in
 
-    (* rename the free variables in lformula that are bound in rformula *)
-    let lformula_vars_to_rename = IdentifierSet.inter lformula_free rformula_bound in
+    (* rename the bound variables in lformula that are free in rformula *)
+    let lformula_vars_to_rename = IdentifierSet.inter lformula_bound rformula_free in
     let (variables, disjoints, last_phantom_id) =
       IdentifierSet.fold (fun elem (variables, disjoints, phantom_id) -> rename_variable_in_disjoints elem variables disjoints phantom_id)
       lformula_vars_to_rename (lformula.variables, lformula.disjoints, last_phantom_id)
     in
     let lformula = make_normal_form variables disjoints lformula.annotation last_phantom_id in
     
-    (* rename the free variables in rformula that are bound in lformula *)
-    let rformula_vars_to_rename = IdentifierSet.inter rformula_free lformula_bound in
+    (* rename the bound variables in rformula that are free in lformula *)
+    let rformula_vars_to_rename = IdentifierSet.inter rformula_bound lformula_free in
     let (variables, disjoints, last_phantom_id) =
       IdentifierSet.fold (fun elem (variables, disjoints, phantom_id) -> rename_variable_in_disjoints elem variables disjoints phantom_id)
       rformula_vars_to_rename (rformula.variables, rformula.disjoints, last_phantom_id)
     in
     let rformula = make_normal_form variables disjoints rformula.annotation last_phantom_id in
 
-    (* rename the common free variables only in the rformulas (it would have been indifferent if were renamed them in lformulas) *)
-    let common_vars_to_rename = IdentifierSet.inter lformula_free rformula_free in 
+    (* rename the common bound variables only in the rformulas (it would have been indifferent if were renamed them in lformulas) *)
+    let common_vars_to_rename = IdentifierSet.inter lformula_bound rformula_bound in 
     let (variables, disjoints, last_phantom_id) =
       IdentifierSet.fold (fun elem (variables, disjoints, phantom_id) -> rename_variable_in_disjoints elem variables disjoints phantom_id)
       common_vars_to_rename (rformula.variables, rformula.disjoints, last_phantom_id)
@@ -113,22 +108,6 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
     (lformula, rformula, last_phantom_id)
   in
 
-  let handle_and (lformula: normal_form) (rformula: normal_form) (last_phantom_id: int) =
-    let (lformula, rformula, last_phantom_id) = rename_common_free_variables lformula rformula last_phantom_id in
-    let free_variables = common_free_variables lformula rformula in
-    let annotation = first_annotation lformula.annotation rformula.annotation in
-    let cartesian = list_cartesian lformula.disjoints rformula.disjoints in
-    let disjoints = List.map (fun (l, r) -> annotate (Formula.And(l, r)) annotation) cartesian in
-    make_normal_form free_variables disjoints annotation last_phantom_id
-  in
-  let handle_and_separately (lformula: normal_form) (rformula: normal_form) (last_phantom_id: int) =
-    let (lformula, rformula, last_phantom_id) = rename_common_free_variables lformula rformula last_phantom_id in
-    let free_variables = common_free_variables lformula rformula in
-    let annotation = first_annotation lformula.annotation rformula.annotation in
-    let cartesian = list_cartesian lformula.disjoints rformula.disjoints in
-    let disjoints = List.map (fun (l, r) -> annotate (Formula.AndSeparately(l, r)) annotation) cartesian in
-    make_normal_form free_variables disjoints annotation last_phantom_id
-  in
   let handle_exist (exist_id: identifier) (subformula: normal_form) (exist_annot: annotation) =
     let variables = subformula.variables in
     let disjoints = subformula.disjoints in
@@ -147,11 +126,32 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
       | Some(_) -> make_normal_form (IdentifierSet.add exist_id variables) disjoints annotation phantom_id
       | None -> make_normal_form variables disjoints annotation phantom_id
   in
-  let handle_or (lformula: normal_form) (rformula: normal_form) (last_phantom_id: int) =
+  let handle_two_formulas (lformula: normal_form) (rformula: normal_form) (last_phantom_id: int) make_disjoints =
     let (lformula, rformula, last_phantom_id) = rename_common_free_variables lformula rformula last_phantom_id in
-    let free_variables = common_free_variables lformula rformula in
+    let bound_variables = IdentifierSet.union lformula.variables rformula.variables in
     let annotation = first_annotation lformula.annotation rformula.annotation in
-    make_normal_form free_variables (lformula.disjoints @ rformula.disjoints) annotation last_phantom_id
+    let disjoints = make_disjoints lformula rformula annotation in 
+    make_normal_form bound_variables disjoints annotation last_phantom_id
+  in
+  let handle_and (lformula: normal_form) (rformula: normal_form) (last_phantom_id: int) =
+    let make_and_disjoints lformula rformula annotation =
+      let cartesian = list_cartesian lformula.disjoints rformula.disjoints in
+      List.map (fun (l, r) -> annotate (Formula.And(l, r)) annotation) cartesian
+    in
+    handle_two_formulas lformula rformula last_phantom_id make_and_disjoints
+  in
+  let handle_and_separately (lformula: normal_form) (rformula: normal_form) (last_phantom_id: int) =
+    let make_and_separately_disjoints lformula rformula annotation =
+      let cartesian = list_cartesian lformula.disjoints rformula.disjoints in
+      List.map (fun (l, r) -> annotate (Formula.AndSeparately(l, r)) annotation) cartesian
+    in
+    handle_two_formulas lformula rformula last_phantom_id make_and_separately_disjoints
+  in
+  let handle_or (lformula: normal_form) (rformula: normal_form) (last_phantom_id: int) =
+    let make_or_disjoints lformula rformula _ =
+      lformula.disjoints @ rformula.disjoints
+    in
+    handle_two_formulas lformula rformula last_phantom_id make_or_disjoints
   in
 
   match formula.node with
