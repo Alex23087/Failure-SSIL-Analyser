@@ -45,6 +45,8 @@
 %token <string> IDENTIFIER
 %token NONDET
 %token STAR
+%token SL
+%token SR
 %token EOF
 
 /** formulas */
@@ -87,7 +89,7 @@
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> star
 
 %type <Prelude.Ast.LogicFormulas.Formula.t> formula
-%type <Prelude.Ast.LogicFormulas.Formula.t option> option(formula)
+%type <Prelude.Ast.LogicFormulas.Formula.t option> option(delimited(SL, formula, SR))
 %type <Prelude.Ast.LogicFormulas.ArithmeticExpression.t> arithmetic_expression_f
 
 %%
@@ -96,13 +98,13 @@ program:
   | toplevel_command EOF                                                                    { $1 }
 
 toplevel_command:
-  | atomic_command option(formula)
+  | atomic_command option(delimited(SL, formula, SR))
     { annotateCommand (HeapRegularCommand.Command($1)) $startpos $2 }
   | sequence
     { $1 }
-  | nondetchoice option(formula)
+  | nondetchoice option(delimited(SL, formula, SR))
     { $1 }
-  | star option(formula)
+  | star option(delimited(SL, formula, SR))
     { $1 }
   | formula
     { annotateCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos (Some $1) }
