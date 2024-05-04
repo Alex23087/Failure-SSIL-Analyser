@@ -40,12 +40,29 @@
 %token QUESTION
 %token <int> INT
 %token <string> IDENTIFIER
-%token <string> HEAPIDENTIFIER
 %token NONDET
 %token STAR
 %token EOF
 
-%start <t>program
+/* precedences */
+%nonassoc SEMICOLON
+%nonassoc EQ
+%left OR
+%left AND
+%right NOT
+%left PLUS MINUS
+%left TIMES DIV MOD
+%left STAR
+
+
+%start <Prelude.Ast.Commands.HeapRegularCommand.t> program
+%type <Prelude.Ast.Commands.HeapRegularCommand.t> toplevel_command
+%type <Prelude.Ast.Commands.HeapAtomicCommand.t> atomic_command
+%type <Prelude.Ast.Commands.ArithmeticExpression.t> arithmentic_expression
+%type <Prelude.Ast.Commands.BooleanExpression.t> boolean_expression
+%type <Prelude.Ast.Commands.HeapRegularCommand.t> sequence
+%type <Prelude.Ast.Commands.HeapRegularCommand.t> nondetchoice
+%type <Prelude.Ast.Commands.HeapRegularCommand.t> star
 
 %%
 
@@ -75,7 +92,7 @@ atomic_command:
   | id = IDENTIFIER EQ ALLOC
     { annotateEmpty (HeapAtomicCommand.Allocation(id)) $startpos }
   | FREE LPAREN id = IDENTIFIER RPAREN
-    { annotateEmpty (HeapAtomicCommand.Deallocation(id)) $startpos }
+    { annotateEmpty (HeapAtomicCommand.Free(id)) $startpos }
   | id1 = IDENTIFIER EQ LBRACKET id2 = IDENTIFIER RBRACKET
     { annotateEmpty (HeapAtomicCommand.ReadHeap(id1, id2)) $startpos }
   | LBRACKET id1 = IDENTIFIER RBRACKET EQ a = arithmentic_expression
@@ -84,24 +101,24 @@ atomic_command:
 
 arithmentic_expression:
   | INT
-    { annotateEmpty (ArithmenticExpression.Literal($1)) $startpos }
+    { annotateEmpty (ArithmeticExpression.Literal($1)) $startpos }
   | id = IDENTIFIER
-    { annotateEmpty (ArithmenticExpression.Variable(id)) $startpos }
+    { annotateEmpty (ArithmeticExpression.Variable(id)) $startpos }
   | a1 = arithmentic_expression o = arithmetic_operator a2 = arithmentic_expression
-    { annotateEmpty (ArithmenticExpression.BinaryOperation(o, a1, a2)) $startpos }
+    { annotateEmpty (ArithmeticExpression.BinaryOperation(o, a1, a2)) $startpos }
 ;
 
-arithmetic_operator:
+%inline arithmetic_operator:
   | PLUS
-    { annotateEmpty (ArithmeticOperation.Plus) $startpos }
+    { ArithmeticOperation.Plus }
   | MINUS
-    { annotateEmpty (ArithmeticOperation.Minus) $startpos }
+    { ArithmeticOperation.Minus }
   | TIMES
-    { annotateEmpty (ArithmeticOperation.Times) $startpos }
+    { ArithmeticOperation.Times }
   | DIV
-    { annotateEmpty (ArithmeticOperation.Division) $startpos }
+    { ArithmeticOperation.Division }
   | MOD
-    { annotateEmpty (ArithmeticOperation.Modulo) $startpos }
+    { ArithmeticOperation.Modulo }
 ;
 
 boolean_expression:
@@ -119,7 +136,7 @@ boolean_expression:
     { annotateEmpty (BooleanExpression.Comparison(c, a1, a2)) $startpos }
 ;
 
-boolean_comparison_op:
+%inline boolean_comparison_op:
   | EQEQ
     { BooleanComparison.Equal }
   | NEQ
@@ -146,5 +163,5 @@ nondetchoice:
 
 star:
   | toplevel_command STAR
-    { annotateEmpty (HeapRegularCommand.Star($1)) $startpos  }
+    { annotateEmpty (HeapRegularCommand.Star($1)) $startpos  } 
 ;
