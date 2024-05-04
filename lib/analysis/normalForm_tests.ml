@@ -32,10 +32,6 @@ let rec equal_formulas (lformula: Formula.t) (rformula: Formula.t) =
     raise (Failure "expected formula which cannot appear in normalized form")
   | Or(_, _), _ | Exists(_, _), _ ->
     raise (Failure "disjunctions and existentials cannot appear in the normalized form")
-  (* | Or(ll, lr), Or(rl, rr) ->
-    equal_formulas ll rl && equal_formulas lr rr
-  | Exists(lid, lformula), Exists(rid, rformula) ->
-    lid == rid && equal_formulas lformula rformula *)
   | _ ->
     false
 
