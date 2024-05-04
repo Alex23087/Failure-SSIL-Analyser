@@ -22,17 +22,6 @@ let rename_variable_in_normal_formula (formula: normal_form) (var: identifier) (
   make_normal_form variables disjoints formula.annotation formula.last_phantom_id
 
 let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id: int) =
-  let new_variable_name (old_var: identifier) (phantom_id: int) =
-    let substr = String.split_on_char '$' old_var in
-    if List.length substr > 2 then
-      raise (Failure "Found more than two $ characters in a variable name")
-    else if List.length substr = 2 then
-      let var_name = List.nth substr 1 in
-      ((string_of_int phantom_id) ^ "$" ^ var_name, phantom_id + 1)
-    else
-      let var_name = List.hd substr in
-      ((string_of_int phantom_id) ^ "$" ^ var_name, phantom_id + 1)
-  in
   let first_annotation (annot1: annotation) (annot2: annotation) =
     if annot1.position.line < annot2.position.line then
       annot1
@@ -47,7 +36,7 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
     match expr.node with
     | Literal(_) -> (IdentifierSet.empty)
     | Variable(id) -> (IdentifierSet.singleton id)
-    | Operation(_, lexpr, rexpr) -> 
+    | Operation(_, lexpr, rexpr) ->
       let l_ids = expr_identifiers lexpr in
       let r_ids = expr_identifiers rexpr in
       IdentifierSet.union l_ids r_ids
@@ -58,10 +47,10 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
       IdentifierSet.empty
     | Allocation(id, _) | NonAllocated(id) ->
       IdentifierSet.singleton id
-    | Comparison(_, lexpr, rexpr) -> 
+    | Comparison(_, lexpr, rexpr) ->
       IdentifierSet.union (expr_identifiers lexpr) (expr_identifiers rexpr)
     | And(lformula, rformula) | AndSeparately(lformula, rformula) ->
-      IdentifierSet.union (formula_identifiers lformula) (formula_identifiers rformula)      
+      IdentifierSet.union (formula_identifiers lformula) (formula_identifiers rformula)
     | Exists(_, _) ->
       raise (Failure "Formulas of existential abstraction cannot be contained in normal form disjoints")
     | Or(_, _) ->
@@ -89,7 +78,7 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
       lformula_vars_to_rename (lformula.variables, lformula.disjoints, last_phantom_id)
     in
     let lformula = make_normal_form variables disjoints lformula.annotation last_phantom_id in
-    
+
     (* rename the bound variables in rformula that are free in lformula *)
     let rformula_vars_to_rename = IdentifierSet.inter rformula_bound lformula_free in
     let (variables, disjoints, last_phantom_id) =
@@ -99,7 +88,7 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
     let rformula = make_normal_form variables disjoints rformula.annotation last_phantom_id in
 
     (* rename the common bound variables only in the rformulas (it would have been indifferent if were renamed them in lformulas) *)
-    let common_vars_to_rename = IdentifierSet.inter lformula_bound rformula_bound in 
+    let common_vars_to_rename = IdentifierSet.inter lformula_bound rformula_bound in
     let (variables, disjoints, last_phantom_id) =
       IdentifierSet.fold (fun elem (variables, disjoints, phantom_id) -> rename_variable_in_disjoints elem variables disjoints phantom_id)
       common_vars_to_rename (rformula.variables, rformula.disjoints, last_phantom_id)
@@ -113,7 +102,7 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
     let disjoints = subformula.disjoints in
     let annotation = first_annotation exist_annot subformula.annotation in
     let phantom_id = subformula.last_phantom_id in
-    
+
     match IdentifierSet.find_opt exist_id subformula.variables with
     | Some(_) ->
       (* if the given identifier has already been existentialized, we don't add
@@ -121,7 +110,7 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
       make_normal_form variables disjoints annotation phantom_id
     | None ->
       (* if the existentialized variable does not occur in the subformula disjoints, we don't need to add it *)
-      let free_variables = normal_form_free_variables subformula in 
+      let free_variables = normal_form_free_variables subformula in
       match IdentifierSet.find_opt exist_id free_variables with
       | Some(_) -> make_normal_form (IdentifierSet.add exist_id variables) disjoints annotation phantom_id
       | None -> make_normal_form variables disjoints annotation phantom_id
@@ -130,7 +119,7 @@ let rec existential_disjuntive_normal_form (formula: Formula.t) (last_phantom_id
     let (lformula, rformula, last_phantom_id) = rename_common_free_variables lformula rformula last_phantom_id in
     let bound_variables = IdentifierSet.union lformula.variables rformula.variables in
     let annotation = first_annotation lformula.annotation rformula.annotation in
-    let disjoints = make_disjoints lformula rformula annotation in 
+    let disjoints = make_disjoints lformula rformula annotation in
     make_normal_form bound_variables disjoints annotation last_phantom_id
   in
   let handle_and (lformula: normal_form) (rformula: normal_form) (last_phantom_id: int) =

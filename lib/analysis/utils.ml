@@ -6,8 +6,19 @@ type annotation = Ast.logic_formulas_annotation
 type identifier = Ast.identifier
 
 (* https://stackoverflow.com/a/10893700 *)
-let list_cartesian l l' = 
+let list_cartesian l l' =
   List.concat (List.map (fun e -> List.map (fun e' -> (e,e')) l') l)
+
+let new_variable_name (old_var: identifier) (phantom_id: int) =
+  let substr = String.split_on_char '$' old_var in
+  if List.length substr > 2 then
+    raise (Failure "Found more than two $ characters in a variable name")
+  else if List.length substr = 2 then
+    let var_name = List.nth substr 1 in
+    ((string_of_int phantom_id) ^ "$" ^ var_name, phantom_id + 1)
+  else
+    let var_name = List.hd substr in
+    ((string_of_int phantom_id) ^ "$" ^ var_name, phantom_id + 1)
 
 let rename_variable_in_set (variables: IdentifierSet.t) (var: identifier) (new_name: identifier) =
   match IdentifierSet.find_opt var variables with
@@ -22,7 +33,7 @@ let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_
     match expr.node with
     | Literal(_) -> expr
     | Variable(id) -> update_formula expr (ArithmeticExpression.Variable(rename_variable_name id var new_name))
-    | Operation(op, lexpr, rexpr) -> 
+    | Operation(op, lexpr, rexpr) ->
       let lexpr = rename_variable_in_expression lexpr var new_name in
       let rexpr = rename_variable_in_expression rexpr var new_name in
       update_formula disjoint (ArithmeticExpression.Operation(op, lexpr, rexpr))
@@ -35,7 +46,7 @@ let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_
     update_formula disjoint (Formula.NonAllocated(rename_variable_name id var new_name))
   | Exists(_, _) ->
     raise (Failure "Formulas of existential abstraction cannot be contained in normal form disjoints")
-  | And(lformula, rformula) -> 
+  | And(lformula, rformula) ->
     let lformula = rename_variable_in_formula lformula var new_name in
     let rformula = rename_variable_in_formula rformula var new_name in
     update_formula disjoint (Formula.And(lformula, rformula))
@@ -45,7 +56,7 @@ let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_
     let lexpr = rename_variable_in_expression lexpr var new_name in
     let rexpr = rename_variable_in_expression rexpr var new_name in
     update_formula disjoint (Formula.Comparison(op, lexpr, rexpr))
-  | Allocation(id, expr) -> 
+  | Allocation(id, expr) ->
     let id = rename_variable_name id var new_name in
     let expr = rename_variable_in_expression expr var new_name in
     update_formula disjoint (Formula.Allocation(id, expr))
@@ -53,3 +64,8 @@ let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_
     let lformula = rename_variable_in_formula lformula var new_name in
     let rformula = rename_variable_in_formula rformula var new_name in
     update_formula disjoint (Formula.AndSeparately(lformula, rformula))
+
+let get_variable_from_expression (expr: ArithmeticExpression.t) =
+  match expr.node with
+  | Variable(id) -> Some(id)
+  | _ -> None
