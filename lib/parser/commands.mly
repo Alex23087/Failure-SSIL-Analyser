@@ -8,10 +8,13 @@
     let column = position.Lexing.pos_cnum in
     make_position line column
 
-  let annotate command position formula = Prelude.Ast.Commands.annotate command (from_menhir_pos position) formula
-  let annotateEmpty command position = annotate command position None
+  let annotateCommand command position formula = Prelude.Ast.Commands.annotate command (from_menhir_pos position) formula
+  let annotateEmptyCommand command position = annotateCommand command position None
+
+  let annotateFormula formula position = Prelude.Ast.LogicFormulas.annotate formula (from_menhir_pos position)
 %}
 
+/* commands */
 %token PLUS
 %token MINUS
 %token TIMES
@@ -44,7 +47,19 @@
 %token STAR
 %token EOF
 
+/** formulas */
+%token True
+%token False
+%token Exists
+%token <string> Identifier
+%token And Or Star Emp Arrow Void
+%token LTf GTf LEf GEf EQf NEf
+%token <int> Integer
+%token Plus Minus Times Div Mod
+
 /* precedences */
+
+/* commands */
 %nonassoc SEMICOLON
 %nonassoc EQ
 %left OR
@@ -54,6 +69,13 @@
 %left TIMES DIV MOD
 %left STAR
 
+/* formulas */
+%left Or
+%left And
+%left Star
+%left Plus Minus
+%left Times Div Mod
+%nonassoc PREC
 
 %start <Prelude.Ast.Commands.HeapRegularCommand.t> program
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> toplevel_command
@@ -64,6 +86,10 @@
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> nondetchoice
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> star
 
+%type <Prelude.Ast.LogicFormulas.Formula.t> formula
+// %type <Prelude.Ast.LogicFormulas.Formula.t option> option(formula)
+%type <Prelude.Ast.LogicFormulas.ArithmeticExpression.t> arithmetic_expression_f
+
 %%
 
 program:
@@ -71,41 +97,43 @@ program:
 
 toplevel_command:
   | atomic_command
-    { annotateEmpty (HeapRegularCommand.Command($1)) $startpos }
+    { annotateEmptyCommand (HeapRegularCommand.Command($1)) $startpos }
   | sequence
     { $1 }
   | nondetchoice
     { $1 }
   | star
     { $1 }
+  | formula
+    { annotateEmptyCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos }
 ;
 
 atomic_command:
   | SKIP
-    { annotateEmpty (HeapAtomicCommand.Skip) $startpos }
+    { annotateEmptyCommand (HeapAtomicCommand.Skip) $startpos }
   | id = IDENTIFIER EQ a = arithmetic_expression
-    { annotateEmpty (HeapAtomicCommand.Assignment(id, a)) $startpos }
+    { annotateEmptyCommand (HeapAtomicCommand.Assignment(id, a)) $startpos }
   | id = IDENTIFIER NONDET
-    { annotateEmpty (HeapAtomicCommand.NonDet(id)) $startpos }
+    { annotateEmptyCommand (HeapAtomicCommand.NonDet(id)) $startpos }
   | b = boolean_expression QUESTION
-    { annotateEmpty (HeapAtomicCommand.Guard(b)) $startpos }
+    { annotateEmptyCommand (HeapAtomicCommand.Guard(b)) $startpos }
   | id = IDENTIFIER EQ ALLOC
-    { annotateEmpty (HeapAtomicCommand.Allocation(id)) $startpos }
+    { annotateEmptyCommand (HeapAtomicCommand.Allocation(id)) $startpos }
   | FREE LPAREN id = IDENTIFIER RPAREN
-    { annotateEmpty (HeapAtomicCommand.Free(id)) $startpos }
+    { annotateEmptyCommand (HeapAtomicCommand.Free(id)) $startpos }
   | id1 = IDENTIFIER EQ LBRACKET id2 = IDENTIFIER RBRACKET
-    { annotateEmpty (HeapAtomicCommand.ReadHeap(id1, id2)) $startpos }
+    { annotateEmptyCommand (HeapAtomicCommand.ReadHeap(id1, id2)) $startpos }
   | LBRACKET id1 = IDENTIFIER RBRACKET EQ a = arithmetic_expression
-    { annotateEmpty (HeapAtomicCommand.WriteHeap(id1, a)) $startpos }
+    { annotateEmptyCommand (HeapAtomicCommand.WriteHeap(id1, a)) $startpos }
 ;
 
 arithmetic_expression:
   | INT
-    { annotateEmpty (ArithmeticExpression.Literal($1)) $startpos }
+    { annotateEmptyCommand (ArithmeticExpression.Literal($1)) $startpos }
   | id = IDENTIFIER
-    { annotateEmpty (ArithmeticExpression.Variable(id)) $startpos }
+    { annotateEmptyCommand (ArithmeticExpression.Variable(id)) $startpos }
   | a1 = arithmetic_expression o = arithmetic_operator a2 = arithmetic_expression
-    { annotateEmpty (ArithmeticExpression.BinaryOperation(o, a1, a2)) $startpos }
+    { annotateEmptyCommand (ArithmeticExpression.BinaryOperation(o, a1, a2)) $startpos }
 ;
 
 %inline arithmetic_operator:
@@ -123,17 +151,17 @@ arithmetic_expression:
 
 boolean_expression:
   | TRUE
-    { annotateEmpty (BooleanExpression.True) $startpos }
+    { annotateEmptyCommand (BooleanExpression.True) $startpos }
   | FALSE
-    { annotateEmpty (BooleanExpression.False) $startpos }
+    { annotateEmptyCommand (BooleanExpression.False) $startpos }
   | NOT b = boolean_expression
-    { annotateEmpty (BooleanExpression.Not(b)) $startpos }
+    { annotateEmptyCommand (BooleanExpression.Not(b)) $startpos }
   | b1 = boolean_expression AND b2 = boolean_expression
-    { annotateEmpty (BooleanExpression.And(b1, b2)) $startpos }
+    { annotateEmptyCommand (BooleanExpression.And(b1, b2)) $startpos }
   | b1 = boolean_expression OR b2 = boolean_expression
-    { annotateEmpty (BooleanExpression.Or(b1, b2)) $startpos }
+    { annotateEmptyCommand (BooleanExpression.Or(b1, b2)) $startpos }
   | a1 = arithmetic_expression c = boolean_comparison_op a2 = arithmetic_expression
-    { annotateEmpty (BooleanExpression.Comparison(c, a1, a2)) $startpos }
+    { annotateEmptyCommand (BooleanExpression.Comparison(c, a1, a2)) $startpos }
 ;
 
 %inline boolean_comparison_op:
@@ -153,15 +181,63 @@ boolean_expression:
 
 sequence:
   | toplevel_command SEMICOLON toplevel_command
-    {annotateEmpty (HeapRegularCommand.Sequence($1, $3)) $startpos }
+    {annotateEmptyCommand (HeapRegularCommand.Sequence($1, $3)) $startpos }
 ;
 
 nondetchoice:
   | toplevel_command PLUS toplevel_command
-    { annotateEmpty (HeapRegularCommand.NondeterministicChoice($1, $3)) $startpos }
+    { annotateEmptyCommand (HeapRegularCommand.NondeterministicChoice($1, $3)) $startpos }
 ;
 
 star:
   | toplevel_command STAR
-    { annotateEmpty (HeapRegularCommand.Star($1)) $startpos  } 
+    { annotateEmptyCommand (HeapRegularCommand.Star($1)) $startpos  } 
 ;
+
+formula:
+    | True
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.True) $startpos }
+    | False
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.False) $startpos }
+    | Exists Identifier formula
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Exists($2, $3)) $startpos } %prec PREC
+    | formula And formula
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.And($1, $3)) $startpos }
+    | formula Or formula
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Or($1, $3)) $startpos }
+    | arithmetic_expression_f BinaryComparison arithmetic_expression_f
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Comparison($2, $1, $3)) $startpos }
+    | Emp
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.EmptyHeap) $startpos }
+    | Identifier Arrow arithmetic_expression_f
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Allocation($1, $3)) $startpos }
+    | Identifier Void
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.NonAllocated($1)) $startpos }
+    | formula Star formula
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.AndSeparately($1, $3)) $startpos }
+    ;
+
+arithmetic_expression_f:
+    | Integer
+      { annotateFormula (Prelude.Ast.LogicFormulas.ArithmeticExpression.Literal($1)) $startpos }
+    | Identifier
+      { annotateFormula (Prelude.Ast.LogicFormulas.ArithmeticExpression.Variable($1)) $startpos }
+    | arithmetic_expression_f BinaryOperator arithmetic_expression_f
+      { annotateFormula (Prelude.Ast.LogicFormulas.ArithmeticExpression.Operation($2, $1, $3)) $startpos }
+
+%inline BinaryComparison:
+  | LTf { Prelude.Ast.LogicFormulas.BinaryComparison.LessThan }
+  | GTf { Prelude.Ast.LogicFormulas.BinaryComparison.GreaterThan }
+  | LEf { Prelude.Ast.LogicFormulas.BinaryComparison.LessOrEqual }
+  | GEf { Prelude.Ast.LogicFormulas.BinaryComparison.GreaterOrEqual }
+  | EQf { Prelude.Ast.LogicFormulas.BinaryComparison.Equals }
+  | NEf { Prelude.Ast.LogicFormulas.BinaryComparison.NotEquals }
+  ;
+
+%inline BinaryOperator:
+  | Plus  { Prelude.Ast.LogicFormulas.BinaryOperator.Plus }
+  | Minus { Prelude.Ast.LogicFormulas.BinaryOperator.Minus }
+  | Times { Prelude.Ast.LogicFormulas.BinaryOperator.Times }
+  | Div   { Prelude.Ast.LogicFormulas.BinaryOperator.Division }
+  | Mod   { Prelude.Ast.LogicFormulas.BinaryOperator.Modulo }
+  ;

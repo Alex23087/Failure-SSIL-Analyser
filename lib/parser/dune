@@ -1,5 +1,5 @@
 (menhir
- (modules logic commands)
+ (modules commands)
  (explain true)
  (infer false)
  (flags --dump --strict))
