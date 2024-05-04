@@ -33,9 +33,9 @@
 
 /* Starting symbol */
 
-%start <Formula.t> formula
-%type <Formula.t> the_formula
-%type <ArithmeticExpression.t> arithmetic_expression
+%start <Prelude.Ast.LogicFormulas.Formula.t> formula
+%type <Prelude.Ast.LogicFormulas.Formula.t> the_formula
+%type <Prelude.Ast.LogicFormulas.ArithmeticExpression.t> arithmetic_expression
 
 
 %%
@@ -74,7 +74,7 @@ arithmetic_expression:
     | Identifier
       { annotate (ArithmeticExpression.Variable($1)) $startpos }
     | arithmetic_expression BinaryOperator arithmetic_expression
-      { annotate ($2, $1, $3) $startpos }
+      { annotate (ArithmeticExpression.Operation($2, $1, $3)) $startpos }
 
 %inline BinaryComparison:
   | LT { BinaryComparison.LessThan }
