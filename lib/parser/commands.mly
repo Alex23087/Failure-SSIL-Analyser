@@ -96,8 +96,8 @@ program:
   | toplevel_command EOF                                                                    { $1 }
 
 toplevel_command:
-  | option(formula) atomic_command
-    { annotateCommand (HeapRegularCommand.Command($2)) $startpos $1 }
+  | atomic_command option(formula)
+    { annotateCommand (HeapRegularCommand.Command($1)) $startpos $2 }
   | sequence
     { $1 }
   | nondetchoice
