@@ -100,9 +100,9 @@ toplevel_command:
     { annotateCommand (HeapRegularCommand.Command($1)) $startpos $2 }
   | sequence
     { $1 }
-  | nondetchoice
+  | nondetchoice option(formula)
     { $1 }
-  | star
+  | star option(formula)
     { $1 }
   | formula
     { annotateCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos (Some $1) }
