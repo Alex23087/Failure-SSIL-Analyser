@@ -3,7 +3,7 @@
 (**Definition of generic Abstract Syntax Trees to represent our programs*)
 module Ast = Ast
 
-(***)
+(**Definition of Control Flow Graph data structures to represent our program*)
 module Cfg = Cfg
 
 (***)
