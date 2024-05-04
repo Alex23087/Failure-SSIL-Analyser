@@ -18,7 +18,7 @@ let make_normal_form variables disjoints annotation phantom_id =
   {variables; disjoints; annotation; last_phantom_id = phantom_id}
 
 let normal_form_free_variables (formula: normal_form) =
-  let ids = List.map formula_identifiers formula.disjoints in
+  let ids = List.map get_formula_identifiers formula.disjoints in
   let ids = List.fold_left (fun acc ids -> IdentifierSet.union acc ids) IdentifierSet.empty ids in
   IdentifierSet.diff ids formula.variables
 
@@ -82,7 +82,7 @@ let disjunction_of_normalized_formulas (lformula: normal_form) (rformula: normal
     lformula.disjoints @ rformula.disjoints
   in
   merge_two_formulas lformula rformula last_phantom_id make_or_disjoints
-  
+
 let existentialization_of_identifier (exist_id: identifier) (subformula: normal_form) (exist_annot: annotation) =
   let variables = subformula.variables in
   let disjoints = subformula.disjoints in
