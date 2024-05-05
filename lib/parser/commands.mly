@@ -81,33 +81,55 @@
 
 %start <Prelude.Ast.Commands.HeapRegularCommand.t> program
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> toplevel_command
+%type <Prelude.Ast.Commands.HeapRegularCommand.t> toplevel_command_nof
 %type <Prelude.Ast.Commands.HeapAtomicCommand.t> atomic_command
 %type <Prelude.Ast.Commands.ArithmeticExpression.t> arithmetic_expression
 %type <Prelude.Ast.Commands.BooleanExpression.t> boolean_expression
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> sequence
+%type <Prelude.Ast.Commands.HeapRegularCommand.t> sequence_nof
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> nondetchoice
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> star
+%type <Prelude.Ast.Commands.HeapRegularCommand.t> nondetchoice_nof
+%type <Prelude.Ast.Commands.HeapRegularCommand.t> star_nof
 
 %type <Prelude.Ast.LogicFormulas.Formula.t> formula
-%type <Prelude.Ast.LogicFormulas.Formula.t option> option(delimited(SL, formula, SR))
+%type <Prelude.Ast.LogicFormulas.Formula.t> delimited(SL, formula, SR)
 %type <Prelude.Ast.LogicFormulas.ArithmeticExpression.t> arithmetic_expression_f
 
 %%
 
 program:
-  | toplevel_command EOF                                                                    { $1 }
+  | toplevel_command EOF
+    { $1 }
+  | formula EOF
+    { annotateCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos (Some $1) }
 
 toplevel_command:
-  | atomic_command option(delimited(SL, formula, SR))
+  | atomic_command delimited(SL, formula, SR)
     { annotateCommand (HeapRegularCommand.Command($1)) $startpos $2 }
   | sequence
     { $1 }
-  | nondetchoice option(delimited(SL, formula, SR))
+  | nondetchoice
     { $1 }
-  | star option(delimited(SL, formula, SR))
+  | star
     { $1 }
-  | formula
-    { annotateCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos (Some $1) }
+  // | atomic_command
+  //   { annotateEmptyCommand (HeapRegularCommand.Command($1)) $startpos }
+  // | nondetchoice_nof
+  //   { $1 }
+  | toplevel_command_nof
+    { $1 }
+  ;
+
+toplevel_command_nof:
+  | atomic_command
+    { annotateEmptyCommand (HeapRegularCommand.Command($1)) $startpos }
+  | sequence_nof
+    { $1 }
+  | nondetchoice_nof
+    { $1 }
+  | star_nof
+    { $1 }
 ;
 
 atomic_command:
@@ -186,14 +208,29 @@ sequence:
     {annotateEmptyCommand (HeapRegularCommand.Sequence($1, $3)) $startpos }
 ;
 
+sequence_nof:
+  | toplevel_command_nof SEMICOLON toplevel_command_nof
+    {annotateEmptyCommand (HeapRegularCommand.Sequence($1, $3)) $startpos }
+;
+
 nondetchoice:
-  | toplevel_command PLUS toplevel_command
+  | toplevel_command_nof PLUS toplevel_command_nof delimited(SL, formula, SR)
+    { annotateCommand (HeapRegularCommand.NondeterministicChoice($1, $3)) $startpos $4}
+;
+
+nondetchoice_nof:
+  | toplevel_command_nof PLUS toplevel_command_nof
     { annotateEmptyCommand (HeapRegularCommand.NondeterministicChoice($1, $3)) $startpos }
 ;
 
 star:
-  | toplevel_command STAR
-    { annotateEmptyCommand (HeapRegularCommand.Star($1)) $startpos  } 
+  | toplevel_command_nof STAR delimited(SL, formula, SR)
+    { annotateCommand (HeapRegularCommand.Star($1)) $startpos $3 }
+;
+
+star_nof:
+  | toplevel_command_nof STAR
+    { annotateEmptyCommand (HeapRegularCommand.Star($1)) $startpos  }
 ;
 
 formula:
