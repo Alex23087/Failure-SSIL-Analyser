@@ -1,7 +1,7 @@
 (library
  (name lisproject)
  (public_name lisproject)
- (libraries sedlex menhirLib)
+ (libraries menhirLib)
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq sedlex.ppx)))
 

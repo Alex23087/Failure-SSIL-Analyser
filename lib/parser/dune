@@ -1,3 +1,6 @@
+(ocamllex
+ (modules lexer_commands))
+
 (menhir
  (modules commands)
  (explain true)

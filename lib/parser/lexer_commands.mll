@@ -1,5 +1,4 @@
 {
-    open Parser
     open Printf
 
     (* Auxiliary definitions *)
@@ -12,9 +11,9 @@
 
     let keyword_table =
       let mapping = [
-        ("skip", SKIP);
-        ("alloc", ALLOC);
-        ("free", FREE);
+        ("skip", Commands.SKIP);
+        ("alloc", Commands.ALLOC);
+        ("free", Commands.FREE);
       ]
     in create_hashtable (List.length mapping) mapping
 
@@ -41,43 +40,41 @@ rule next_token = parse
 | whitespace                            { next_token lexbuf }
 | newline                               { Lexing.new_line lexbuf; next_token lexbuf }
 
-| "Int(" int as i ")"                   { Parser.INT (int_of_string i) }
-| "True"                                { Parser.TRUE }
-| "False"                               { Parser.FALSE }
+| "Int(" int as i ")"                   { Commands.INT (int_of_string i) }
+| "True"                                { Commands.TRUE }
+| "False"                               { Commands.FALSE }
 
 | id as i                               {
                                           (* look up identifier to see if it's a keyword *)
                                           try
                                             let keyword_token = Hashtbl.find keyword_table i in keyword_token
-                                          with Not_found -> Parser.IDENTIFIER i
+                                          with Not_found -> Commands.IDENTIFIER i
                                         }
 
-| '+'                                   { Parser.PLUS }
-| '-'                                   { Parser.MINUS }
-| '*'                                   { Parser.STAR }
-| '/'                                   { Parser.DIV }
-| '%'                                   { Parser.MOD }
+| '+'                                   { Commands.PLUS }
+| '-'                                   { Commands.MINUS }
+| '*'                                   { Commands.STAR }
+| '/'                                   { Commands.DIV }
+| '%'                                   { Commands.MOD }
 
-| '='                                   { Parser.EQ }
-| "=="                                  { Parser.EQEQ }
-| "!="                                  { Parser.NOTEQ }
-| '<'                                   { Parser.LESS }
-| "<="                                  { Parser.LESSEQ }
-| '>'                                   { Parser.GREATER }
-| ">="                                  { Parser.GREATEREQ }
-| "&&"                                  { Parser.AND }
-| "||"                                  { Parser.OR }
-| '!'                                   { Parser.NOT }
+| '='                                   { Commands.EQ }
+| "=="                                  { Commands.EQEQ }
+| "!="                                  { Commands.NEQ }
+| '<'                                   { Commands.LT }
+| "<="                                  { Commands.LE }
+| '>'                                   { Commands.GT }
+| ">="                                  { Commands.GE }
+| "&&"                                  { Commands.AND }
+| "||"                                  { Commands.OR }
+| '!'                                   { Commands.NOT }
 
-| '?'                                   { Parser.QUESTION }
+| '?'                                   { Commands.QUESTION }
 
-| '('                                   { Parser.LPAREN }
-| ')'                                   { Parser.RPAREN }
-| '{'                                   { Parser.LBRACE }
-| '}'                                   { Parser.RBRACE }
-| '['                                   { Parser.LBRACK }
-| ']'                                   { Parser.RBRACK }
-| ';'                                   { Parser.SEMICOLON }
+| '('                                   { Commands.LPAREN }
+| ')'                                   { Commands.RPAREN }
+| '['                                   { Commands.LBRACKET }
+| ']'                                   { Commands.RBRACKET }
+| ';'                                   { Commands.SEMICOLON }
 
 | "//"                                  { consume_single_line_comment lexbuf }
 | "/*"                                  { consume_multi_line_comment lexbuf }
@@ -122,32 +119,32 @@ and consume_single_line_comment = parse
     }
 and consume_formula = parse
   | whitespace                            { consume_formula lexbuf }
-  | "Int(" int as i ")"                   { Parser.Int (int_of_string i) }
+  | "Int(" int as i ")"                   { Commands.Integer (int_of_string i) }
   | ">>"
     {
       next_token lexbuf
     }
-  | '+'                                   { Parser.Plus }
-  | '-'                                   { Parser.Minus }
-  | '*'                                   { Parser.Times }
-  | '/'                                   { Parser.Div }
-  | '%'                                   { Parser.Mod }
-  | "true"                                { Parser.True }
-  | "false"                               { Parser.False }
-  | "exists"                              { Parser.Exists }
-  | "^"                                   { Parser.Star }
-  | "->"                                  { Parser.Arrow }
-  | "-/>"                                 { Parser.Void }
-  | "emp"                                 { Parser.Emp }
-  | '<'                                   { Parser.LTf }
-  | "<="                                  { Parser.LEf }
-  | '>'                                   { Parser.GTf }
-  | ">="                                  { Parser.GEf }
-  | "=="                                  { Parser.EQf }
-  | "!="                                  { Parser.NEf }
-  | "&&"                                  { Parser.And }
-  | "||"                                  { Parser.Or }
-  | id as i                               { Parser.Identifier i }
+  | '+'                                   { Commands.Plus }
+  | '-'                                   { Commands.Minus }
+  | '*'                                   { Commands.Times }
+  | '/'                                   { Commands.Div }
+  | '%'                                   { Commands.Mod }
+  | "true"                                { Commands.True }
+  | "false"                               { Commands.False }
+  | "exists"                              { Commands.Exists }
+  | "^"                                   { Commands.Star }
+  | "->"                                  { Commands.Arrow }
+  | "-/>"                                 { Commands.Void }
+  | "emp"                                 { Commands.Emp }
+  | '<'                                   { Commands.LTf }
+  | "<="                                  { Commands.LEf }
+  | '>'                                   { Commands.GTf }
+  | ">="                                  { Commands.GEf }
+  | "=="                                  { Commands.EQf }
+  | "!="                                  { Commands.NEf }
+  | "&&"                                  { Commands.And }
+  | "||"                                  { Commands.Or }
+  | id as i                               { Commands.Identifier i }
   | newline
     {
       Lexing.new_line lexbuf;

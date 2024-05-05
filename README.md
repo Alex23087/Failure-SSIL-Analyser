@@ -8,7 +8,7 @@
 - `bash -c "sh <(curl -fsSL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)"`
 - `opam init`
 - `opam update`
-- `opam install dune ppx_deriving odoc sedlex menhirLib`
+- `opam install dune ppx_deriving odoc menhirLib`
 
 ### Building and running
 - `make build`
