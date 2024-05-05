@@ -37,24 +37,19 @@ let newline = '\r' | '\n' | "\r\n"
 
 let id = ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '_' '0'-'9']*
 
-rule next_token = parse 
+rule next_token = parse
 | whitespace                            { next_token lexbuf }
 | newline                               { Lexing.new_line lexbuf; next_token lexbuf }
 
-| "Int(" int as i ")"                   { printf "int: %s\n" i; Parser.INTEGER (int_of_string i) }
+| "Int(" int as i ")"                   { Parser.INT (int_of_string i) }
 | "True"                                { Parser.TRUE }
 | "False"                               { Parser.FALSE }
 
 | id as i                               {
                                           (* look up identifier to see if it's a keyword *)
                                           try
-                                            let keyword_token = Hashtbl.find keyword_table i in
-                                            printf "keyword: %s\n" i;
-                                            (* printf "position: %s\n" (Location.show_lexeme_pos (Location.to_lexeme_position lexbuf)); *)
-                                            keyword_token
-                                          with Not_found ->
-                                            printf "id: %s\n" i;
-                                            Parser.ID i
+                                            let keyword_token = Hashtbl.find keyword_table i in keyword_token
+                                          with Not_found -> Parser.IDENTIFIER i
                                         }
 
 | '+'                                   { Parser.PLUS }
@@ -86,41 +81,85 @@ rule next_token = parse
 
 | "//"                                  { consume_single_line_comment lexbuf }
 | "/*"                                  { consume_multi_line_comment lexbuf }
+| "<<"                                  { consume_formula lexbuf }
 | eof                                   { EOF }
 | _ as c
   {
     let err_msg = sprintf "Unrecognized character: %c --- " c in
     let pos = Location.to_lexeme_position lexbuf in
     raise (Lexing_error (pos, err_msg))
-  } 
+  }
 and consume_multi_line_comment = parse
-  | "*/" 
-    { 
-      next_token lexbuf 
+  | "*/"
+    {
+      next_token lexbuf
     }
-  | newline 
-    { 
+  | newline
+    {
       Lexing.new_line lexbuf;
-      consume_multi_line_comment lexbuf 
+      consume_multi_line_comment lexbuf
     }
-  | eof 
-    { 
+  | eof
+    {
       let err_msg = "Unterminated multiline comment" in
       let pos = Location.to_lexeme_position lexbuf in
-      raise (Lexing_error(pos, err_msg)) 
+      raise (Lexing_error(pos, err_msg))
     }
-  | _ 
-    { 
-      consume_multi_line_comment lexbuf 
+  | _
+    {
+      consume_multi_line_comment lexbuf
     }
 and consume_single_line_comment = parse
-  | newline 
-    { 
+  | newline
+    {
       Lexing.new_line lexbuf;
-      next_token lexbuf 
+      next_token lexbuf
     }
   | eof { EOF }
-  | _ 
-    { 
-      consume_single_line_comment lexbuf 
+  | _
+    {
+      consume_single_line_comment lexbuf
+    }
+and consume_formula = parse
+  | whitespace                            { consume_formula lexbuf }
+  | "Int(" int as i ")"                   { Parser.Int (int_of_string i) }
+  | ">>"
+    {
+      next_token lexbuf
+    }
+  | '+'                                   { Parser.Plus }
+  | '-'                                   { Parser.Minus }
+  | '*'                                   { Parser.Times }
+  | '/'                                   { Parser.Div }
+  | '%'                                   { Parser.Mod }
+  | "true"                                { Parser.True }
+  | "false"                               { Parser.False }
+  | "exists"                              { Parser.Exists }
+  | "^"                                   { Parser.Star }
+  | "->"                                  { Parser.Arrow }
+  | "-/>"                                 { Parser.Void }
+  | "emp"                                 { Parser.Emp }
+  | '<'                                   { Parser.LTf }
+  | "<="                                  { Parser.LEf }
+  | '>'                                   { Parser.GTf }
+  | ">="                                  { Parser.GEf }
+  | "=="                                  { Parser.EQf }
+  | "!="                                  { Parser.NEf }
+  | "&&"                                  { Parser.And }
+  | "||"                                  { Parser.Or }
+  | id as i                               { Parser.Identifier i }
+  | newline
+    {
+      Lexing.new_line lexbuf;
+      consume_formula lexbuf
+    }
+  | eof
+    {
+      let err_msg = "Unterminated formula" in
+      let pos = Location.to_lexeme_position lexbuf in
+      raise (Lexing_error(pos, err_msg))
+    }
+  | _
+    {
+      consume_formula lexbuf
     }
