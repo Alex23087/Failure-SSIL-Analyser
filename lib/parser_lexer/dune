@@ -1,8 +1,8 @@
 (ocamllex
- (modules lexer_commands))
+ (modules lexer))
 
 (menhir
- (modules commands)
+ (modules parser)
  (explain true)
  (infer false)
  (flags --dump --strict))
