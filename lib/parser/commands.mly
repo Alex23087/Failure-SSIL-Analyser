@@ -100,7 +100,7 @@
 program:
   | toplevel_command EOF
     { $1 }
-  | formula EOF
+  | delimited(SL, formula, SR) EOF
     { annotateCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos (Some $1) }
 
 toplevel_command:
