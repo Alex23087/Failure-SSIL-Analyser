@@ -86,7 +86,6 @@
 %type <Prelude.Ast.Commands.ArithmeticExpression.t> arithmetic_expression
 %type <Prelude.Ast.Commands.BooleanExpression.t> boolean_expression
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> sequence
-%type <Prelude.Ast.Commands.HeapRegularCommand.t> sequence_nof
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> nondetchoice
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> star
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> nondetchoice_nof
@@ -113,10 +112,6 @@ toplevel_command:
     { $1 }
   | star
     { $1 }
-  // | atomic_command
-  //   { annotateEmptyCommand (HeapRegularCommand.Command($1)) $startpos }
-  // | nondetchoice_nof
-  //   { $1 }
   | toplevel_command_nof
     { $1 }
   ;
@@ -124,8 +119,6 @@ toplevel_command:
 toplevel_command_nof:
   | atomic_command
     { annotateEmptyCommand (HeapRegularCommand.Command($1)) $startpos }
-  | sequence_nof
-    { $1 }
   | nondetchoice_nof
     { $1 }
   | star_nof
@@ -205,11 +198,6 @@ boolean_expression:
 
 sequence:
   | toplevel_command SEMICOLON toplevel_command
-    {annotateEmptyCommand (HeapRegularCommand.Sequence($1, $3)) $startpos }
-;
-
-sequence_nof:
-  | toplevel_command_nof SEMICOLON toplevel_command_nof
     {annotateEmptyCommand (HeapRegularCommand.Sequence($1, $3)) $startpos }
 ;
 
