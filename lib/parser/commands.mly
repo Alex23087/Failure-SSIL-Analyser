@@ -105,7 +105,7 @@ program:
 
 toplevel_command:
   | atomic_command delimited(SL, formula, SR)
-    { annotateCommand (HeapRegularCommand.Command($1)) $startpos $2 }
+    { annotateCommand (HeapRegularCommand.Command($1)) $startpos (Some $2) }
   | sequence
     { $1 }
   | nondetchoice
@@ -203,7 +203,7 @@ sequence:
 
 nondetchoice:
   | toplevel_command_nof PLUS toplevel_command_nof delimited(SL, formula, SR)
-    { annotateCommand (HeapRegularCommand.NondeterministicChoice($1, $3)) $startpos $4}
+    { annotateCommand (HeapRegularCommand.NondeterministicChoice($1, $3)) $startpos (Some $4)}
 ;
 
 nondetchoice_nof:
@@ -213,7 +213,7 @@ nondetchoice_nof:
 
 star:
   | toplevel_command_nof STAR delimited(SL, formula, SR)
-    { annotateCommand (HeapRegularCommand.Star($1)) $startpos $3 }
+    { annotateCommand (HeapRegularCommand.Star($1)) $startpos (Some $3) }
 ;
 
 star_nof:
