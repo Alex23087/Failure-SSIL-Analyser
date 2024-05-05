@@ -14,9 +14,8 @@
   - {{! HeapRegularCommands.ArithmeticExpression}ArithmeticExpression} ::= Int(n) | Identifier | ArithmeticExpression BinaryOperator ArithmeticExpression
   - {{! HeapRegularCommands.ArithmeticOperation}BinaryOperator} ::= + | - | * | / | %
 *)
-module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
+module HeapRegularCommands = struct
   open Base
-  module AnnotatedNode = Base.AnnotatedNode(Annotation)
 
   module ArithmeticOperation = struct
     type t =
@@ -40,40 +39,40 @@ module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
   end
 
   module ArithmeticExpression = struct
-    type t_node =
+    type 'a t_node =
       | Literal of int
       | Variable of identifier
-      | BinaryOperation of ArithmeticOperation.t * t * t
-    and t = t_node AnnotatedNode.t
+      | BinaryOperation of ArithmeticOperation.t * 'a t * 'a t
+    and 'a t = ('a t_node, 'a) AnnotatedNode.t
     [@@deriving show]
   end
 
   module BooleanExpression = struct
-    type t_node =
+    type 'a t_node =
       | True
       | False
-      | Not of t
-      | And of t * t
-      | Or of t * t
-      | Comparison of BooleanComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
-    and t = t_node AnnotatedNode.t
+      | Not of 'a t
+      | And of 'a t * 'a t
+      | Or of 'a t * 'a t
+      | Comparison of BooleanComparison.t * 'a ArithmeticExpression.t * 'a ArithmeticExpression.t
+    and 'a t = ('a t_node, 'a) AnnotatedNode.t
     [@@deriving show]
   end
 
   module HeapAtomicCommand = struct
-    type t_node =
+    type 'a t_node =
       | Skip
-      | Assignment of identifier * ArithmeticExpression.t
+      | Assignment of identifier * 'a ArithmeticExpression.t
       | NonDet of identifier
-      | Guard of BooleanExpression.t
+      | Guard of 'a BooleanExpression.t
       | Allocation of identifier
       | Free of identifier
       | ReadHeap of identifier * identifier
-      | WriteHeap of identifier * ArithmeticExpression.t
-    and t = t_node AnnotatedNode.t
+      | WriteHeap of identifier * 'a ArithmeticExpression.t
+    and 'a t = ('a t_node, 'a) AnnotatedNode.t
     [@@deriving show]
 
-    let modifiedVariables (command: t) =
+    let modifiedVariables (command: 'a t) =
       match command.node with
       | Skip                  -> (IdentifierSet.empty)
       | Assignment(id, _)     -> (IdentifierSet.singleton id)
@@ -86,15 +85,15 @@ module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
   end
 
   module HeapRegularCommand = struct
-    type t_node =
-      | Command of HeapAtomicCommand.t
-      | Sequence of t * t
-      | NondeterministicChoice of t * t
-      | Star of t
-    and t = t_node AnnotatedNode.t
+    type 'a t_node =
+      | Command of 'a HeapAtomicCommand.t
+      | Sequence of 'a t * 'a t
+      | NondeterministicChoice of 'a t * 'a t
+      | Star of 'a t
+    and 'a t = ('a t_node, 'a) AnnotatedNode.t
     [@@deriving show]
 
-    let rec modifiedVariables (command: t) = 
+    let rec modifiedVariables (command: 'a t) = 
       match command.node with
       | Command(atomicCommand) ->
          HeapAtomicCommand.modifiedVariables atomicCommand
@@ -106,7 +105,7 @@ module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
          modifiedVariables regularCommand
   end
 
-  type t = HeapRegularCommand.t
+  type 'a t = 'a HeapRegularCommand.t
   let pp = HeapRegularCommand.pp
   let show = HeapRegularCommand.show
   let modifiedVariables = HeapRegularCommand.modifiedVariables

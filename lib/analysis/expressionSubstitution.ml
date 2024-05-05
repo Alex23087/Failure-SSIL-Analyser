@@ -1,9 +1,10 @@
-open Prelude.Ast.LogicFormulas
+open Prelude.Ast
+open LogicFormulas
 open NormalForm
 open Utils
 
-let substitute_expression_in_normalized_formula (formula: normal_form) (changing_expr: ArithmeticExpression.t) (changed_id: identifier) =
-  let rec substitute_expression_in_expression (expr: ArithmeticExpression.t) (changing_expr: ArithmeticExpression.t) (changed_id: identifier) =
+let substitute_expression_in_normalized_formula (formula: NormalForm.t) (changing_expr: 'a ArithmeticExpression.t) (changed_id: identifier) =
+  let rec substitute_expression_in_expression (expr: 'a ArithmeticExpression.t) (changing_expr: 'a ArithmeticExpression.t) (changed_id: identifier) =
     match expr.node with
     | Literal(_) -> expr
     | Variable(id) ->
@@ -16,7 +17,7 @@ let substitute_expression_in_normalized_formula (formula: normal_form) (changing
       let rexpr = substitute_expression_in_expression rexpr changing_expr changed_id in
       update_formula expr (ArithmeticExpression.Operation(op, lexpr, rexpr))
   in
-  let rec substitute_expression_in_formula (formula: Formula.t) (changing_expr: ArithmeticExpression.t) (changed_id: identifier) (renamed_id: identifier) =
+  let rec substitute_expression_in_formula (formula: 'a Formula.t) (changing_expr: 'a ArithmeticExpression.t) (changed_id: identifier) (renamed_id: identifier) =
     match formula.node with
     | True | False | EmptyHeap ->
       formula, false
@@ -64,7 +65,7 @@ let substitute_expression_in_normalized_formula (formula: normal_form) (changing
   let renamed_var, renamed_phantom_id = new_variable_name changed_id original_phantom_id in
   let id_expr = annotate (ArithmeticExpression.Variable(renamed_var)) changing_expr.annotation in
   let renamed_equal_formula = annotate (Formula.Comparison(BinaryComparison.Equals, id_expr, changing_expr)) changing_expr.annotation in
-  let substitute_in_disjoint (formula: Formula.t) (disjoints: Formula.t list) (accum_renamed_used: bool) =
+  let substitute_in_disjoint (formula: 'a Formula.t) (disjoints: 'a Formula.t list) (accum_renamed_used: bool) =
     let formula, renamed_used = substitute_expression_in_formula formula changing_expr changed_id renamed_var in
     let formula = if renamed_used then
       annotate (Formula.And(formula, renamed_equal_formula)) formula.annotation
@@ -75,4 +76,4 @@ let substitute_expression_in_normalized_formula (formula: normal_form) (changing
   in
   let disjoints, renamed_used = List.fold_left (fun (disjoints, renamed_used) x -> substitute_in_disjoint x disjoints renamed_used) ([], false) formula.disjoints in
   let phantom_id = if renamed_used then renamed_phantom_id else original_phantom_id in
-  make_normal_form formula.variables disjoints formula.annotation phantom_id
+  NormalForm.make formula.variables disjoints formula.annotation phantom_id

@@ -1,19 +1,13 @@
 open Lisproject.Ast
-
-(* Instantiate the AST with the annotation type *)
-module ASTHRC = HeapRegularCommands(struct
-  type t = int (* int annotations *)
-end)
+open HeapRegularCommands
 
 let counter = ref 0
 
 (* Annotate a node with a unique integer *)
-let annotate (node: 'a): 'a ASTHRC.AnnotatedNode.t =
-  let out = ASTHRC.AnnotatedNode.make node !counter in
+let annotate node =
+  let out = AnnotatedNode.make node !counter in
   counter := !counter + 1;
   out
-
-open ASTHRC
 
 let () =
   (* Create an AST corresponding to the RegCmd:  x = 1; (x < 10?; x = x + 1)*; !(x < 10)?
@@ -55,7 +49,7 @@ let () =
     | _ -> print_endline "Not Star";
 
   (* Print it with show_rcmd *)
-  print_endline (show root);
+  (* print_endline (HeapRegularCommand.show root); *)
 
   let root = annotate (HeapRegularCommand.Sequence(
     (annotate (HeapRegularCommand.Command(annotate (HeapAtomicCommand.Allocation("x"))))),
@@ -65,5 +59,5 @@ let () =
     ))
     )
   )) in
-  print_endline (show root);
+  (* print_endline (HeapRegularCommand.show root); *)
   print_endline (modifiedVariables root |> IdentifierSet.elements |> String.concat ", ");

@@ -1,6 +1,7 @@
-open Prelude.Ast.LogicFormulas
-open NormalForm
 open ExpressionSubstitution
+open NormalForm
+open Prelude.Ast
+open LogicFormulas
 
 open TestUtils
 

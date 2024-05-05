@@ -3,24 +3,23 @@
 (**Identifier type*)
 type identifier = string [@@deriving show]
 
-(**AnnotationType signature which is used to define ASTs' annotations *)
-module type AnnotationType = sig
-  type t
-end
+module AnnotatedNode = struct
+  type ('a, 'b) t = {node: 'a; annotation: 'b [@opaque]} [@@deriving show]
+  let make (node: 'a) (annotation: 'b) = {node; annotation}
+  let unpack (annotated_node: ('a, 'b) t) = (annotated_node.node, annotated_node.annotation)
+  let annotation (annotated_node: ('a, 'b) t) = annotated_node.annotation
+  let node (annotated_node: ('a, 'b) t) = annotated_node.node
 
-(**AnnotatedNode struct which represents ASTs' nodes and their annotations*)
-module AnnotatedNode(Annotation: AnnotationType) = struct
-  type annotation = Annotation.t
-  type 'a t = {node: 'a; annotation: annotation [@opaque]} [@@deriving show]
-
-  let make (node: 'a) (annotation: annotation) = {node; annotation}
-  let unpack (annotated_node: 'a t) = (annotated_node.node, annotated_node.annotation)
-  let annotation (annotated_node: 'a t) = annotated_node.annotation
-  let node (annotated_node: 'a t) = annotated_node.node
+  let update_annotation (annotated_node: ('a, 'b) t) (new_annot: 'b) =
+    let node = node annotated_node in
+    make node new_annot
+  let update_node (annotated_node: ('a, 'b) t) (new_node: 'a) =
+    let annot = annotation annotated_node in
+    make new_node annot
 end
 
 (**IdentifierSet*)
 module IdentifierSet = Set.Make(struct
-  type t = identifier
+  type t = identifier 
   let compare = compare
 end)

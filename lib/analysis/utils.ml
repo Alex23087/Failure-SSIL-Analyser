@@ -1,16 +1,15 @@
-open Prelude
-open Prelude.Ast.LogicFormulas
+open Prelude.Ast
+open LogicFormulas
 
-module IdentifierSet = struct include Ast.IdentifierSet end
-type annotation = Ast.logic_formulas_annotation
-type identifier = Ast.identifier
+let update_formula = AnnotatedNode.update_node
+let annotate = AnnotatedNode.make
 
 (* https://stackoverflow.com/a/10893700 *)
 let list_cartesian l l' =
   List.concat (List.map (fun e -> List.map (fun e' -> (e,e')) l') l)
 
-let rec equal_formulas (lformula: Formula.t) (rformula: Formula.t) =
-  let rec equal_expressions (lexpr: ArithmeticExpression.t) (rexpr: ArithmeticExpression.t) =
+let rec equal_formulas (lformula: 'a Formula.t) (rformula: 'a Formula.t) =
+  let rec equal_expressions (lexpr: 'a ArithmeticExpression.t) (rexpr: 'a ArithmeticExpression.t) =
     match (lexpr.node, rexpr.node) with
     | (Literal(l), Literal(r)) -> l = r
     | (Variable(l), Variable(r)) -> l = r
@@ -55,18 +54,18 @@ let rename_variable_in_set (variables: IdentifierSet.t) (var: identifier) (new_n
   | Some(_) -> IdentifierSet.add new_name (IdentifierSet.remove var variables)
   | None -> variables
 
-let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_name: identifier) =
+let rec rename_variable_in_formula (disjoint: 'a Formula.t) (var: identifier) (new_name: identifier) =
   let rename_variable_name (var: identifier) (old_name: identifier) (new_name: identifier) =
     if var = old_name then new_name else var
   in
-  let rec rename_variable_in_expression (expr: ArithmeticExpression.t) (var: identifier) (new_name: identifier) =
+  let rec rename_variable_in_expression (expr: 'a ArithmeticExpression.t) (var: identifier) (new_name: identifier) =
     match expr.node with
     | Literal(_) -> expr
     | Variable(id) -> update_formula expr (ArithmeticExpression.Variable(rename_variable_name id var new_name))
     | Operation(op, lexpr, rexpr) ->
       let lexpr = rename_variable_in_expression lexpr var new_name in
       let rexpr = rename_variable_in_expression rexpr var new_name in
-      update_formula disjoint (ArithmeticExpression.Operation(op, lexpr, rexpr))
+      update_formula expr (ArithmeticExpression.Operation(op, lexpr, rexpr))
   in
 
   match disjoint.node with
@@ -95,16 +94,16 @@ let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_
     let rformula = rename_variable_in_formula rformula var new_name in
     update_formula disjoint (Formula.AndSeparately(lformula, rformula))
     
-let get_variable_from_expression (expr: ArithmeticExpression.t) =
+let get_variable_from_expression (expr: 'a ArithmeticExpression.t) =
   match expr.node with
   | Variable(id) -> Some(id)
   | _ -> None
 
-let command_annotation_to_logic_annotation (annotation: Prelude.Ast.regular_formulas_annotation) : Prelude.Ast.logic_formulas_annotation =
+let command_annotation_to_logic_annotation (annotation: Commands.annotation) : annotation =
   {position=annotation.position}
 
-let rec command_expression_to_logic_expression (expr: Prelude.Ast.Commands.ArithmeticExpression.t) =
-  let command_boperator_to_logic_boperator (op: Prelude.Ast.Commands.ArithmeticOperation.t) =
+let rec command_expression_to_logic_expression (expr: 'a Commands.ArithmeticExpression.t) =
+  let command_boperator_to_logic_boperator (op: Commands.ArithmeticOperation.t) =
     match op with
     | Plus -> BinaryOperator.Plus
     | Minus -> BinaryOperator.Minus
@@ -125,8 +124,8 @@ let rec command_expression_to_logic_expression (expr: Prelude.Ast.Commands.Arith
     let op = command_boperator_to_logic_boperator op in
     annotate (ArithmeticExpression.Operation(op, lexpr, rexpr)) annotation
 
-let rec command_bexpression_to_logic_formula (expr: Prelude.Ast.Commands.BooleanExpression.t) =
-  let command_bcomparison_to_logic_bcomparison (op: Prelude.Ast.Commands.BooleanComparison.t) =
+let rec command_bexpression_to_logic_formula (expr: 'a Commands.BooleanExpression.t) =
+  let command_bcomparison_to_logic_bcomparison (op: Commands.BooleanComparison.t) =
     match op with
     | Equal -> BinaryComparison.Equals
     | NotEqual -> BinaryComparison.NotEquals
@@ -135,7 +134,7 @@ let rec command_bexpression_to_logic_formula (expr: Prelude.Ast.Commands.Boolean
     | GreaterThan -> BinaryComparison.GreaterThan
     | GreaterOrEqual -> BinaryComparison.GreaterOrEqual
   in
-  let command_bcomparison_to_negated_logic_bcomparison (op: Prelude.Ast.Commands.BooleanComparison.t) =
+  let command_bcomparison_to_negated_logic_bcomparison (op: Commands.BooleanComparison.t) =
     match op with
     | Equal -> BinaryComparison.Equals
     | NotEqual -> BinaryComparison.NotEquals
@@ -144,8 +143,8 @@ let rec command_bexpression_to_logic_formula (expr: Prelude.Ast.Commands.Boolean
     | GreaterThan -> BinaryComparison.LessOrEqual
     | GreaterOrEqual -> BinaryComparison.LessThan
   in
-  let negated_command_bexpression (expr: Prelude.Ast.Commands.BooleanExpression.t) =
-    Prelude.Ast.Commands.annotate (Prelude.Ast.Commands.BooleanExpression.Not(expr)) expr.annotation
+  let negated_command_bexpression (expr: 'a Commands.BooleanExpression.t) =
+    annotate (Commands.BooleanExpression.Not(expr)) expr.annotation
   in
 
   let annotation = command_annotation_to_logic_annotation expr.annotation in
@@ -191,7 +190,7 @@ let rec command_bexpression_to_logic_formula (expr: Prelude.Ast.Commands.Boolean
     let op = command_bcomparison_to_logic_bcomparison op in
     annotate (Formula.Comparison(op, lexpr, rexpr)) annotation
     
-let rec get_expr_identifiers (expr: ArithmeticExpression.t) =
+let rec get_expr_identifiers (expr: 'a ArithmeticExpression.t) =
   match expr.node with
   | Literal(_) -> (IdentifierSet.empty)
   | Variable(id) -> (IdentifierSet.singleton id)
@@ -200,7 +199,7 @@ let rec get_expr_identifiers (expr: ArithmeticExpression.t) =
     let r_ids = get_expr_identifiers rexpr in
     IdentifierSet.union l_ids r_ids
 
-let rec get_formula_identifiers (formula: Formula.t) =
+let rec get_formula_identifiers (formula: 'a Formula.t) =
   match formula.node with
   | True | False | EmptyHeap ->
     IdentifierSet.empty

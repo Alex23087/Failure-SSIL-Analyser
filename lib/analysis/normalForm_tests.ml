@@ -1,4 +1,6 @@
-open Prelude.Ast.LogicFormulas
+open NormalForm
+open Prelude.Ast
+open LogicFormulas
 open NormalForm
 
 open TestUtils

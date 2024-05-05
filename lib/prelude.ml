@@ -8,86 +8,88 @@
     *)
 module Ast = struct
   type identifier = Ast.identifier
-  module IdentifierSet = struct include Ast.IdentifierSet end
+  module AnnotatedNode = struct include Ast.AnnotatedNode end [@@deriving show]
+  module IdentifierSet = struct include Ast.IdentifierSet end [@@deriving show]
 
   (** Position record, which holds where the given command or annotation is in the source files.*)
   type position = {line: int; column: int} [@@deriving show]
 
   let make_position (line: int) (column: int) = {line; column}
 
-  type logic_formulas_annotation = {
-    position: position;
-  }
-  [@@deriving show]
-
   (** Concrete implementation of the Logic Formulas, with source-position annotations*)
   module LogicFormulas = struct
-    include Ast.AnnotationLogic(struct
-      type t = logic_formulas_annotation
-    end)
+    include Ast.AnnotationLogic
 
-    let make_annotation line column : AnnotatedNode.annotation =
+    type annotation = {
+      position: position;
+    }
+    [@@deriving show]
+
+    type t = annotation Ast.AnnotationLogic.t
+    [@@deriving show]
+
+    let make_annotation line column : annotation =
       let position = make_position line column in {position}
-
-    (** Utility functions to build Logic Formulas' annotated nodes*)
-    let annotate formula annotation =
-      AnnotatedNode.make formula annotation
-      
-    let annotate_parser formula line column =
-      AnnotatedNode.make formula (make_annotation line column)
-
-    (** Utility function to update a logic formula*)
-    let update_formula annotated_node new_formula =
-      let _, annotation = AnnotatedNode.unpack annotated_node in 
-      AnnotatedNode.make new_formula annotation
   end
-
-  type regular_formulas_annotation = {
-    position: position;
-    logic_formula: LogicFormulas.t option
-  }
-  [@@deriving show]
 
   (** Concrete implementation of the Regular Commands, with source-position and logic formula in the annotation.
       
       Note that the logic formula annotates after the command, not before. *)
   module Commands = struct
-    include Ast.HeapRegularCommands(struct
-      type t = regular_formulas_annotation
-    end)
+    include Ast.HeapRegularCommands
 
-    let make_annotation line column formula : AnnotatedNode.annotation =
+    type annotation = {
+      position: position;
+      logic_formula: LogicFormulas.t option
+    }
+    [@@deriving show]
+
+    type t = annotation Ast.HeapRegularCommands.t
+    [@@deriving show]
+    
+    let make_annotation line column formula : annotation =
       let position = make_position line column in
       {position; logic_formula = formula}
+  end
 
-    (** Utility functions to build Commands' annotated nodes*)
-    let annotate formula annotation =
-      AnnotatedNode.make formula annotation
+  module NormalForm = struct
+    type t = {
+      variables: IdentifierSet.t; [@opaque]
+      disjoints: LogicFormulas.t list;
+      annotation: LogicFormulas.annotation;
+      last_phantom_id: int;
+    }
+    [@@deriving show]
 
-    let annotate_parser command line column formula =
-      AnnotatedNode.make command (make_annotation line column formula)
+    let make variables disjoints annotation phantom_id =
+      {variables; disjoints; annotation; last_phantom_id = phantom_id}
+  end
 
-    (** Utility function to update a Command's logic formula*)
-    let update_formula annotated_node new_formula =
-      let node, annotation = AnnotatedNode.unpack annotated_node in 
-      let position = annotation.position in
-      AnnotatedNode.make node (make_annotation position.line position.column new_formula)
+  module AnalysisCommands = struct
+    type annotation = {
+      position: position;
+      postcondition: NormalForm.t option;
+    }
+    [@@deriving show]
+
+    type t = annotation Ast.HeapRegularCommands.t
+    [@@deriving show]
   end
 end
 
 (** This module contains the concrete implementation of the Control Flow Graph data structures.
 
-    Important definitions:
-    - {{! Cfg.cfg_block}block} - CFG block record to represent sequences of atomic commands in source.
-    - {{! Cfg.cfg}cfg} - Control Flow Graph, instanced on the blocks' record.
-    - {{! Cfg.cfg_item}item} - Control Flow Graph's node, which represent a block of commands, with their predecessor and successor blocks.
-    *)
+Important definitions:
+- {{! Cfg.cfg_block}block} - CFG block record to represent sequences of atomic commands in source.
+- {{! Cfg.cfg}cfg} - Control Flow Graph, instanced on the blocks' record.
+- {{! Cfg.cfg_item}item} - Control Flow Graph's node, which represent a block of commands, with their predecessor and successor blocks.
+*)
 module Cfg = struct
   (** Control Flow Graph nodes' content. *)
   type cfg_block = {
     visit_count: int;
-    precondition: Ast.LogicFormulas.t option;
-    statements: Ast.Commands.HeapAtomicCommand.t list;
+    precondition: Ast.NormalForm.t option;
+    statements: Ast.AnalysisCommands.t list;
   }
 
   include Cfg.CFG

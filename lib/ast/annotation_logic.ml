@@ -10,9 +10,8 @@
   - {{! AnnotationLogic.ArithmeticExpression}ArithmeticExpression} ::= Int(n) | Identifier | ArithmeticExpression BinaryOperator ArithmeticExpression
   - {{! AnnotationLogic.BinaryOperator}BinaryOperator} ::= + | - | * | / | %
 *)
-module AnnotationLogic(Annotation: Base.AnnotationType) = struct
+module AnnotationLogic = struct
   open Base
-  module AnnotatedNode = Base.AnnotatedNode(Annotation)
 
   module BinaryOperator = struct
     type t =
@@ -25,11 +24,11 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
   end
 
   module ArithmeticExpression = struct
-    type t_node =
+    type 'a t_node =
       | Literal of int
       | Variable of identifier
-      | Operation of BinaryOperator.t * t * t
-    and t = t_node AnnotatedNode.t
+      | Operation of BinaryOperator.t * 'a t * 'a t
+    and 'a t = ('a t_node, 'a) AnnotatedNode.t
     [@@deriving show]
   end
 
@@ -45,24 +44,24 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
   end
 
   module Formula = struct
-    type t_node =
+    type 'a t_node =
       | True
       | False
-      | Exists of identifier * t
-      | And of t * t
-      | Or of t * t
-      | Comparison of BinaryComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
+      | Exists of identifier * 'a t
+      | And of 'a t * 'a t
+      | Or of 'a t * 'a t
+      | Comparison of BinaryComparison.t * 'a ArithmeticExpression.t * 'a ArithmeticExpression.t
 
       (* Spatial Formulas *)
       | EmptyHeap
       | NonAllocated of identifier
-      | Allocation of identifier * ArithmeticExpression.t
-      | AndSeparately of t * t
-    and t = t_node AnnotatedNode.t
+      | Allocation of identifier * 'a ArithmeticExpression.t
+      | AndSeparately of 'a t * 'a t
+    and 'a t = ('a t_node, 'a) AnnotatedNode.t
     [@@deriving show]
   end
 
-  type t = Formula.t
+  type 'a t = 'a Formula.t
   let pp = Formula.pp
   let show = Formula.show
 end

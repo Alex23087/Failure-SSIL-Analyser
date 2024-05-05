@@ -1,20 +1,13 @@
 open Lisproject.Ast
-
-(* Instantiate the AST with the annotation type *)
-module ASTLogic = AnnotationLogic(struct
-  type t = int (* int annotations *)
-end)
-
-open ASTLogic
+open AnnotationLogic
 
 let counter = ref 0
 
 (* Annotate a node with a unique integer *)
-let annotate (node: 'a): 'a AnnotatedNode.t =
+let annotate node =
   let out = AnnotatedNode.make node !counter in
   counter := !counter + 1;
   out
-
 
 let () =
   (* Create an AST corresponding to:  (((x<5) and (x+1==y%2)) or (exists p.(p<=x or p>=y*2)) * (x -> _ and y -> 12)) *)
@@ -75,6 +68,6 @@ let () =
         ))
       ))
     )) in
-
+  ()
   (* Print it with show_rcmd *)
-  print_endline (show root)
+  (* print_endline (show root) *)

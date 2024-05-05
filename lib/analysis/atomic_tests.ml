@@ -1,9 +1,10 @@
-open Prelude.Ast
-open Prelude.Ast.LogicFormulas
+open Atomic
 open NormalForm
 open ExpressionSubstitution
 open Utils
-open Atomic
+open Prelude.Ast
+open LogicFormulas
+open NormalForm
 
 open TestUtils
 

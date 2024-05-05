@@ -1,8 +1,7 @@
-open Prelude
-open Prelude.Ast.LogicFormulas
+open Prelude.Ast
 open Utils
 
-let first_annotation (annot1: annotation) (annot2: annotation) =
+let first_annotation (annot1: LogicFormulas.annotation) (annot2: LogicFormulas.annotation) =
   if annot1.position.line < annot2.position.line then
     annot1
   else if annot1.position.line > annot2.position.line then
@@ -12,7 +11,7 @@ let first_annotation (annot1: annotation) (annot2: annotation) =
   else
     annot2
     
-let rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) (disjoints: Formula.t list) (phantom_id: int) =
+let rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) (disjoints: LogicFormulas.t list) (phantom_id: int) =
   let (new_var, phantom_id) = new_variable_name var phantom_id in
   let variables = IdentifierSet.add new_var (IdentifierSet.remove var variables) in
   let disjoints = List.map (fun x -> rename_variable_in_formula x var new_var) disjoints in
