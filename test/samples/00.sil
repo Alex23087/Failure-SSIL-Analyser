@@ -1,4 +1,1 @@
-aaa = alloc();
-[aaa] = 1 + 2l
-<< True >>;
-free(aaa);
+<< true >>
