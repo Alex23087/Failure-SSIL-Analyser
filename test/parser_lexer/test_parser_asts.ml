@@ -2,6 +2,7 @@ open Lisproject.Prelude.Ast.Commands
 open Lisproject.Prelude.Ast.LogicFormulas
 open Lisproject.Prelude.Ast.Commands.AnnotatedNode
 open Lisproject.Prelude.Ast.LogicFormulas.AnnotatedNode
+open Lisproject.Parserlexer
 
 let source_00 = {|x = alloc();
 [x] = 1 + 400 << (exists y x -> y) ^ emp >>;
@@ -152,7 +153,7 @@ let expected_00: HeapRegularCommand.t = {
 };;
 
 let test_00 = let lexbuf = Lexing.from_string ~with_positions:true source_00 in
-              let ast = Lisproject.Parserlexer.Parsing.parse Lisproject.Parserlexer.Lexer.lex lexbuf in
+              let ast = Parsing.parse Lexer.lex lexbuf in
               let res = ast = expected_00 in
               if res then () else raise (Failure "test_00");;
 
