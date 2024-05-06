@@ -16,7 +16,7 @@ module Ast = struct
   let make_position (line: int) (column: int) = {line; column}
 
   type logic_formulas_annotation = {
-    position: position; [@opaque]
+    position: position; (* [@opaque] *)
   } [@@deriving show]
 
   (** Concrete implementation of the Logic Formulas, with source-position annotations*)
@@ -44,7 +44,7 @@ module Ast = struct
   end
 
   type regular_formulas_annotation = {
-    position: position; [@opaque]
+    position: position; (* [@opaque] *)
     logic_formula: LogicFormulas.t option
   }
   [@@deriving show]
