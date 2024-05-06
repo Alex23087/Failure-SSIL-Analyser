@@ -14,6 +14,9 @@ module AnnotatedNode(Annotation: AnnotationType) = struct
   type 'a t = {node: 'a; annotation: annotation [@opaque]} [@@deriving show]
 
   let make (node: 'a) (annotation: annotation) = {node; annotation}
+  let unpack (annotated_node: 'a t) = (annotated_node.node, annotated_node.annotation)
+  let annotation (annotated_node: 'a t) = annotated_node.annotation
+  let node (annotated_node: 'a t) = annotated_node.node
 end
 
 (**IdentifierSet*)

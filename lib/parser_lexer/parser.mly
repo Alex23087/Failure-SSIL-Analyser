@@ -1,17 +1,10 @@
 %{
   open Prelude.Ast.Commands
 
-  open Prelude.Ast
-
-  let from_menhir_pos (position) =
-    let line = position.Lexing.pos_lnum in
-    let column = position.Lexing.pos_cnum in
-    make_position line column
-
-  let annotateCommand command position formula = Prelude.Ast.Commands.annotate command (from_menhir_pos position) formula
+  let annotateCommand command position formula = Prelude.Ast.Commands.annotate_parser command position.Lexing.pos_lnum position.Lexing.pos_cnum formula
   let annotateEmptyCommand command position = annotateCommand command position None
 
-  let annotateFormula formula position = Prelude.Ast.LogicFormulas.annotate formula (from_menhir_pos position)
+  let annotateFormula formula position = Prelude.Ast.LogicFormulas.annotate_parser formula position.Lexing.pos_lnum position.Lexing.pos_cnum
 %}
 
 /* commands */
