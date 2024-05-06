@@ -1,6 +1,7 @@
 open Lisproject.Parserlexer
 open Lisproject.Prelude.Ast
 
+(** handle errors by printing useful informations *)
 let handle_error source lexeme_pos msg =
   let lines = String.split_on_char '\n' source in
   let line = List.nth lines (lexeme_pos.Location.line - 1) in
@@ -13,6 +14,7 @@ let handle_error source lexeme_pos msg =
   Printf.eprintf "\n*** Error at line %d - column (start, end): (%d,%d).\n%s\n%s%s\n*** %s\n\n"
     lexeme_pos.Location.line lexeme_pos.Location.start_column lexeme_pos.Location.end_column line prefix middle msg
 
+(** read filename from disk *)
 let load_file filename =
   let ic = open_in filename in
   let n = in_channel_length ic in
@@ -21,6 +23,7 @@ let load_file filename =
   close_in ic;
   Bytes.to_string s
 
+(** tries to parse filename *)
 let process_source filename =
   let source = load_file filename in
   let lexbuf = Lexing.from_string ~with_positions:true source in
@@ -32,6 +35,7 @@ let process_source filename =
   with Lexer.Lexing_error (pos, msg) | Parsing.Syntax_error (pos, msg) ->
     handle_error source pos msg
 
+(** main  *)
 let () =
   let usage_msg = Printf.sprintf "%s <file>" Sys.argv.(0) in
   let filename = ref "" in

@@ -9,6 +9,7 @@ type code_pos = {
 }
 [@@deriving show, ord, eq]
 
+(** convert the buffer into a lexeme position for parser and lexer errors *)
 let to_lexeme_position lexbuf =
   let startp = Lexing.lexeme_start_p lexbuf in
   let endp = Lexing.lexeme_end_p lexbuf in
