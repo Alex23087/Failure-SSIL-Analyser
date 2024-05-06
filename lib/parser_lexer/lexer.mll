@@ -21,26 +21,25 @@
 
 (* Scanner specification *)
 
-let digit = ['0'-'9']
-let hex_digit = ['0'-'9' 'A'-'F']
+let digit_base10 = ['0'-'9']
 let one_to_nine = ['1'-'9']
+let one_to_f = ['1'-'9' 'A'-'F']
+let alpha = ['a'-'z' 'A'-'Z']
 
-let base10int = ('-'? one_to_nine digit*) | '0'
-let base16int = "0x" hex_digit hex_digit
+let num_base10 = (one_to_nine digit_base10*) | '0'
 
-let int = base10int | base16int
+let int = num_base10
 
 let whitespace = [' ''\t']+
 let newline = '\r' | '\n' | "\r\n"
 
-
-let id = ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '_' '0'-'9']*
+let id = ('_' | alpha)('_' | alpha | digit_base10)*
 
 rule next_token = parse
 | whitespace                            { next_token lexbuf }
 | newline                               { Lexing.new_line lexbuf; next_token lexbuf }
 
-| int                                   { Parser.INT (int_of_string i) }
+| int as i                              { Parser.INT (int_of_string i) }
 | "True"                                { Parser.TRUE }
 | "False"                               { Parser.FALSE }
 
@@ -50,7 +49,7 @@ rule next_token = parse
                                             let keyword_token = Hashtbl.find keyword_table i in keyword_token
                                           with Not_found -> Parser.IDENTIFIER i
                                         }
-
+| "<<"                                  { consume_formula lexbuf }
 | '+'                                   { Parser.PLUS }
 | '-'                                   { Parser.MINUS }
 | '*'                                   { Parser.STAR }
@@ -78,7 +77,6 @@ rule next_token = parse
 
 | "//"                                  { consume_single_line_comment lexbuf }
 | "/*"                                  { consume_multi_line_comment lexbuf }
-| "<<"                                  { consume_formula lexbuf }
 | eof                                   { EOF }
 | _ as c
   {
@@ -119,11 +117,8 @@ and consume_single_line_comment = parse
     }
 and consume_formula = parse
   | whitespace                            { consume_formula lexbuf }
-  | int as i                  { Parser.Integer (int_of_string i) }
-  | ">>"
-    {
-      next_token lexbuf
-    }
+  | int as i                              { Parser.Integer (int_of_string i) }
+  | ">>"                                  { next_token lexbuf }
   | '+'                                   { Parser.Plus }
   | '-'                                   { Parser.Minus }
   | '*'                                   { Parser.Times }
