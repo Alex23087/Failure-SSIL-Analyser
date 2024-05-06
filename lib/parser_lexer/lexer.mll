@@ -40,7 +40,7 @@ rule next_token = parse
 | whitespace                            { next_token lexbuf }
 | newline                               { Lexing.new_line lexbuf; next_token lexbuf }
 
-| "Int(" int as i ")"                   { Parser.INT (int_of_string i) }
+| int                                   { Parser.INT (int_of_string i) }
 | "True"                                { Parser.TRUE }
 | "False"                               { Parser.FALSE }
 
@@ -119,7 +119,7 @@ and consume_single_line_comment = parse
     }
 and consume_formula = parse
   | whitespace                            { consume_formula lexbuf }
-  | "Int(" int as i ")"                   { Parser.Integer (int_of_string i) }
+  | int as i                  { Parser.Integer (int_of_string i) }
   | ">>"
     {
       next_token lexbuf
