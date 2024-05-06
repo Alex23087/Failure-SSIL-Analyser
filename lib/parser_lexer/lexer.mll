@@ -17,6 +17,8 @@
       ]
     in create_hashtable (List.length mapping) mapping
 
+    (* 1 is next_token, 0 is consume_formula *)
+    let state = ref 1
 }
 
 (* Scanner specification *)
@@ -39,45 +41,45 @@ rule next_token = parse
   | whitespace                            { next_token lexbuf }
   | newline                               { Lexing.new_line lexbuf; next_token lexbuf }
 
-  | int as i                              { (1, Parser.INT (int_of_string i)) }
-  | "True"                                { (1, Parser.TRUE) }
-  | "False"                               { (1, Parser.FALSE) }
+  | int as i                              { Parser.INT (int_of_string i) }
+  | "True"                                { Parser.TRUE }
+  | "False"                               { Parser.FALSE }
 
   | id as i                               {
                                             (* look up identifier to see if it's a keyword *)
                                             try
-                                              let keyword_token = Hashtbl.find keyword_table i in (1, keyword_token)
-                                            with Not_found -> (1, Parser.IDENTIFIER i)
+                                              let keyword_token = Hashtbl.find keyword_table i in keyword_token
+                                            with Not_found -> Parser.IDENTIFIER i
                                           }
-  | "<<"                                  { consume_formula lexbuf }
-  | '+'                                   { (1, Parser.PLUS) }
-  | '-'                                   { (1, Parser.MINUS) }
-  | '*'                                   { (1, Parser.STAR) }
-  | '/'                                   { (1, Parser.DIV) }
-  | '%'                                   { (1, Parser.MOD) }
+  | "<<"                                  { state := 0; consume_formula lexbuf }
+  | '+'                                   { Parser.PLUS }
+  | '-'                                   { Parser.MINUS }
+  | '*'                                   { Parser.STAR }
+  | '/'                                   { Parser.DIV }
+  | '%'                                   { Parser.MOD }
 
-  | '='                                   { (1, Parser.EQ) }
-  | "=="                                  { (1, Parser.EQEQ) }
-  | "!="                                  { (1, Parser.NEQ) }
-  | '<'                                   { (1, Parser.LT) }
-  | "<="                                  { (1, Parser.LE) }
-  | '>'                                   { (1, Parser.GT) }
-  | ">="                                  { (1, Parser.GE) }
-  | "&&"                                  { (1, Parser.AND) }
-  | "||"                                  { (1, Parser.OR) }
-  | '!'                                   { (1, Parser.NOT) }
+  | '='                                   { Parser.EQ }
+  | "=="                                  { Parser.EQEQ }
+  | "!="                                  { Parser.NEQ }
+  | '<'                                   { Parser.LT }
+  | "<="                                  { Parser.LE }
+  | '>'                                   { Parser.GT }
+  | ">="                                  { Parser.GE }
+  | "&&"                                  { Parser.AND }
+  | "||"                                  { Parser.OR }
+  | '!'                                   { Parser.NOT }
 
-  | '?'                                   { (1, Parser.QUESTION) }
+  | '?'                                   { Parser.QUESTION }
 
-  | '('                                   { (1, Parser.LPAREN) }
-  | ')'                                   { (1, Parser.RPAREN) }
-  | '['                                   { (1, Parser.LBRACKET) }
-  | ']'                                   { (1, Parser.RBRACKET) }
-  | ';'                                   { (1, Parser.SEMICOLON) }
+  | '('                                   { Parser.LPAREN }
+  | ')'                                   { Parser.RPAREN }
+  | '['                                   { Parser.LBRACKET }
+  | ']'                                   { Parser.RBRACKET }
+  | ';'                                   { Parser.SEMICOLON }
 
   | "//"                                  { consume_single_line_comment lexbuf }
   | "/*"                                  { consume_multi_line_comment lexbuf }
-  | eof                                   { (1, EOF) }
+  | eof                                   { EOF }
   | _ as c
     {
       let err_msg = sprintf "Unrecognized character: %c --- " c in
@@ -110,36 +112,36 @@ and consume_single_line_comment = parse
       Lexing.new_line lexbuf;
       next_token lexbuf
     }
-  | eof { (1, EOF) }
+  | eof { EOF }
   | _
     {
       consume_single_line_comment lexbuf
     }
 and consume_formula = parse
   | whitespace                            { consume_formula lexbuf }
-  | int as i                              { (0, Parser.Integer (int_of_string i)) }
-  | ">>"                                  { next_token lexbuf }
-  | '+'                                   { (0, Parser.Plus) }
-  | '-'                                   { (0, Parser.Minus) }
-  | '*'                                   { (0, Parser.Times) }
-  | '/'                                   { (0, Parser.Div) }
-  | '%'                                   { (0, Parser.Mod) }
-  | "true"                                { (0, Parser.True) }
-  | "false"                               { (0, Parser.False) }
-  | "exists"                              { (0, Parser.Exists) }
-  | "^"                                   { (0, Parser.Star) }
-  | "->"                                  { (0, Parser.Arrow) }
-  | "-/>"                                 { (0, Parser.Void) }
-  | "emp"                                 { (0, Parser.Emp) }
-  | '<'                                   { (0, Parser.LTf) }
-  | "<="                                  { (0, Parser.LEf) }
-  | '>'                                   { (0, Parser.GTf) }
-  | ">="                                  { (0, Parser.GEf) }
-  | "=="                                  { (0, Parser.EQf) }
-  | "!="                                  { (0, Parser.NEf) }
-  | "&&"                                  { (0, Parser.And) }
-  | "||"                                  { (0, Parser.Or) }
-  | id as i                               { (0, Parser.Identifier i) }
+  | int as i                              { Parser.Integer (int_of_string i) }
+  | ">>"                                  { state := 1; next_token lexbuf }
+  | '+'                                   { Parser.Plus }
+  | '-'                                   { Parser.Minus }
+  | '*'                                   { Parser.Times }
+  | '/'                                   { Parser.Div }
+  | '%'                                   { Parser.Mod }
+  | "true"                                { Parser.True }
+  | "false"                               { Parser.False }
+  | "exists"                              { Parser.Exists }
+  | "^"                                   { Parser.Star }
+  | "->"                                  { Parser.Arrow }
+  | "-/>"                                 { Parser.Void }
+  | "emp"                                 { Parser.Emp }
+  | '<'                                   { Parser.LTf }
+  | "<="                                  { Parser.LEf }
+  | '>'                                   { Parser.GTf }
+  | ">="                                  { Parser.GEf }
+  | "=="                                  { Parser.EQf }
+  | "!="                                  { Parser.NEf }
+  | "&&"                                  { Parser.And }
+  | "||"                                  { Parser.Or }
+  | id as i                               { Parser.Identifier i }
   | newline
     {
       Lexing.new_line lexbuf;
@@ -155,3 +157,11 @@ and consume_formula = parse
     {
       consume_formula lexbuf
     }
+
+{
+
+  let lex = fun lexbuf ->
+    if !state = 1
+      then next_token lexbuf
+      else consume_formula lexbuf
+}
