@@ -5,7 +5,7 @@
   in out case will be used to store position information in the source files.
 
   The following is the grammar definition for our programs:
-  - {{! AnnotationLogic.Formula}Formula} ::= True | False | Exists Identifier Formula | Formula && Formula | Formula || Formula | ArithmeticExpression BinaryComparison ArithmeticExpression | Emp | x -> y | x -/> | Formula ^ Formula
+  - {{! AnnotationLogic.Formula}Formula} ::= True | False | Exists Identifier Formula | Formula && Formula | Formula || Formula | ArithmeticExpression BinaryComparison ArithmeticExpression | Emp | x -> y | x -/> | Formula * Formula
   - {{! AnnotationLogic.BinaryComparison}BinaryComparison} ::= < | > | <= | >= | == | !=
   - {{! AnnotationLogic.ArithmeticExpression}ArithmeticExpression} ::= Int(n) | Identifier | ArithmeticExpression BinaryOperator ArithmeticExpression
   - {{! AnnotationLogic.BinaryOperator}BinaryOperator} ::= + | - | * | / | %

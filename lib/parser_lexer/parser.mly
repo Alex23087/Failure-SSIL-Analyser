@@ -41,11 +41,12 @@
 %token EOF
 
 /** formulas */
+%token LParen RParen
 %token True
 %token False
 %token Exists
 %token <string> Identifier
-%token And Or Star Emp Arrow Void
+%token And Or Emp Arrow Void
 %token LTf GTf LEf GEf EQf NEf
 %token <int> Integer
 %token Plus Minus Times Div Mod
@@ -63,9 +64,11 @@
 %left STAR
 
 /* formulas */
+%nonassoc LOW
 %left Or
 %left And
-%left Star
+%left EQf NEf
+%left LTf GTf LEf GEf
 %left Plus Minus
 %left Times Div Mod
 %nonassoc PREC
@@ -227,11 +230,13 @@ formula:
     | Emp
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.EmptyHeap) $startpos }
     | Identifier Arrow arithmetic_expression_f
-      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Allocation($1, $3)) $startpos }
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Allocation($1, $3)) $startpos } %prec LOW
     | Identifier Void
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.NonAllocated($1)) $startpos }
-    | formula Star formula
+    | formula Times formula
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.AndSeparately($1, $3)) $startpos }
+    | LParen formula RParen
+      { $2 }
     ;
 
 arithmetic_expression_f:
@@ -241,6 +246,8 @@ arithmetic_expression_f:
       { annotateFormula (Prelude.Ast.LogicFormulas.ArithmeticExpression.Variable($1)) $startpos }
     | arithmetic_expression_f BinaryOperator arithmetic_expression_f
       { annotateFormula (Prelude.Ast.LogicFormulas.ArithmeticExpression.Operation($2, $1, $3)) $startpos }
+    | LParen arithmetic_expression_f RParen
+      { $2 }
 
 %inline BinaryComparison:
   | LTf { Prelude.Ast.LogicFormulas.BinaryComparison.LessThan }

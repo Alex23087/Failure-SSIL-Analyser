@@ -129,7 +129,6 @@ and consume_formula = parse
   | "true"                                { Parser.True }
   | "false"                               { Parser.False }
   | "exists"                              { Parser.Exists }
-  | "^"                                   { Parser.Star }
   | "->"                                  { Parser.Arrow }
   | "-/>"                                 { Parser.Void }
   | "emp"                                 { Parser.Emp }
@@ -141,6 +140,8 @@ and consume_formula = parse
   | "!="                                  { Parser.NEf }
   | "&&"                                  { Parser.And }
   | "||"                                  { Parser.Or }
+  | "("                                   { Parser.LParen }
+  | ")"                                   { Parser.RParen }
   | id as i                               { Parser.Identifier i }
   | newline
     {
