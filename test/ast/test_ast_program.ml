@@ -2,7 +2,7 @@ open Lisproject.Ast
 
 (* Instantiate the AST with the annotation type *)
 module ASTHRC = HeapRegularCommands(struct
-  type t = int (* int annotations *)
+  type t = int (* int annotations *) [@@deriving show]
 end)
 
 let counter = ref 0

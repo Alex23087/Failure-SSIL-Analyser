@@ -2,7 +2,7 @@ open Lisproject.Ast
 
 (* Instantiate the AST with the annotation type *)
 module ASTLogic = AnnotationLogic(struct
-  type t = int (* int annotations *)
+  type t = int (* int annotations *) [@@deriving show]
 end)
 
 open ASTLogic

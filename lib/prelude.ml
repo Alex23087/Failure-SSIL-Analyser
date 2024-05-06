@@ -16,14 +16,15 @@ module Ast = struct
   let make_position (line: int) (column: int) = {line; column}
 
   type logic_formulas_annotation = {
-    position: position;
-  }
-  [@@deriving show]
+    position: position; [@opaque]
+  } [@@deriving show]
 
   (** Concrete implementation of the Logic Formulas, with source-position annotations*)
   module LogicFormulas = struct
     include Ast.AnnotationLogic(struct
       type t = logic_formulas_annotation
+      let show = show_logic_formulas_annotation
+      let pp = pp_logic_formulas_annotation
     end)
 
     let make_annotation line column : AnnotatedNode.annotation =
@@ -32,7 +33,7 @@ module Ast = struct
     (** Utility functions to build Logic Formulas' annotated nodes*)
     let annotate formula annotation =
       AnnotatedNode.make formula annotation
-      
+
     let annotate_parser formula line column =
       AnnotatedNode.make formula (make_annotation line column)
 
@@ -43,7 +44,7 @@ module Ast = struct
   end
 
   type regular_formulas_annotation = {
-    position: position;
+    position: position; [@opaque]
     logic_formula: LogicFormulas.t option
   }
   [@@deriving show]
@@ -54,6 +55,8 @@ module Ast = struct
   module Commands = struct
     include Ast.HeapRegularCommands(struct
       type t = regular_formulas_annotation
+      let show = show_regular_formulas_annotation
+      let pp = pp_regular_formulas_annotation
     end)
 
     let make_annotation line column formula : AnnotatedNode.annotation =
