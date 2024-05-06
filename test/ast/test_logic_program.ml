@@ -3,6 +3,9 @@ open AnnotationLogic
 
 let counter = ref 0
 
+type t = int AnnotationLogic.t
+[@@deriving show]
+
 (* Annotate a node with a unique integer *)
 let annotate node =
   let out = AnnotatedNode.make node !counter in
@@ -68,6 +71,5 @@ let () =
         ))
       ))
     )) in
-  ()
   (* Print it with show_rcmd *)
-  (* print_endline (show root) *)
+  print_endline (show root)

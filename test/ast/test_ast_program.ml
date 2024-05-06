@@ -3,6 +3,9 @@ open HeapRegularCommands
 
 let counter = ref 0
 
+type t = int HeapRegularCommands.t
+[@@deriving show]
+
 (* Annotate a node with a unique integer *)
 let annotate node =
   let out = AnnotatedNode.make node !counter in
@@ -49,7 +52,7 @@ let () =
     | _ -> print_endline "Not Star";
 
   (* Print it with show_rcmd *)
-  (* print_endline (HeapRegularCommand.show root); *)
+  print_endline (show root);
 
   let root = annotate (HeapRegularCommand.Sequence(
     (annotate (HeapRegularCommand.Command(annotate (HeapAtomicCommand.Allocation("x"))))),
@@ -59,5 +62,5 @@ let () =
     ))
     )
   )) in
-  (* print_endline (HeapRegularCommand.show root); *)
+  print_endline (show root);
   print_endline (modifiedVariables root |> IdentifierSet.elements |> String.concat ", ");

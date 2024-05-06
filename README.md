@@ -22,3 +22,11 @@
 - `make doc` To only build the documentation
 - `make docopen` To build and then open the documentation in browser
 - The built documentation can be found at `_build/default/_doc/_html/index.html`
+
+### Troubleshooting
+-   Dune not found after successful installation
+    ```
+    dune build
+    make: dune: No such file or directory
+    ```
+    solution: `eval $(opam env)`

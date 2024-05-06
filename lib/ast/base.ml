@@ -4,7 +4,10 @@
 type identifier = string [@@deriving show]
 
 module AnnotatedNode = struct
-  type ('a, 'b) t = {node: 'a; annotation: 'b [@opaque]} [@@deriving show]
+  type ('a, 'b) t = {
+    node: 'a;
+    annotation: 'b
+  } [@@deriving show]
   let make (node: 'a) (annotation: 'b) = {node; annotation}
   let unpack (annotated_node: ('a, 'b) t) = (annotated_node.node, annotated_node.annotation)
   let annotation (annotated_node: ('a, 'b) t) = annotated_node.annotation
