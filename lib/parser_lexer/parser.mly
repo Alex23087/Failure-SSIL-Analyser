@@ -107,6 +107,8 @@ toplevel_command:
     { $1 }
   | toplevel_command_nof
     { $1 }
+  | LPAREN toplevel_command RPAREN
+    { $2 }
   ;
 
 toplevel_command_nof:
@@ -116,7 +118,7 @@ toplevel_command_nof:
     { $1 }
   | star_nof
     { $1 }
-;
+  ;
 
 atomic_command:
   | SKIP
