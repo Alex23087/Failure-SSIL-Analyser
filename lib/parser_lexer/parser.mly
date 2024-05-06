@@ -124,7 +124,7 @@ atomic_command:
     { annotateEmptyCommand (HeapAtomicCommand.NonDet(id)) $startpos }
   | b = boolean_expression QUESTION
     { annotateEmptyCommand (HeapAtomicCommand.Guard(b)) $startpos }
-  | id = IDENTIFIER EQ ALLOC
+  | id = IDENTIFIER EQ ALLOC LPAREN RPAREN
     { annotateEmptyCommand (HeapAtomicCommand.Allocation(id)) $startpos }
   | FREE LPAREN id = IDENTIFIER RPAREN
     { annotateEmptyCommand (HeapAtomicCommand.Free(id)) $startpos }
