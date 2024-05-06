@@ -17,7 +17,7 @@
       ]
     in create_hashtable (List.length mapping) mapping
 
-    (* 1 is next_token, 0 is consume_formula *)
+    (* current active rule: 1 is next_token, 0 is consume_formula *)
     let state = ref 1
 }
 
