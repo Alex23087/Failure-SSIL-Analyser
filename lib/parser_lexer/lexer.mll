@@ -160,6 +160,7 @@ and consume_formula = parse
 
 {
 
+  (* it is the lexer used by the parser *)
   let lex = fun lexbuf ->
     if !state = 1
       then next_token lexbuf
