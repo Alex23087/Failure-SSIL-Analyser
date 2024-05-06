@@ -10,8 +10,8 @@ let handle_error source lexeme_pos msg =
       (lexeme_pos.Location.end_column - lexeme_pos.Location.start_column + 1)
       '^'
   in
-  Printf.eprintf "\n*** Error at line %d.\n%s\n%s%s\n*** %s\n\n"
-    lexeme_pos.Location.line line prefix middle msg
+  Printf.eprintf "\n*** Error at line %d - column (start, end): (%d,%d).\n%s\n%s%s\n*** %s\n\n"
+    lexeme_pos.Location.line lexeme_pos.Location.start_column lexeme_pos.Location.end_column line prefix middle msg
 
 let load_file filename =
   let ic = open_in filename in
