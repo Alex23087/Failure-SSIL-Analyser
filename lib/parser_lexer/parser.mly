@@ -144,6 +144,8 @@ arithmetic_expression:
     { annotateEmptyCommand (ArithmeticExpression.Variable(id)) $startpos }
   | a1 = arithmetic_expression o = arithmetic_operator a2 = arithmetic_expression
     { annotateEmptyCommand (ArithmeticExpression.BinaryOperation(o, a1, a2)) $startpos }
+  | LPAREN a = arithmetic_expression RPAREN
+    { a }
 ;
 
 %inline arithmetic_operator:
@@ -172,6 +174,8 @@ boolean_expression:
     { annotateEmptyCommand (BooleanExpression.Or(b1, b2)) $startpos }
   | a1 = arithmetic_expression c = boolean_comparison_op a2 = arithmetic_expression
     { annotateEmptyCommand (BooleanExpression.Comparison(c, a1, a2)) $startpos }
+  | LPAREN b = boolean_expression RPAREN
+    { b }
 ;
 
 %inline boolean_comparison_op:
