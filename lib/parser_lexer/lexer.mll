@@ -50,7 +50,6 @@ rule next_token = parse
                                           with Not_found -> Parser.IDENTIFIER i
                                         }
 | "<<"                                  { consume_formula lexbuf }
-| ">>"                                  { next_token lexbuf }
 | '+'                                   { Parser.PLUS }
 | '-'                                   { Parser.MINUS }
 | '*'                                   { Parser.STAR }
