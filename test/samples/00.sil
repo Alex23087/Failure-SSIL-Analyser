@@ -1,1 +1,4 @@
-<< true || false >>
+x = alloc();
+[x] = 1 + 21
+<< true || false >>;
+free(x);
