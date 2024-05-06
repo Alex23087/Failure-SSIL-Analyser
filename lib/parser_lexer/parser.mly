@@ -53,7 +53,7 @@
 /* precedences */
 
 /* commands */
-%nonassoc SEMICOLON
+%left SEMICOLON
 %nonassoc EQ
 %left OR
 %left AND

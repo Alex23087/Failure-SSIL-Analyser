@@ -4,4 +4,4 @@ let lex =
       then Lexer.next_token lexbuf
       else Lexer.consume_formula lexbuf in
       state := next_state;
-       next_buf
+      next_buf
