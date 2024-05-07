@@ -97,9 +97,6 @@ module CFG = struct
     aux h initial_node;
     Cfg(h)
 
-  let clone (cfg : 'a t) = match cfg with
-    | Cfg(ht) -> Cfg(Hashtbl.copy ht)
-
   let root (cfg : 'a t) =
     raise (Failure "not implemented")
 
@@ -122,15 +119,16 @@ module CFG = struct
   (** returns the expression binded with id in cfg, or raises Not_found if id no exists in cfg *)
   let get_exp (cfg : 'a t) (id : int) = (get cfg id).exp
 
-  (** updates the expression binded with id in cfg, or raises Not_found if id no exists in cfg *)
-  let update (cfg : 'a t) (id : int) (expr: 'a) = 
-    let item = get cfg id in
-    match cfg with
-    | Cfg(ht) -> Hashtbl.replace ht id (make_item expr item.pred item.succ)
-
+  (** updates the expression bound with id in cfg, or raises Not_found if id no exists in cfg *)
   let set_expr (cfg : 'a t) (id : int) (expr: 'a) =
-    let cfg = clone cfg in
-    update cfg id expr;
+    let cfg = 
+      match cfg with
+      | Cfg(ht) -> Cfg(Hashtbl.copy ht)
+    in
+    let item = get cfg id in
+    let _ =
+      match cfg with
+      | Cfg(ht) -> Hashtbl.replace ht id (make_item expr item.pred item.succ)
+    in
     cfg
-
 end
