@@ -1,4 +1,4 @@
-open Atomic
+open AtomicBase
 open Normalization
 open Analysis_Utils
 open DataStructures.Parser.LogicFormulas
