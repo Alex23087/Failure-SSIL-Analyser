@@ -1,5 +1,5 @@
 open ExpressionSubstitution
-open NormalForm
+open Normalization
 open DataStructures.Parser.LogicFormulas
 
 open Analysis_TestCommon

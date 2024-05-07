@@ -1,5 +1,5 @@
 open Atomic
-open NormalForm
+open Normalization
 open Analysis_Utils
 open DataStructures.Parser.LogicFormulas
 module Commands = Ast.HeapRegularCommands

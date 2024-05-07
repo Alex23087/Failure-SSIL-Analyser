@@ -1,4 +1,4 @@
-open NormalForm
+open NormalizationBase
 open DataStructures.Parser.LogicFormulas
 
 open Analysis_TestCommon
