@@ -128,4 +128,9 @@ module CFG = struct
     match cfg with
     | Cfg(ht) -> Hashtbl.replace ht id (make_item expr item.pred item.succ)
 
+  let set_expr (cfg : 'a t) (id : int) (expr: 'a) =
+    let cfg = clone cfg in
+    update cfg id expr;
+    cfg
+
 end
