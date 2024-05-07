@@ -102,7 +102,7 @@ let get_variable_from_expression (expr: 'a ArithmeticExpression.t) =
 let command_annotation_to_logic_annotation (annotation: Commands.annotation) : annotation =
   {position=annotation.position}
 
-let rec command_expression_to_logic_expression (expr: 'a Commands.ArithmeticExpression.t) =
+let rec command_expression_to_logic_expression (expr: 'a Commands.ArithmeticExpression.t) (annotation_conversion) =
   let command_boperator_to_logic_boperator (op: Commands.ArithmeticOperation.t) =
     match op with
     | Plus -> BinaryOperator.Plus
@@ -112,19 +112,19 @@ let rec command_expression_to_logic_expression (expr: 'a Commands.ArithmeticExpr
     | Modulo -> BinaryOperator.Modulo
   in
 
-  let annotation = command_annotation_to_logic_annotation expr.annotation in
+  let annotation = annotation_conversion expr.annotation in
   match expr.node with
   | Literal(value) ->
     annotate (ArithmeticExpression.Literal(value)) annotation
   | Variable(id) ->
     annotate (ArithmeticExpression.Variable(id)) annotation
   | BinaryOperation(op, lexpr, rexpr) ->
-    let lexpr = command_expression_to_logic_expression lexpr in
-    let rexpr = command_expression_to_logic_expression rexpr in
+    let lexpr = command_expression_to_logic_expression lexpr annotation_conversion in
+    let rexpr = command_expression_to_logic_expression rexpr annotation_conversion in
     let op = command_boperator_to_logic_boperator op in
     annotate (ArithmeticExpression.Operation(op, lexpr, rexpr)) annotation
 
-let rec command_bexpression_to_logic_formula (expr: 'a Commands.BooleanExpression.t) =
+let rec command_bexpression_to_logic_formula (expr: 'a Commands.BooleanExpression.t) (annotation_conversion) =
   let command_bcomparison_to_logic_bcomparison (op: Commands.BooleanComparison.t) =
     match op with
     | Equal -> BinaryComparison.Equals
@@ -147,7 +147,7 @@ let rec command_bexpression_to_logic_formula (expr: 'a Commands.BooleanExpressio
     annotate (Commands.BooleanExpression.Not(expr)) expr.annotation
   in
 
-  let annotation = command_annotation_to_logic_annotation expr.annotation in
+  let annotation = annotation_conversion expr.annotation in
   match expr.node with
   | True ->
     annotate (Formula.True) annotation
@@ -161,32 +161,32 @@ let rec command_bexpression_to_logic_formula (expr: 'a Commands.BooleanExpressio
     | False ->
       annotate (Formula.True) annotation
     | Not(_) ->
-      command_bexpression_to_logic_formula expr
+      command_bexpression_to_logic_formula expr annotation_conversion
     | And(lexpr, rexpr) ->
-      let lexpr = command_bexpression_to_logic_formula (negated_command_bexpression lexpr) in
-      let rexpr = command_bexpression_to_logic_formula (negated_command_bexpression rexpr) in
+      let lexpr = command_bexpression_to_logic_formula (negated_command_bexpression lexpr) annotation_conversion in
+      let rexpr = command_bexpression_to_logic_formula (negated_command_bexpression rexpr) annotation_conversion in
       annotate (Formula.Or(lexpr, rexpr)) annotation
     | Or(lexpr, rexpr) ->
-      let lexpr = command_bexpression_to_logic_formula (negated_command_bexpression lexpr) in
-      let rexpr = command_bexpression_to_logic_formula (negated_command_bexpression rexpr) in
+      let lexpr = command_bexpression_to_logic_formula (negated_command_bexpression lexpr) annotation_conversion in
+      let rexpr = command_bexpression_to_logic_formula (negated_command_bexpression rexpr) annotation_conversion in
       annotate (Formula.And(lexpr, rexpr)) annotation
     | Comparison(op, lexpr, rexpr) ->
-      let lexpr = command_expression_to_logic_expression lexpr in
-      let rexpr = command_expression_to_logic_expression rexpr in
+      let lexpr = command_expression_to_logic_expression lexpr annotation_conversion in
+      let rexpr = command_expression_to_logic_expression rexpr annotation_conversion in
       let op = command_bcomparison_to_negated_logic_bcomparison op in
       annotate (Formula.Comparison(op, lexpr, rexpr)) annotation
   )
   | And(lexpr, rexpr) ->
-    let lexpr = command_bexpression_to_logic_formula lexpr in
-    let rexpr = command_bexpression_to_logic_formula rexpr in
+    let lexpr = command_bexpression_to_logic_formula lexpr annotation_conversion in
+    let rexpr = command_bexpression_to_logic_formula rexpr annotation_conversion in
     annotate (Formula.And(lexpr, rexpr)) annotation
   | Or(lexpr, rexpr) ->
-    let lexpr = command_bexpression_to_logic_formula lexpr in
-    let rexpr = command_bexpression_to_logic_formula rexpr in
+    let lexpr = command_bexpression_to_logic_formula lexpr annotation_conversion in
+    let rexpr = command_bexpression_to_logic_formula rexpr annotation_conversion in
     annotate (Formula.Or(lexpr, rexpr)) annotation
   | Comparison(op, lexpr, rexpr) ->
-    let lexpr = command_expression_to_logic_expression lexpr in
-    let rexpr = command_expression_to_logic_expression rexpr in
+    let lexpr = command_expression_to_logic_expression lexpr annotation_conversion in
+    let rexpr = command_expression_to_logic_expression rexpr annotation_conversion in
     let op = command_bcomparison_to_logic_bcomparison op in
     annotate (Formula.Comparison(op, lexpr, rexpr)) annotation
     

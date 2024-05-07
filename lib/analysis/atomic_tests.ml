@@ -8,6 +8,8 @@ open NormalForm
 
 open TestUtils
 
+let annotation_conversion = command_annotation_to_logic_annotation
+
 let%test "weakest precondition on skip" =
   let command = annot_cmd Commands.HeapAtomicCommand.Skip in
   let post_condition =
@@ -17,11 +19,11 @@ let%test "weakest precondition on skip" =
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition in
+  let pre_condition = weakest_precondition command post_condition annotation_conversion in
   let expected_variables = "x" :: [] in
   let expected_disjoints = annot (Formula.NonAllocated("x")) :: [] in
   test_expected_free_variables pre_condition expected_variables &&
-  test_expected_disjoints  pre_condition expected_disjoints 
+  test_expected_disjoints pre_condition expected_disjoints 
 
 let%test "weakest precondition on assignment" =
   let command =
@@ -41,7 +43,7 @@ let%test "weakest precondition on assignment" =
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition in
+  let pre_condition = weakest_precondition command post_condition annotation_conversion in
   let expected_disjoints =
     annot (Formula.And(
       annot (Formula.NonAllocated("0$x")),
@@ -79,7 +81,7 @@ let%test "weakest precondition on guard" =
     annot (Formula.NonAllocated("y"))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition in
+  let pre_condition = weakest_precondition command post_condition annotation_conversion in
   let expected_disjoints =
     annot (Formula.And(
       annot (Formula.Comparison(
@@ -94,7 +96,7 @@ let%test "weakest precondition on guard" =
       annot (Formula.NonAllocated("y"))
     )) :: []
   in
-  test_expected_disjoints  pre_condition expected_disjoints 
+  test_expected_disjoints pre_condition expected_disjoints 
 
 let%test "weakest precondition on non deterministic assignment" =
   let command =
@@ -108,7 +110,7 @@ let%test "weakest precondition on non deterministic assignment" =
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition in
+  let pre_condition = weakest_precondition command post_condition annotation_conversion in
   let expected_variables = "x" :: [] in
   let expected_disjoints =
     annot (Formula.Comparison(
@@ -118,4 +120,4 @@ let%test "weakest precondition on non deterministic assignment" =
     )) :: []
   in
   test_expected_free_variables pre_condition expected_variables &&
-  test_expected_disjoints  pre_condition expected_disjoints 
+  test_expected_disjoints pre_condition expected_disjoints 
