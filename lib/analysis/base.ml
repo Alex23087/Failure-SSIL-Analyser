@@ -51,7 +51,16 @@ let block_analysis_step (block: Cfg.block) (last_statement: int) : Cfg.block =
   let precondition = Some(Atomic.weakest_precondition statement postcondition annotation_conversion) in
   Cfg.update_formula_at block (last_statement - 1) precondition
 
-let analysis_step (state: analysis_state) (* : analysis_state *) =
+let analysis_step (state: analysis_state) : analysis_state list =
+  let block_to_starting_state (cfg: Cfg.t) (idx: int) (block: Cfg.block) =
+    let cfg = Cfg.set_exp cfg idx block in
+    {
+      cfg = cfg;
+      last_block = idx;
+      last_statement = List.length block.statements
+    }
+  in
+
   let cfg = state.cfg in
   let current_block = Cfg.get_exp cfg state.last_block in
   if state.last_statement = 0 then
@@ -59,10 +68,11 @@ let analysis_step (state: analysis_state) (* : analysis_state *) =
       let block = Cfg.get_exp cfg idx in
       if visit_limit block then
         let block = Cfg.update_formula_at_last block current_block.precondition in
-        Some(block)
+        Some(block_to_starting_state cfg idx block)
       else
         None
     in
     List.filter_map map_fun (Cfg.pred_of cfg state.last_block)
   else
-    [ block_analysis_step current_block state.last_statement ]
+    let block = block_analysis_step current_block state.last_statement in
+    [ block_to_starting_state cfg state.last_block block ]
