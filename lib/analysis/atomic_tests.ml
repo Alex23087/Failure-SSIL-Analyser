@@ -1,10 +1,8 @@
 open Atomic
 open NormalForm
-open ExpressionSubstitution
-open Utils
-open Prelude.Ast
-open LogicFormulas
-open NormalForm
+open Analysis_Utils
+open DataStructures.Parser.LogicFormulas
+module Commands = Ast.HeapRegularCommands
 
 open TestUtils
 

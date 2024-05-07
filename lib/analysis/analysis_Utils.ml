@@ -1,4 +1,5 @@
-open Prelude.Ast
+open DataStructures
+open Parser
 open LogicFormulas
 
 let update_formula = AnnotatedNode.update_node

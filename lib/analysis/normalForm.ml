@@ -1,6 +1,7 @@
-open Prelude.Ast
-open LogicFormulas
-open Utils
+open DataStructures
+open DataStructures.Parser.LogicFormulas
+open DataStructures.Analysis
+open Analysis_Utils
 open NormalFormUtils
 
 let normal_form_free_variables (formula: NormalForm.t) =
@@ -87,7 +88,7 @@ let existentialization_of_identifier (exist_id: identifier) (subformula: NormalF
     | Some(_) -> NormalForm.make (IdentifierSet.add exist_id variables) disjoints annotation phantom_id
     | None -> NormalForm.make variables disjoints annotation phantom_id
 
-let rec existential_disjuntive_normal_form (formula: LogicFormulas.t) (last_phantom_id: int) =
+let rec existential_disjuntive_normal_form (formula: Parser.LogicFormulas.t) (last_phantom_id: int) =
   match formula.node with
   | True | False | EmptyHeap | NonAllocated(_)
   | Comparison(_, _, _) | Allocation(_, _) ->

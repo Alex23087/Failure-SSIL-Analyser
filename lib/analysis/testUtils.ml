@@ -1,5 +1,7 @@
-open Prelude.Ast
-open Utils
+open DataStructures
+open DataStructures.Analysis
+open DataStructures.Parser
+open Analysis_Utils
 
 let annot_cmd command =
   let annotation = Commands.make_annotation 0 0 None in

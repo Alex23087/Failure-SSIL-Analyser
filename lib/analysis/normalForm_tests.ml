@@ -1,7 +1,5 @@
 open NormalForm
-open Prelude.Ast
-open LogicFormulas
-open NormalForm
+open DataStructures.Parser.LogicFormulas
 
 open TestUtils
 

@@ -1,7 +1,7 @@
 open ExpressionSubstitution
 open NormalForm
-open Prelude.Ast
-open LogicFormulas
+open DataStructures.Parser
+open DataStructures.Parser.LogicFormulas
 
 open TestUtils
 

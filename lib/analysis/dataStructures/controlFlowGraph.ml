@@ -1,9 +1,9 @@
 (** This module contains the concrete implementation of the Control Flow Graph data structures.
 
 Important definitions:
-- {{! cfg_block}block} - CFG block record to represent sequences of atomic commands in source.
-- {{! cfg}cfg} - Control Flow Graph, instanced on the blocks' record.
-- {{! cfg_item}item} - Control Flow Graph's node, which represent a block of commands, with their predecessor and successor blocks.
+- {{! Cfg.cfg_block}block} - CFG block record to represent sequences of atomic commands in source.
+- {{! Cfg.cfg}cfg} - Control Flow Graph, instanced on the blocks' record.
+- {{! Cfg.cfg_item}item} - Control Flow Graph's node, which represent a block of commands, with their predecessor and successor blocks.
 *)
 
 open Analysis_DataStructures_Base
@@ -42,61 +42,63 @@ module Commands = struct
     AnnotatedNode.update_annotation command annotation
 end
 
-(** Control Flow Graph nodes' content. *)
-type block = {
-  visit_count: int;
-  precondition: NormalForm.t option;
-  statements: Commands.t list;
-}
-
-include Cfg.CFG
-
-(** Control Flow Graph. *)
-type t = block Cfg.CFG.t
-
-(** Control Flow Graphs' node item. *)
-type item = block Cfg.CFG.item
-
-let update_precondition (block: block) (formula: NormalForm.t option) = 
-  {
-    visit_count = block.visit_count;
-    precondition = formula;
-    statements = block.statements
+module Cfg = struct
+  (** Control Flow Graph nodes' content. *)
+  type block = {
+    visit_count: int;
+    precondition: NormalForm.t option;
+    statements: Commands.t list;
   }
 
-let update_statements (block: block) (statements: Commands.t list) =
-  {
-    visit_count = block.visit_count;
-    precondition = block.precondition;
-    statements = statements
-  }
+  include Cfg.CFG
 
-let increase_visit_count (block: block) = 
-  {
-    visit_count = block.visit_count + 1;
-    precondition = block.precondition;
-    statements = block.statements
-  }
+  (** Control Flow Graph. *)
+  type t = block Cfg.CFG.t
 
-let update_formula_at (block: block) (update_idx: int) (formula: NormalForm.t option) =
-  if update_idx = 0 then
-    update_precondition block formula
-  else (
-    let map_fun idx (statement: Commands.t) = 
-      if (idx + 1) = update_idx then
-        Commands.update_postcondition statement formula
-      else
-        statement
-    in
-    let statements = List.mapi map_fun block.statements in
-    update_statements block statements
-  )
+  (** Control Flow Graphs' node item. *)
+  type item = block Cfg.CFG.item
 
-let update_formula_at_last (block: block) (formula: NormalForm.t option) =
-  match List.rev block.statements with
-  | [] ->
-    update_precondition block formula
-  | statement::tail ->
-    let statement = Commands.update_postcondition statement formula in
-    let statements = List.rev (statement :: tail) in
-    update_statements block statements
+  let update_precondition (block: block) (formula: NormalForm.t option) = 
+    {
+      visit_count = block.visit_count;
+      precondition = formula;
+      statements = block.statements
+    }
+
+  let update_statements (block: block) (statements: Commands.t list) =
+    {
+      visit_count = block.visit_count;
+      precondition = block.precondition;
+      statements = statements
+    }
+
+  let increase_visit_count (block: block) = 
+    {
+      visit_count = block.visit_count + 1;
+      precondition = block.precondition;
+      statements = block.statements
+    }
+
+  let update_formula_at (block: block) (update_idx: int) (formula: NormalForm.t option) =
+    if update_idx = 0 then
+      update_precondition block formula
+    else (
+      let map_fun idx (statement: Commands.t) = 
+        if (idx + 1) = update_idx then
+          Commands.update_postcondition statement formula
+        else
+          statement
+      in
+      let statements = List.mapi map_fun block.statements in
+      update_statements block statements
+    )
+
+  let update_formula_at_last (block: block) (formula: NormalForm.t option) =
+    match List.rev block.statements with
+    | [] ->
+      update_precondition block formula
+    | statement::tail ->
+      let statement = Commands.update_postcondition statement formula in
+      let statements = List.rev (statement :: tail) in
+      update_statements block statements
+end

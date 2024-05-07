@@ -1,14 +1,14 @@
 open NormalForm
 open ExpressionSubstitution
-open Prelude.Ast
-open NormalForm
-open Utils
+open Ast.HeapRegularCommands
+open DataStructures.Analysis
+open Analysis_Utils
 
-let command_bexpression_to_normalized_formula (expr: 'a Commands.BooleanExpression.t) (last_phantom_id: int) (annotation_conversion) =
+let command_bexpression_to_normalized_formula (expr: 'a BooleanExpression.t) (last_phantom_id: int) (annotation_conversion) =
   let formula = command_bexpression_to_logic_formula expr annotation_conversion in
   existential_disjuntive_normal_form formula last_phantom_id
 
-let weakest_precondition (command: 'a Commands.HeapAtomicCommand.t) (post_condition: NormalForm.t) (annotation_conversion) =
+let weakest_precondition (command: 'a HeapAtomicCommand.t) (post_condition: NormalForm.t) (annotation_conversion) =
   let annotation = annotation_conversion command.annotation in
   match command.node with
   | Skip ->

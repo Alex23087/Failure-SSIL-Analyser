@@ -1,7 +1,8 @@
-open Prelude.Ast
-open LogicFormulas
+open DataStructures
+open DataStructures.Parser.LogicFormulas
+open DataStructures.Analysis
 open NormalForm
-open Utils
+open Analysis_Utils
 
 let substitute_expression_in_normalized_formula (formula: NormalForm.t) (changing_expr: 'a ArithmeticExpression.t) (changed_id: identifier) =
   let rec substitute_expression_in_expression (expr: 'a ArithmeticExpression.t) (changing_expr: 'a ArithmeticExpression.t) (changed_id: identifier) =

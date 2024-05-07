@@ -1,9 +1,10 @@
-open Prelude
 open NormalForm
-open AnalysisState
+open DataStructures.Analysis
+open DataStructures.Analysis.State
+open Utils
 
-let get_postcondition = Ast.AnalysisCommands.get_postcondition
-let update_postcondition = Ast.AnalysisCommands.update_postcondition
+let get_postcondition = Commands.get_postcondition
+let update_postcondition = Commands.update_postcondition
 
 let starting_states (cfg: Cfg.t) =
   let block_start_postconditions (block: Cfg.block) =
@@ -32,7 +33,7 @@ let starting_states (cfg: Cfg.t) =
 let visit_limit (block: Cfg.block) =
   block.visit_count < 10
 
-let annotation_conversion (annotation: Ast.AnalysisCommands.annotation) =
+let annotation_conversion (annotation: Commands.annotation) =
   raise (Failure "not implemented")
 
 let block_analysis_step (block: Cfg.block) (last_statement: int) : Cfg.block =

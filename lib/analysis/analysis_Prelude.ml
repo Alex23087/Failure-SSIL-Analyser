@@ -1,2 +1,1 @@
-
-module DataStructures = DataStructures
+include DataStructures

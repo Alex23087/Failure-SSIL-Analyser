@@ -5,4 +5,7 @@ module Parser = struct
   module Commands = RegularCommands
 end
 
-module Analysis = ControlFlowGraph
+module Analysis = struct
+  include ControlFlowGraph
+  module State = State
+end
