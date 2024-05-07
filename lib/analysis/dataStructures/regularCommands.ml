@@ -15,6 +15,6 @@ type annotation = {
 type t = annotation Ast.HeapRegularCommands.t
 [@@deriving show]
 
-let make_annotation line column formula : annotation =
+let make_annotation line column (formula : LogicFormulas.t option) : annotation =
   let position = make_position line column in
   {position; logic_formula = formula}

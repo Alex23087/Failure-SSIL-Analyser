@@ -1,7 +1,7 @@
 open NormalForm
 open DataStructures.Parser.LogicFormulas
 
-open TestUtils
+open Analysis_TestCommon
 
 let%test "existentialized non bound variable" =
   let formula = annot (

@@ -1,9 +1,8 @@
 open ExpressionSubstitution
 open NormalForm
-open DataStructures.Parser
 open DataStructures.Parser.LogicFormulas
 
-open TestUtils
+open Analysis_TestCommon
 
 let%test "substitute identifer only expression" =
   let formula = annot (Formula.Or(

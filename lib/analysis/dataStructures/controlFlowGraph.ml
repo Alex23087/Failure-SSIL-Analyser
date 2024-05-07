@@ -12,9 +12,10 @@ module NormalForm = struct
   type t = {
     variables: IdentifierSet.t; [@opaque]
     disjoints: LogicFormulas.t list;
-    annotation: LogicFormulas.annotation;
+    annotation: annotation;
     last_phantom_id: int;
   }
+  and annotation = LogicFormulas.annotation
   [@@deriving show]
 
   let make variables disjoints annotation phantom_id =

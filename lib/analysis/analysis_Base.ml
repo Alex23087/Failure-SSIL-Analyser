@@ -1,4 +1,3 @@
-open NormalForm
 open DataStructures.Analysis
 open DataStructures.Analysis.State
 open Utils
@@ -21,7 +20,7 @@ let starting_states (cfg: Cfg.t) =
     let start_indices, _ = List.fold_left fold_fun (start_indices, 1) block.statements in
     start_indices
   in
-  let rec starting_states (cfg: Cfg.t) (item: Cfg.item) =
+  let starting_states (cfg: Cfg.t) (item: Cfg.item) =
     let idx = Cfg.idx cfg item in
     let block = Cfg.get_exp cfg idx in
     let map_fun x = {cfg; last_block = idx; last_statement = x} in
@@ -33,10 +32,11 @@ let starting_states (cfg: Cfg.t) =
 let visit_limit (block: Cfg.block) =
   block.visit_count < 10
 
-let annotation_conversion (annotation: Commands.annotation) =
-  raise (Failure "not implemented")
 
 let block_analysis_step (block: Cfg.block) (last_statement: int) : Cfg.block =
+  let annotation_conversion (annotation: Commands.annotation) : NormalForm.annotation =
+    {position= annotation.position}
+  in
   let statement = unwrap_option (List.nth_opt block.statements last_statement) "unexpected" in
   let postcondition = unwrap_option (get_postcondition statement) "unexpected" in
   let precondition = Some(Atomic.weakest_precondition statement postcondition annotation_conversion) in

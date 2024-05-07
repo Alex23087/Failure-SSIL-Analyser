@@ -4,7 +4,7 @@ open Analysis_Utils
 open DataStructures.Parser.LogicFormulas
 module Commands = Ast.HeapRegularCommands
 
-open TestUtils
+open Analysis_TestCommon
 
 let annotation_conversion = command_annotation_to_logic_annotation
 

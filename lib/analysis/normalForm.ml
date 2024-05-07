@@ -2,7 +2,6 @@ open DataStructures
 open DataStructures.Parser.LogicFormulas
 open DataStructures.Analysis
 open Analysis_Utils
-open NormalFormUtils
 
 let normal_form_free_variables (formula: NormalForm.t) =
   let ids = List.map get_formula_identifiers formula.disjoints in
