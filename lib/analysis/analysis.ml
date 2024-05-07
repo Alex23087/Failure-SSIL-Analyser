@@ -1,2 +1,1 @@
-include NormalForm
-include ExpressionSubstitution
+module Prelude = Analysis_Prelude

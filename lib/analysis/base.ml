@@ -1,11 +1,6 @@
 open Prelude
 open NormalForm
-
-type analysis_state = {
-  cfg: Cfg.t;
-  last_block: int;
-  last_statement: int;
-}
+open AnalysisState
 
 let get_postcondition = Ast.AnalysisCommands.get_postcondition
 let update_postcondition = Ast.AnalysisCommands.update_postcondition
@@ -39,11 +34,6 @@ let visit_limit (block: Cfg.block) =
 
 let annotation_conversion (annotation: Ast.AnalysisCommands.annotation) =
   raise (Failure "not implemented")
-
-let unwrap_option opt message =
-  match opt with
-  | Some(x) -> x
-  | None -> raise (Failure message)
 
 let block_analysis_step (block: Cfg.block) (last_statement: int) : Cfg.block =
   let statement = unwrap_option (List.nth_opt block.statements last_statement) "unexpected" in

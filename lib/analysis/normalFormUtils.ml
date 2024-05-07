@@ -1,5 +1,5 @@
-open Prelude.Ast
 open Utils
+open Prelude.Ast
 
 let first_annotation (annot1: LogicFormulas.annotation) (annot2: LogicFormulas.annotation) =
   if annot1.position.line < annot2.position.line then
