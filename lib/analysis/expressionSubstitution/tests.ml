@@ -1,4 +1,4 @@
-open ExpressionSubstitution
+open ExpressionSubstitutionBase
 open Normalization
 open DataStructures.Parser.LogicFormulas
 
