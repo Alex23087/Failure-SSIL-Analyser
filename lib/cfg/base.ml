@@ -100,6 +100,15 @@ module CFG = struct
   let clone (cfg : 'a t) = match cfg with
     | Cfg(ht) -> Cfg(Hashtbl.copy ht)
 
+  let root (cfg : 'a t) =
+    raise (Failure "not implemented")
+
+  let idx (cfg : 'a t) (item: 'a item) =
+    raise (Failure "not implemented")
+    
+  let fold (cfg : 'a t) (fn: 'a t -> 'a item -> 'b -> 'b) (acc: 'b) =
+    raise (Failure "not implemented")
+  
   (** returns the current binding of id in cfg, or raises Not_found if no such binding exists *)
   let get (cfg : 'a t) (id : int) = match cfg with
     | Cfg(ht) -> Hashtbl.find ht id

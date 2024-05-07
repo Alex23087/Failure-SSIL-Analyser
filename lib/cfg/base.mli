@@ -18,6 +18,12 @@ module CFG : sig
   val make : 'a Node.t -> 'a t
   val clone : 'a t -> 'a t
   
+  val root : 'a t -> 'a item
+
+  val idx : 'a t -> 'a item -> int
+
+  val fold : 'a t -> ('a t -> 'a item -> 'b -> 'b) -> 'b -> 'b
+
   (** returns the current binding of id in cfg, or raises Not_found if no such binding exists *)
   val get : 'a t -> int -> 'a item
 

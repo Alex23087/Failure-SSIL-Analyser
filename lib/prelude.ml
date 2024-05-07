@@ -72,8 +72,18 @@ module Ast = struct
     }
     [@@deriving show]
 
-    type t = annotation Ast.HeapRegularCommands.t
+    type t = annotation Ast.HeapRegularCommands.HeapAtomicCommand.t
     [@@deriving show]
+
+    let get_postcondition (command: ('a, annotation) AnnotatedNode.t) =
+      command.annotation.postcondition
+
+    let update_postcondition (command: ('a, annotation) AnnotatedNode.t) postcondition =
+      let annotation = {
+        position = command.annotation.position;
+        postcondition
+      } in
+      AnnotatedNode.update_annotation command annotation
   end
 end
 
@@ -86,7 +96,7 @@ Important definitions:
 *)
 module Cfg = struct
   (** Control Flow Graph nodes' content. *)
-  type cfg_block = {
+  type block = {
     visit_count: int;
     precondition: Ast.NormalForm.t option;
     statements: Ast.AnalysisCommands.t list;
@@ -95,8 +105,53 @@ module Cfg = struct
   include Cfg.CFG
 
   (** Control Flow Graph. *)
-  type cfg = cfg_block Cfg.CFG.t
+  type t = block Cfg.CFG.t
   
   (** Control Flow Graphs' node item. *)
-  type cfg_item = cfg_block Cfg.CFG.item
+  type item = block Cfg.CFG.item
+
+  let update_precondition (block: block) (formula: Ast.NormalForm.t option) = 
+    {
+      visit_count = block.visit_count;
+      precondition = formula;
+      statements = block.statements
+    }
+
+  let update_statements (block: block) (statements: Ast.AnalysisCommands.t list) =
+    {
+      visit_count = block.visit_count;
+      precondition = block.precondition;
+      statements = statements
+    }
+
+  let increase_visit_count (block: block) = 
+    {
+      visit_count = block.visit_count + 1;
+      precondition = block.precondition;
+      statements = block.statements
+    }
+
+  let update_formula_at (block: block) (update_idx: int) (formula: Ast.NormalForm.t option) =
+    if update_idx = 0 then
+      update_precondition block formula
+    else (
+      let map_fun idx (statement: Ast.AnalysisCommands.t) = 
+        if (idx + 1) = update_idx then
+          Ast.AnalysisCommands.update_postcondition statement formula
+        else
+          statement
+      in
+      let statements = List.mapi map_fun block.statements in
+      update_statements block statements
+    )
+
+  let update_formula_at_last (block: block) (formula: Ast.NormalForm.t option) =
+    match List.rev block.statements with
+    | [] ->
+      update_precondition block formula
+    | statement::tail ->
+      let statement = Ast.AnalysisCommands.update_postcondition statement formula in
+      let statements = List.rev (statement :: tail) in
+      update_statements block statements
+    
 end
