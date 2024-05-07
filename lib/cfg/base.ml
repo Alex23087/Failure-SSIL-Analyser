@@ -120,7 +120,7 @@ module CFG = struct
   let get_exp (cfg : 'a t) (id : int) = (get cfg id).exp
 
   (** updates the expression bound with id in cfg, or raises Not_found if id no exists in cfg *)
-  let set_expr (cfg : 'a t) (id : int) (expr: 'a) =
+  let set_exp (cfg : 'a t) (id : int) (expr: 'a) =
     let cfg = 
       match cfg with
       | Cfg(ht) -> Cfg(Hashtbl.copy ht)
