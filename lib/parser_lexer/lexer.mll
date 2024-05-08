@@ -14,11 +14,11 @@
         ("skip", Parser.Skip);
         ("alloc", Parser.Alloc);
         ("free", Parser.Free);
+        ("true", Parser.True);
+        ("false", Parser.False);
+        ("exists", Parser.Exists);
       ]
     in create_hashtable (List.length mapping) mapping
-
-    (* current active rule: 1 is next_token, 0 is consume_formula *)
-    let state = ref 1
 }
 
 (* Scanner specification *)
@@ -42,16 +42,15 @@ rule next_token = parse
   | newline                               { Lexing.new_line lexbuf; next_token lexbuf }
 
   | int as i                              { Parser.Integer (int_of_string i) }
-  | "True"                                { Parser.True }
-  | "False"                               { Parser.False }
-
-  | id as i                               {
-                                            (* look up identifier to see if it's a keyword *)
-                                            try
-                                              let keyword_token = Hashtbl.find keyword_table i in keyword_token
-                                            with Not_found -> Parser.Identifier i
-                                          }
-  | "<<"                                  { state := 0; Parser.LShift }
+  | "<<"                                  { Parser.LShift }
+  | ">>"                                  { Parser.RShift }
+  | "->"                                  { Parser.Arrow }
+  | "-/>"                                 { Parser.Void }
+  | "emp"                                 { Parser.Emp }
+  | "="                                   { Parser.Equal }
+  | "!="                                  { Parser.NotEqual }
+  | "&&"                                  { Parser.And }
+  | "||"                                  { Parser.Or }
   | '+'                                   { Parser.Plus }
   | '-'                                   { Parser.Minus }
   | '*'                                   { Parser.Times }
@@ -79,6 +78,12 @@ rule next_token = parse
 
   | "//"                                  { consume_single_line_comment lexbuf }
   | "/*"                                  { consume_multi_line_comment lexbuf }
+  | id as i                               {
+                                            (* look up identifier to see if it's a keyword *)
+                                            try
+                                              let keyword_token = Hashtbl.find keyword_table i in keyword_token
+                                            with Not_found -> Parser.Identifier i
+                                          }
   | eof                                   { Eof }
   | _ as c
     {
@@ -116,53 +121,9 @@ and consume_single_line_comment = parse
     {
       consume_single_line_comment lexbuf
     }
-and consume_formula = parse
-  | whitespace                            { consume_formula lexbuf }
-  | int as i                              { Parser.Integer (int_of_string i) }
-  | ">>"                                  { state := 1; Parser.RShift }
-  | '+'                                   { Parser.Plus }
-  | '-'                                   { Parser.Minus }
-  | '*'                                   { Parser.Times }
-  | '/'                                   { Parser.Div }
-  | '%'                                   { Parser.Mod }
-  | "true"                                { Parser.True }
-  | "false"                               { Parser.False }
-  | "exists"                              { Parser.Exists }
-  | "->"                                  { Parser.Arrow }
-  | "-/>"                                 { Parser.Void }
-  | "emp"                                 { Parser.Emp }
-  | '<'                                   { Parser.LessThan }
-  | "<="                                  { Parser.LessOrEqual }
-  | '>'                                   { Parser.GreaterThan }
-  | ">="                                  { Parser.GreaterOrEqual }
-  | "=="                                  { Parser.Equal }
-  | "!="                                  { Parser.NotEqual }
-  | "&&"                                  { Parser.And }
-  | "||"                                  { Parser.Or }
-  | "("                                   { Parser.LParen }
-  | ")"                                   { Parser.RParen }
-  | id as i                               { Parser.Identifier i }
-  | newline
-    {
-      Lexing.new_line lexbuf;
-      consume_formula lexbuf
-    }
-  | eof
-    {
-      let err_msg = "Unterminated formula" in
-      let pos = Location.to_lexeme_position lexbuf in
-      raise (Lexing_error(pos, err_msg))
-    }
-  | _
-    {
-      consume_formula lexbuf
-    }
 
 {
 
   (* it is the lexer used by the parser *)
-  let lex = fun lexbuf ->
-    if !state = 1
-      then next_token lexbuf
-      else consume_formula lexbuf
+  let lex = next_token
 }
