@@ -16,8 +16,13 @@ module CFG : sig
   type 'a t [@@deriving show]
   type 'a item [@@deriving show]
   val make : 'a Node.t -> 'a t
-  val clone : 'a t -> 'a t
   
+  val root : 'a t -> 'a item
+
+  val idx : 'a t -> 'a item -> int
+
+  val fold : 'a t -> ('a t -> 'a item -> 'b -> 'b) -> 'b -> 'b
+
   (** returns the current binding of id in cfg, or raises Not_found if no such binding exists *)
   val get : 'a t -> int -> 'a item
 
@@ -30,6 +35,6 @@ module CFG : sig
   (** returns the expression binded with id in cfg, or raises Not_found if id no exists in cfg *)
   val get_exp : 'a t -> int -> 'a
 
-  (** updates the expression binded with id in cfg, or raises Not_found if id no exists in cfg *)
-  val update : 'a t -> int -> 'a -> unit
+  (** updates the expression bound with id in cfg, or raises Not_found if id no exists in cfg *)
+  val set_exp : 'a t -> int -> 'a -> 'a t
 end
