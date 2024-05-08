@@ -30,7 +30,6 @@
     let guard_body = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _body)) _body_pos in
     let guard_body_star = annotateEmptyCommand (HeapRegularCommand.Star(guard_body)) _body_pos in
     annotateCommand (HeapRegularCommand.Sequence(guard_body_star, b_neg_guard_command)) overall_pos formula
-
 %}
 
 %token EqualEqual
