@@ -94,7 +94,7 @@ atomic_command:
     { annotateEmptyCommand (HeapAtomicCommand.Skip) $startpos }
   | id = Identifier Equal a = arithmetic_expression
     { annotateEmptyCommand (HeapAtomicCommand.Assignment(id, a)) $startpos }
-  | id = Identifier NonDet
+  | id = Identifier Equal NonDet LParen RParen
     { annotateEmptyCommand (HeapAtomicCommand.NonDet(id)) $startpos }
   | b = boolean_expression Question
     { annotateEmptyCommand (HeapAtomicCommand.Guard(b)) $startpos }

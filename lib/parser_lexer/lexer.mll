@@ -17,6 +17,7 @@
         ("true", Parser.True);
         ("false", Parser.False);
         ("exists", Parser.Exists);
+        ("nondet", Parser.NonDet);
       ]
     in create_hashtable (List.length mapping) mapping
 }
