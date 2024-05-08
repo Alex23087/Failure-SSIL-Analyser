@@ -42,8 +42,8 @@ rule next_token = parse
   | newline                               { Lexing.new_line lexbuf; next_token lexbuf }
 
   | int as i                              { Parser.INT (int_of_string i) }
-  | "True"                                { Parser.TRUE }
-  | "False"                               { Parser.FALSE }
+  | "True"                                { Parser.True }
+  | "False"                               { Parser.False }
 
   | id as i                               {
                                             (* look up identifier to see if it's a keyword *)
@@ -51,7 +51,7 @@ rule next_token = parse
                                               let keyword_token = Hashtbl.find keyword_table i in keyword_token
                                             with Not_found -> Parser.IDENTIFIER i
                                           }
-  | "<<"                                  { state := 0; consume_formula lexbuf }
+  | "<<"                                  { state := 0; Parser.LShift }
   | '+'                                   { Parser.Plus }
   | '-'                                   { Parser.Minus }
   | '*'                                   { Parser.Times }
@@ -120,7 +120,7 @@ and consume_single_line_comment = parse
 and consume_formula = parse
   | whitespace                            { consume_formula lexbuf }
   | int as i                              { Parser.Integer (int_of_string i) }
-  | ">>"                                  { state := 1; next_token lexbuf }
+  | ">>"                                  { state := 1; Parser.RShift }
   | '+'                                   { Parser.Plus }
   | '-'                                   { Parser.Minus }
   | '*'                                   { Parser.Times }

@@ -9,8 +9,6 @@
 
 /* commands */
 %token EQEQ
-%token TRUE
-%token FALSE
 %token SKIP
 %token ALLOC
 %token FREE
@@ -24,6 +22,7 @@
 %token EOF
 
 /** formulas */
+%token LShift RShift
 %token LParen RParen
 %token True
 %token False
@@ -67,12 +66,12 @@
 program:
   | toplevel_command EOF
     { $1 }
-  | formula EOF
-    { annotateCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos (Some $1) }
+  | LShift formula RShift EOF
+    { annotateCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos (Some $2) }
 
 toplevel_command:
-  | atomic_command formula
-    { annotateCommand (HeapRegularCommand.Command($1)) $startpos (Some $2) }
+  | atomic_command LShift formula RShift
+    { annotateCommand (HeapRegularCommand.Command($1)) $startpos (Some $3) }
   | sequence
     { $1 }
   | nondetchoice
@@ -138,9 +137,9 @@ arithmetic_expression:
 ;
 
 boolean_expression:
-  | TRUE
+  | True
     { annotateEmptyCommand (BooleanExpression.True) $startpos }
-  | FALSE
+  | False
     { annotateEmptyCommand (BooleanExpression.False) $startpos }
   | Not b = boolean_expression
     { annotateEmptyCommand (BooleanExpression.Not(b)) $startpos }
@@ -175,8 +174,8 @@ sequence:
 ;
 
 nondetchoice:
-  | toplevel_command_noformula Plus toplevel_command_noformula formula
-    { annotateCommand (HeapRegularCommand.NondeterministicChoice($1, $3)) $startpos (Some $4)}
+  | toplevel_command_noformula Plus toplevel_command_noformula LShift formula RShift
+    { annotateCommand (HeapRegularCommand.NondeterministicChoice($1, $3)) $startpos (Some $5)}
 ;
 
 nondetchoice_noformula:
@@ -185,8 +184,8 @@ nondetchoice_noformula:
 ;
 
 star:
-  | toplevel_command_noformula Times formula
-    { annotateCommand (HeapRegularCommand.Star($1)) $startpos (Some $3) }
+  | toplevel_command_noformula Times LShift formula RShift
+    { annotateCommand (HeapRegularCommand.Star($1)) $startpos (Some $4) }
 ;
 
 star_noformula:
