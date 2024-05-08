@@ -21,6 +21,7 @@
         ("if", Parser.If);
         ("then", Parser.Then);
         ("else", Parser.Else);
+        ("while", Parser.While);
       ]
     in create_hashtable (List.length mapping) mapping
 }

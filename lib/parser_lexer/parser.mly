@@ -19,6 +19,20 @@
     match formula with
       | Some f -> annotateCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) overall_pos (Some f)
       | None -> annotateEmptyCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) overall_pos
+
+  let rewriteWhile overall_pos _guard _guard_pos _body _body_pos formula =
+    let b_guard = HeapAtomicCommand.Guard(_guard) in
+    let b_guard_atom = annotateEmptyCommand b_guard _guard_pos in
+    let b_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_guard_atom)) _guard_pos in
+    let b_neg_guard = HeapAtomicCommand.Guard(annotateEmptyCommand (BooleanExpression.Not(_guard)) _guard_pos) in
+    let b_neg_guard_atom = annotateEmptyCommand b_neg_guard _guard_pos in
+    let b_neg_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_neg_guard_atom)) _guard_pos in
+    let guard_body = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _body)) _body_pos in
+    let guard_body_star = annotateEmptyCommand (HeapRegularCommand.Star(guard_body)) _body_pos in
+      match formula with
+        | Some f -> annotateCommand (HeapRegularCommand.Sequence(guard_body_star, b_neg_guard_command)) overall_pos (Some f)
+        | None -> annotateEmptyCommand (HeapRegularCommand.Sequence(guard_body_star, b_neg_guard_command)) overall_pos
+
 %}
 
 %token EqualEqual
@@ -43,6 +57,7 @@
 %token Plus Minus Times Div Mod
 %token Dot
 %token If Then Else
+%token While
 
 /* precedences */
 
@@ -70,6 +85,7 @@
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> star_noformula
 
 %type <Prelude.Ast.LogicFormulas.Formula.t> formula
+%type <Prelude.Ast.LogicFormulas.Formula.t option> option(delimited(LShift, formula, RShift))
 %type <Prelude.Ast.LogicFormulas.ArithmeticExpression.t> arithmetic_expression_of_formula
 
 %%
@@ -92,6 +108,11 @@ toplevel_command:
   | If boolean_expression Then toplevel_command_noformula Else toplevel_command_noformula LShift formula RShift
     {
       rewriteIfThenElse $startpos $2 $startpos($2) $4 $startpos($4) $6 $startpos($6) (Some $8)
+    }
+  | While boolean_expression LBrace toplevel_command RBrace option(delimited(LShift, formula, RShift))
+    {
+      (* thanks to braces there is no need to avoid sub-commands with formulae  *)
+      rewriteWhile $startpos $2 $startpos($2) $4 $startpos($4) $6
     }
   | toplevel_command_noformula
     { $1 }
