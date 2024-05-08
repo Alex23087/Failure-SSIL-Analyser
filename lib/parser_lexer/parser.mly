@@ -6,6 +6,19 @@
   let annotateEmptyCommand command position = annotateCommand command position None
 
   let annotateFormula formula position = Prelude.Ast.LogicFormulas.annotate_parser formula position.Lexing.pos_lnum position.Lexing.pos_cnum
+
+  let rewriteIfThenElse overall_pos _guard _guard_pos _then _then_pos _else _else_pos formula =
+    let b_guard = HeapAtomicCommand.Guard(_guard) in
+    let b_guard_atom = annotateEmptyCommand b_guard _guard_pos in
+    let b_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_guard_atom)) _guard_pos in
+    let b_neg_guard = HeapAtomicCommand.Guard(annotateEmptyCommand (BooleanExpression.Not(_guard)) _guard_pos) in
+    let b_neg_guard_atom = annotateEmptyCommand b_neg_guard _guard_pos in
+    let b_neg_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_neg_guard_atom)) _guard_pos in
+    let then_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_neg_guard_command, _then)) _then_pos in
+    let else_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _else)) _else_pos in
+    match formula with
+      | Some f -> annotateCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) overall_pos (Some f)
+      | None -> annotateEmptyCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) overall_pos
 %}
 
 %token EqualEqual
@@ -76,19 +89,10 @@ toplevel_command:
     { $1 }
   | star
     { $1 }
-  | If boolean_expression Then toplevel_command Else toplevel_command
+  | If boolean_expression Then toplevel_command_noformula Else toplevel_command_noformula LShift formula RShift
     {
-      let b_guard = HeapAtomicCommand.Guard($2) in
-      let b_guard_atom = annotateEmptyCommand b_guard $startpos($2) in
-      let b_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_guard_atom)) $startpos($2) in
-      let b_neg_guard = HeapAtomicCommand.Guard(annotateEmptyCommand (BooleanExpression.Not($2)) $startpos($2)) in
-      let b_neg_guard_atom = annotateEmptyCommand b_neg_guard $startpos($2) in
-      let b_neg_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_neg_guard_atom)) $startpos($2) in
-      let then_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_neg_guard_command, $4)) $startpos($4) in
-      let else_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, $6)) $startpos($6) in
-      let non_det_choice = annotateEmptyCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) $startpos in
-      non_det_choice
-    } %prec LOW
+      rewriteIfThenElse $startpos $2 $startpos($2) $4 $startpos($4) $6 $startpos($6) (Some $8)
+    }
   | toplevel_command_noformula
     { $1 }
   | LParen toplevel_command RParen
@@ -102,6 +106,10 @@ toplevel_command_noformula:
     { $1 }
   | star_noformula
     { $1 }
+  | If boolean_expression Then toplevel_command_noformula Else toplevel_command_noformula
+    {
+      rewriteIfThenElse $startpos $2 $startpos($2) $4 $startpos($4) $6 $startpos($6) None
+    } %prec LOW
   ;
 
 atomic_command:
