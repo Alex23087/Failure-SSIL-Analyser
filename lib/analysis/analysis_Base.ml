@@ -30,8 +30,7 @@ let starting_states (cfg: Cfg.t) =
   Cfg.fold cfg (fun cfg x acc -> (starting_states cfg x) @ acc) []
 
 let visit_limit (block: Cfg.block) =
-  block.visit_count < 10
-
+  block.visit_count >= 10
 
 let block_analysis_step (block: Cfg.block) (last_statement: int) : Cfg.block =
   let annotation_conversion (annotation: Commands.annotation) : NormalForm.annotation =
@@ -42,7 +41,7 @@ let block_analysis_step (block: Cfg.block) (last_statement: int) : Cfg.block =
   let precondition = Some(Atomic.weakest_precondition statement postcondition annotation_conversion) in
   Cfg.update_formula_at block (last_statement - 1) precondition
 
-let analysis_step (state: analysis_state) : analysis_state list =
+let analysis_step (state: analysis_state) : analysis_state list * analysis_state list =
   let block_to_starting_state (cfg: Cfg.t) (idx: int) (block: Cfg.block) =
     let cfg = Cfg.set_exp cfg idx block in
     {
@@ -57,13 +56,31 @@ let analysis_step (state: analysis_state) : analysis_state list =
   if state.last_statement = 0 then
     let map_fun idx =
       let block = Cfg.get_exp cfg idx in
-      if visit_limit block then
-        let block = Cfg.update_formula_at_last block current_block.precondition in
-        Some(block_to_starting_state cfg idx block)
+      let iteration_limit_reached = visit_limit block in
+      let block = Cfg.update_formula_at_last block current_block.precondition in
+      let state = block_to_starting_state cfg idx block in
+      if iteration_limit_reached then
+        Either.Right(state)
       else
-        None
+        Either.Left(state)
     in
-    List.filter_map map_fun (Cfg.pred_of cfg state.last_block)
+
+    let next_states, end_states = List.partition_map map_fun (Cfg.pred_of cfg state.last_block) in
+    match next_states with
+    | [] -> [], state :: end_states
+    | _ -> next_states, end_states
   else
     let block = block_analysis_step current_block state.last_statement in
-    [ block_to_starting_state cfg state.last_block block ]
+    [ block_to_starting_state cfg state.last_block block ], []
+
+let analyze_program (cfg: Cfg.t) =
+  let states = starting_states cfg in
+  let rec analyze (next_states: analysis_state list) (end_states: analysis_state list) =
+    match next_states with
+    | [] ->
+      end_states
+    | hd::tl ->
+      let next_states, new_end_states = analysis_step hd in
+      analyze (next_states @ tl) (new_end_states @ end_states)
+  in
+  analyze states []
