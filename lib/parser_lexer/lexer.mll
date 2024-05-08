@@ -56,6 +56,7 @@ rule next_token = parse
   | '*'                                   { Parser.Times }
   | '/'                                   { Parser.Div }
   | '%'                                   { Parser.Mod }
+  | '.'                                   { Parser.Dot }
 
   | '='                                   { Parser.Equal }
   | "=="                                  { Parser.EqualEqual }

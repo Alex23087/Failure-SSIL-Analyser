@@ -27,6 +27,7 @@
 %token LessThan GreaterThan LessOrEqual GreaterOrEqual Equal NotEqual
 %token <int> Integer
 %token Plus Minus Times Div Mod
+%token Dot
 
 /* precedences */
 
@@ -193,8 +194,8 @@ formula:
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.True) $startpos }
     | False
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.False) $startpos }
-    | Exists Identifier formula
-      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Exists($2, $3)) $startpos } %prec PREC
+    | Exists Identifier Dot formula
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Exists($2, $4)) $startpos } %prec PREC
     | formula And formula
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.And($1, $3)) $startpos }
     | formula Or formula
