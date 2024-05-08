@@ -8,18 +8,18 @@
 %}
 
 /* commands */
-%token EQEQ
-%token SKIP
-%token ALLOC
-%token FREE
-%token LBRACKET
-%token RBRACKET
+%token EqualEqual
+%token Skip
+%token Alloc
+%token Free
+%token LBracket
+%token RBracket
 %token Semicolon
-%token QUESTION
+%token Question
 %token <int> INT
 %token <string> IDENTIFIER
-%token NONDET
-%token EOF
+%token NonDet
+%token Eof
 
 /** formulas */
 %token LShift RShift
@@ -64,9 +64,9 @@
 %%
 
 program:
-  | toplevel_command EOF
+  | toplevel_command Eof
     { $1 }
-  | LShift formula RShift EOF
+  | LShift formula RShift Eof
     { annotateCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos (Some $2) }
 
 toplevel_command:
@@ -94,21 +94,21 @@ toplevel_command_noformula:
   ;
 
 atomic_command:
-  | SKIP
+  | Skip
     { annotateEmptyCommand (HeapAtomicCommand.Skip) $startpos }
   | id = IDENTIFIER Equal a = arithmetic_expression
     { annotateEmptyCommand (HeapAtomicCommand.Assignment(id, a)) $startpos }
-  | id = IDENTIFIER NONDET
+  | id = IDENTIFIER NonDet
     { annotateEmptyCommand (HeapAtomicCommand.NonDet(id)) $startpos }
-  | b = boolean_expression QUESTION
+  | b = boolean_expression Question
     { annotateEmptyCommand (HeapAtomicCommand.Guard(b)) $startpos }
-  | id = IDENTIFIER Equal ALLOC LParen RParen
+  | id = IDENTIFIER Equal Alloc LParen RParen
     { annotateEmptyCommand (HeapAtomicCommand.Allocation(id)) $startpos }
-  | FREE LParen id = IDENTIFIER RParen
+  | Free LParen id = IDENTIFIER RParen
     { annotateEmptyCommand (HeapAtomicCommand.Free(id)) $startpos }
-  | id1 = IDENTIFIER Equal LBRACKET id2 = IDENTIFIER RBRACKET
+  | id1 = IDENTIFIER Equal LBracket id2 = IDENTIFIER RBracket
     { annotateEmptyCommand (HeapAtomicCommand.ReadHeap(id1, id2)) $startpos }
-  | LBRACKET id1 = IDENTIFIER RBRACKET Equal a = arithmetic_expression
+  | LBracket id1 = IDENTIFIER RBracket Equal a = arithmetic_expression
     { annotateEmptyCommand (HeapAtomicCommand.WriteHeap(id1, a)) $startpos }
 ;
 
@@ -154,7 +154,7 @@ boolean_expression:
 ;
 
 %inline boolean_comparison_op:
-  | EQEQ
+  | EqualEqual
     { BooleanComparison.Equal }
   | NotEqual
     { BooleanComparison.NotEqual }

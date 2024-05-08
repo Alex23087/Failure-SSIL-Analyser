@@ -11,9 +11,9 @@
 
     let keyword_table =
       let mapping = [
-        ("skip", Parser.SKIP);
-        ("alloc", Parser.ALLOC);
-        ("free", Parser.FREE);
+        ("skip", Parser.Skip);
+        ("alloc", Parser.Alloc);
+        ("free", Parser.Free);
       ]
     in create_hashtable (List.length mapping) mapping
 
@@ -59,7 +59,7 @@ rule next_token = parse
   | '%'                                   { Parser.Mod }
 
   | '='                                   { Parser.Equal }
-  | "=="                                  { Parser.EQEQ }
+  | "=="                                  { Parser.EqualEqual }
   | "!="                                  { Parser.NotEqual }
   | '<'                                   { Parser.LessThan }
   | "<="                                  { Parser.LessOrEqual }
@@ -69,17 +69,17 @@ rule next_token = parse
   | "||"                                  { Parser.Or }
   | '!'                                   { Parser.Not }
 
-  | '?'                                   { Parser.QUESTION }
+  | '?'                                   { Parser.Question }
 
   | '('                                   { Parser.LParen }
   | ')'                                   { Parser.RParen }
-  | '['                                   { Parser.LBRACKET }
-  | ']'                                   { Parser.RBRACKET }
+  | '['                                   { Parser.LBracket }
+  | ']'                                   { Parser.RBracket }
   | ';'                                   { Parser.Semicolon }
 
   | "//"                                  { consume_single_line_comment lexbuf }
   | "/*"                                  { consume_multi_line_comment lexbuf }
-  | eof                                   { EOF }
+  | eof                                   { Eof }
   | _ as c
     {
       let err_msg = sprintf "Unrecognized character: %c --- " c in
@@ -96,8 +96,7 @@ and consume_multi_line_comment = parse
       Lexing.new_line lexbuf;
       consume_multi_line_comment lexbuf
     }
-  | eof
-    {
+  | eof    {
       let err_msg = "Unterminated multiline comment" in
       let pos = Location.to_lexeme_position lexbuf in
       raise (Lexing_error(pos, err_msg))
@@ -112,7 +111,7 @@ and consume_single_line_comment = parse
       Lexing.new_line lexbuf;
       next_token lexbuf
     }
-  | eof { EOF }
+  | eof { Eof }
   | _
     {
       consume_single_line_comment lexbuf
