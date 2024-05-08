@@ -7,6 +7,7 @@
 
   let annotateFormula formula position = Prelude.Ast.LogicFormulas.annotate_parser formula position.Lexing.pos_lnum position.Lexing.pos_cnum
 
+  (* (b?; then) + (¬b?; else) *)
   let rewriteIfThenElse overall_pos _guard _guard_pos _then _then_pos _else _else_pos formula =
     let b_guard = HeapAtomicCommand.Guard(_guard) in
     let b_guard_atom = annotateEmptyCommand b_guard _guard_pos in
@@ -16,10 +17,9 @@
     let b_neg_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_neg_guard_atom)) _guard_pos in
     let then_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_neg_guard_command, _then)) _then_pos in
     let else_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _else)) _else_pos in
-    match formula with
-      | Some f -> annotateCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) overall_pos (Some f)
-      | None -> annotateEmptyCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) overall_pos
+    annotateCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) overall_pos formula
 
+  (* (b?; body)*; ¬b? *)
   let rewriteWhile overall_pos _guard _guard_pos _body _body_pos formula =
     let b_guard = HeapAtomicCommand.Guard(_guard) in
     let b_guard_atom = annotateEmptyCommand b_guard _guard_pos in
@@ -29,9 +29,7 @@
     let b_neg_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_neg_guard_atom)) _guard_pos in
     let guard_body = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _body)) _body_pos in
     let guard_body_star = annotateEmptyCommand (HeapRegularCommand.Star(guard_body)) _body_pos in
-      match formula with
-        | Some f -> annotateCommand (HeapRegularCommand.Sequence(guard_body_star, b_neg_guard_command)) overall_pos (Some f)
-        | None -> annotateEmptyCommand (HeapRegularCommand.Sequence(guard_body_star, b_neg_guard_command)) overall_pos
+    annotateCommand (HeapRegularCommand.Sequence(guard_body_star, b_neg_guard_command)) overall_pos formula
 
 %}
 
