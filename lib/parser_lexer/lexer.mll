@@ -52,22 +52,22 @@ rule next_token = parse
                                             with Not_found -> Parser.IDENTIFIER i
                                           }
   | "<<"                                  { state := 0; consume_formula lexbuf }
-  | '+'                                   { Parser.PLUS }
-  | '-'                                   { Parser.MINUS }
-  | '*'                                   { Parser.STAR }
-  | '/'                                   { Parser.DIV }
-  | '%'                                   { Parser.MOD }
+  | '+'                                   { Parser.Plus }
+  | '-'                                   { Parser.Minus }
+  | '*'                                   { Parser.Times }
+  | '/'                                   { Parser.Div }
+  | '%'                                   { Parser.Mod }
 
-  | '='                                   { Parser.EQ }
+  | '='                                   { Parser.Equal }
   | "=="                                  { Parser.EQEQ }
-  | "!="                                  { Parser.NEQ }
-  | '<'                                   { Parser.LT }
-  | "<="                                  { Parser.LE }
-  | '>'                                   { Parser.GT }
-  | ">="                                  { Parser.GE }
-  | "&&"                                  { Parser.AND }
-  | "||"                                  { Parser.OR }
-  | '!'                                   { Parser.NOT }
+  | "!="                                  { Parser.NotEqual }
+  | '<'                                   { Parser.LessThan }
+  | "<="                                  { Parser.LessOrEqual }
+  | '>'                                   { Parser.GreaterThan }
+  | ">="                                  { Parser.GreaterOrEqual }
+  | "&&"                                  { Parser.And }
+  | "||"                                  { Parser.Or }
+  | '!'                                   { Parser.Not }
 
   | '?'                                   { Parser.QUESTION }
 
@@ -75,7 +75,7 @@ rule next_token = parse
   | ')'                                   { Parser.RPAREN }
   | '['                                   { Parser.LBRACKET }
   | ']'                                   { Parser.RBRACKET }
-  | ';'                                   { Parser.SEMICOLON }
+  | ';'                                   { Parser.Semicolon }
 
   | "//"                                  { consume_single_line_comment lexbuf }
   | "/*"                                  { consume_multi_line_comment lexbuf }
@@ -132,12 +132,12 @@ and consume_formula = parse
   | "->"                                  { Parser.Arrow }
   | "-/>"                                 { Parser.Void }
   | "emp"                                 { Parser.Emp }
-  | '<'                                   { Parser.LTf }
-  | "<="                                  { Parser.LEf }
-  | '>'                                   { Parser.GTf }
-  | ">="                                  { Parser.GEf }
-  | "=="                                  { Parser.EQf }
-  | "!="                                  { Parser.NEf }
+  | '<'                                   { Parser.LessThan }
+  | "<="                                  { Parser.LessOrEqual }
+  | '>'                                   { Parser.GreaterThan }
+  | ">="                                  { Parser.GreaterOrEqual }
+  | "=="                                  { Parser.Equal }
+  | "!="                                  { Parser.NotEqual }
   | "&&"                                  { Parser.And }
   | "||"                                  { Parser.Or }
   | "("                                   { Parser.LParen }
