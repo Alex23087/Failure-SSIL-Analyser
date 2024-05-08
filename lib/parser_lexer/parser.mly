@@ -1,5 +1,6 @@
 %{
   open Prelude.Ast.Commands
+  open Either
 
   let annotateCommand command position formula = Prelude.Ast.Commands.annotate_parser command position.Lexing.pos_lnum position.Lexing.pos_cnum formula
   let annotateEmptyCommand command position = annotateCommand command position None
@@ -42,7 +43,7 @@
 %left Semicolon
 %nonassoc PREC
 
-%start <Prelude.Ast.Commands.HeapRegularCommand.t> program
+%start <(Prelude.Ast.Commands.HeapRegularCommand.t, Prelude.Ast.LogicFormulas.Formula.t) Either.t> program
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> toplevel_command
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> toplevel_command_noformula
 %type <Prelude.Ast.Commands.HeapAtomicCommand.t> atomic_command
@@ -61,9 +62,9 @@
 
 program:
   | toplevel_command Eof
-    { $1 }
+    { left $1 }
   | LShift formula RShift Eof
-    { annotateCommand (HeapRegularCommand.Command(annotateEmptyCommand HeapAtomicCommand.Skip $startpos)) $startpos (Some $2) }
+    { right $2 }
 
 toplevel_command:
   | atomic_command LShift formula RShift

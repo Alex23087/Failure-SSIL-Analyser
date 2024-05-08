@@ -145,9 +145,9 @@ let expected_00: HeapRegularCommand.t = {
 
 let test_00 = let lexbuf = Lexing.from_string ~with_positions:true source_00 in
               let ast = Parsing.parse Lexer.lex lexbuf in
-              let res = (ast = expected_00) in
-              if res then () else raise (Failure "test_00");;
-
-
+                match Either.find_left ast with
+                | Some command -> let res = (command = expected_00) in
+                    if res then () else raise (Failure "test_00")
+                | None -> raise (Failure "test_00 is not a command");;
 
 let () = test_00;;

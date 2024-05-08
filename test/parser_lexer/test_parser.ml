@@ -30,8 +30,11 @@ let process_source filename =
   try
     lexbuf
     |> Parsing.parse Lexer.lex
-    |> Commands.show
-    |> Printf.printf "Parsing succeded!\n\n%s\n"
+    |> fun ast -> match Either.find_left ast with
+      | Some command -> command
+        |> Commands.show
+        |> Printf.printf "Parsing succeded!\n\n%s\n"
+      | None -> Printf.eprintf "\nNo command found\n"
   with Lexer.Lexing_error (pos, msg) | Parsing.Syntax_error (pos, msg) ->
     handle_error source pos msg
 
