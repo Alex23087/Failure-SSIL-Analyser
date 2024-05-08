@@ -37,17 +37,6 @@ module Node = struct
       List.map (fun x -> length x) ls |>
       List.fold_left (+) 1
     )
-
-end
-
-(** Auxiliary module for providing Hashtbl of a pretty printing function *)
-module Hashtbl = struct
-  include Hashtbl
-
-  let pp pp_key pp_value ppf values =
-    Hashtbl.iter (fun key data ->
-      Format.fprintf ppf "@[<1>%a: %a@]@." pp_key key pp_value data) values
-
 end
 
 (** given a node and an id, adds the latter to the predecessor list of the former *)
@@ -60,8 +49,16 @@ let compute_pred (node : 'a Node.t) : unit =
       List.iter (fun x -> (add_pred x id); aux x) succ;
   in aux node
 
-(** The CFG is implemented as an Hashtable <id, (exp, predecessors, successors)> *)
 module CFG = struct
+  (* Auxiliary module for providing Hashtbl of a pretty printing function *)
+  module Hashtbl = struct
+    include Hashtbl
+
+    let pp pp_key pp_value ppf values =
+      Hashtbl.iter (fun key data ->
+        Format.fprintf ppf "@[<1>%a: %a@]@." pp_key key pp_value data) values
+
+  end
 
   type 'a item = {
     idx   : int;
@@ -70,13 +67,15 @@ module CFG = struct
     succ  : int list;
   } [@@deriving show]
 
+  (* The CFG is implemented as an Hashtable <id, (exp, predecessors, successors)> *)
   type 'a t = {
     cfg: (int, 'a item) Hashtbl.t;
     root_id: int
   }
   [@@deriving show]
 
-  let make_item idx exp pred succ = {idx = idx; exp = exp; pred = pred; succ = succ}
+  let make_item idx exp pred succ =
+    {idx = idx; exp = exp; pred = pred; succ = succ}
 
   (** starting from a node (the root), builds a CFG *)
   let make (initial_node : 'a Node.t) : 'a t = 
@@ -132,6 +131,7 @@ module CFG = struct
   let idx (_ : 'a t) (item: 'a item) =
     item.idx
 
+  (* Auxiliary module used into the fold function *)
   module IntSet = Set.Make(struct
     type t = int 
     let compare = compare
