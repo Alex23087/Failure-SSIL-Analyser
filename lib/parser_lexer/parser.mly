@@ -95,8 +95,6 @@ toplevel_command:
     }
   | toplevel_command_noformula
     { $1 }
-  | LBrace toplevel_command RBrace
-    { $2 }
   ;
 
 toplevel_command_noformula:
@@ -110,6 +108,8 @@ toplevel_command_noformula:
     {
       rewriteIfThenElse $startpos $2 $startpos($2) $4 $startpos($4) $6 $startpos($6) None
     } %prec LOW
+  | LBrace toplevel_command RBrace
+    { $2 }
   ;
 
 atomic_command:
