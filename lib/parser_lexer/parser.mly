@@ -199,7 +199,7 @@ formula:
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.And($1, $3)) $startpos }
     | formula Or formula
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Or($1, $3)) $startpos }
-    | arithmetic_expression_of_formula BinaryComparison arithmetic_expression_of_formula
+    | arithmetic_expression_of_formula binary_comparison_of_formula arithmetic_expression_of_formula
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Comparison($2, $1, $3)) $startpos }
     | Emp
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.EmptyHeap) $startpos }
@@ -218,12 +218,12 @@ arithmetic_expression_of_formula:
       { annotateFormula (Prelude.Ast.LogicFormulas.ArithmeticExpression.Literal($1)) $startpos }
     | Identifier
       { annotateFormula (Prelude.Ast.LogicFormulas.ArithmeticExpression.Variable($1)) $startpos }
-    | arithmetic_expression_of_formula BinaryOperator arithmetic_expression_of_formula
+    | arithmetic_expression_of_formula binary_operator_of_formula arithmetic_expression_of_formula
       { annotateFormula (Prelude.Ast.LogicFormulas.ArithmeticExpression.Operation($2, $1, $3)) $startpos }
     | LParen arithmetic_expression_of_formula RParen
       { $2 }
 
-%inline BinaryComparison:
+%inline binary_comparison_of_formula:
   | LessThan { Prelude.Ast.LogicFormulas.BinaryComparison.LessThan }
   | GreaterThan { Prelude.Ast.LogicFormulas.BinaryComparison.GreaterThan }
   | LessOrEqual { Prelude.Ast.LogicFormulas.BinaryComparison.LessOrEqual }
@@ -232,7 +232,7 @@ arithmetic_expression_of_formula:
   | NotEqual { Prelude.Ast.LogicFormulas.BinaryComparison.NotEquals }
   ;
 
-%inline BinaryOperator:
+%inline binary_operator_of_formula:
   | Plus  { Prelude.Ast.LogicFormulas.BinaryOperator.Plus }
   | Minus { Prelude.Ast.LogicFormulas.BinaryOperator.Minus }
   | Times { Prelude.Ast.LogicFormulas.BinaryOperator.Times }
