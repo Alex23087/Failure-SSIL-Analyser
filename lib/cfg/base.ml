@@ -64,15 +64,16 @@ let compute_pred (node : 'a Node.t) : unit =
 module CFG = struct
 
   type 'a item = {
+    idx   : int;
     exp   : 'a;
     pred  : int list;
     succ  : int list;
   } [@@deriving show]
 
-  type 'a t = Cfg of ((int, 'a item) Hashtbl.t)
+  type 'a t = Cfg of ((int, 'a item) Hashtbl.t) * int
   [@@deriving show]
 
-  let make_item exp pred succ = {exp = exp; pred = pred; succ = succ}
+  let make_item idx exp pred succ = {idx = idx; exp = exp; pred = pred; succ = succ}
 
   (** starting from a node (the root), builds a CFG *)
   let make (initial_node : 'a Node.t) : 'a t = 
@@ -81,34 +82,28 @@ module CFG = struct
     let rec aux (h : (int, 'a item) Hashtbl.t) (node : 'a Node.t) : unit = 
       match node.succ with
       | [] -> (* the node has not successors, insert it *)
-        Hashtbl.add h (node.id) (make_item (node.exp) (node.pred) [])
+        Hashtbl.add h (node.id) (make_item (node.id) (node.exp) (node.pred) [])
 
       | x::xs ->  (* insert node' successors into the HT *)
         let id_succ = List.map (fun (x : 'a Node.t) -> x.id) (x.succ) in
-        Hashtbl.add h (x.id) (make_item (x.exp) (x.pred) id_succ);
+        Hashtbl.add h (x.id) (make_item (x.id) (x.exp) (x.pred) id_succ);
         List.iter (aux h) (x.succ);  
         List.iter (aux h) xs;
 
         (* insert node itself *)
         let id_node_succ = List.map (fun (x : 'a Node.t) -> x.id) (node.succ) in
-        Hashtbl.add h (node.id) (make_item (node.exp) (node.pred) id_node_succ)
+        Hashtbl.add h (node.id) (make_item (node.id) (node.exp) (node.pred) id_node_succ)
     in
     compute_pred initial_node;
     aux h initial_node;
-    Cfg(h)
+    Cfg(h, initial_node.id)
 
-  let root (cfg : 'a t) =
-    raise (Failure "not implemented")
-
-  let idx (cfg : 'a t) (item: 'a item) =
-    raise (Failure "not implemented")
-    
-  let fold (cfg : 'a t) (fn: 'a t -> 'a item -> 'b -> 'b) (acc: 'b) =
-    raise (Failure "not implemented")
+  let idx (_ : 'a t) (item: 'a item) =
+    item.idx
   
   (** returns the current binding of id in cfg, or raises Not_found if no such binding exists *)
   let get (cfg : 'a t) (id : int) = match cfg with
-    | Cfg(ht) -> Hashtbl.find ht id
+    | Cfg(ht, _) -> Hashtbl.find ht id
   
   (** returns the successors identifiers of id in cfg, or raises Not_found if id no exists in cfg *)
   let succ_of (cfg : 'a t) (id : int) = (get cfg id).succ
@@ -123,12 +118,40 @@ module CFG = struct
   let set_exp (cfg : 'a t) (id : int) (expr: 'a) =
     let cfg = 
       match cfg with
-      | Cfg(ht) -> Cfg(Hashtbl.copy ht)
+      | Cfg(ht, root) -> Cfg(Hashtbl.copy ht, root)
     in
     let item = get cfg id in
     let _ =
       match cfg with
-      | Cfg(ht) -> Hashtbl.replace ht id (make_item expr item.pred item.succ)
+      | Cfg(ht, _) -> Hashtbl.replace ht id (make_item item.idx expr item.pred item.succ)
     in
     cfg
+
+  let root (cfg : 'a t) =
+    match cfg with
+    | Cfg(_, root) -> get cfg root
+
+  module IntSet = Set.Make(struct
+    type t = int 
+    let compare = compare
+  end)
+    
+  let fold (cfg : 'a t) (fn: 'a t -> 'a item -> 'b -> 'b) (acc: 'b) =
+    let visited = IntSet.empty in
+    let to_visit = [ idx cfg (root cfg) ] in
+    let rec visit to_visit visited acc =
+      match to_visit with
+      | [] ->
+        acc
+      | hd::tl ->        
+        match IntSet.find_opt hd visited with
+        | Some(_) ->
+          visit tl visited acc
+        | None ->
+          let visited = IntSet.add hd visited in
+          let successors = succ_of cfg hd in
+          let acc = fn cfg (get cfg hd) acc in
+          visit (successors @ tl) visited acc
+    in
+    visit to_visit visited acc
 end
