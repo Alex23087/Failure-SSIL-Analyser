@@ -1,21 +1,9 @@
-module Node : sig
-  type 'a t [@@deriving show]
-  val make : 'a -> 'a t list -> 'a t
-
-  (** given a node with its successors, returns the number of nodes *)
-  val length : 'a t -> int
-end
-
-module Hashtbl : sig
-  val pp : (Format.formatter -> 'a -> unit) ->
-    (Format.formatter -> 'b -> unit) ->
-    Format.formatter -> ('a, 'b) Hashtbl.t -> unit
-end
-
 module CFG : sig
+  (** The Control Flow Graph data structure *)
   type 'a t [@@deriving show]
+
+  (** The Control Flow Graph's internal item *)
   type 'a item [@@deriving show]
-  val make : 'a Node.t -> 'a t
   
   (** returns the root item of the CFG *)
   val root : 'a t -> 'a item
