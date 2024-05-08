@@ -71,8 +71,8 @@ rule next_token = parse
 
   | '?'                                   { Parser.QUESTION }
 
-  | '('                                   { Parser.LPAREN }
-  | ')'                                   { Parser.RPAREN }
+  | '('                                   { Parser.LParen }
+  | ')'                                   { Parser.RParen }
   | '['                                   { Parser.LBRACKET }
   | ']'                                   { Parser.RBRACKET }
   | ';'                                   { Parser.Semicolon }

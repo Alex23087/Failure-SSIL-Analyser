@@ -16,8 +16,6 @@
 %token FREE
 %token LBRACKET
 %token RBRACKET
-%token LPAREN
-%token RPAREN
 %token Semicolon
 %token QUESTION
 %token <int> INT
@@ -83,7 +81,7 @@ toplevel_command:
     { $1 }
   | toplevel_command_noformula
     { $1 }
-  | LPAREN toplevel_command RPAREN
+  | LParen toplevel_command RParen
     { $2 }
   ;
 
@@ -105,9 +103,9 @@ atomic_command:
     { annotateEmptyCommand (HeapAtomicCommand.NonDet(id)) $startpos }
   | b = boolean_expression QUESTION
     { annotateEmptyCommand (HeapAtomicCommand.Guard(b)) $startpos }
-  | id = IDENTIFIER Equal ALLOC LPAREN RPAREN
+  | id = IDENTIFIER Equal ALLOC LParen RParen
     { annotateEmptyCommand (HeapAtomicCommand.Allocation(id)) $startpos }
-  | FREE LPAREN id = IDENTIFIER RPAREN
+  | FREE LParen id = IDENTIFIER RParen
     { annotateEmptyCommand (HeapAtomicCommand.Free(id)) $startpos }
   | id1 = IDENTIFIER Equal LBRACKET id2 = IDENTIFIER RBRACKET
     { annotateEmptyCommand (HeapAtomicCommand.ReadHeap(id1, id2)) $startpos }
@@ -122,7 +120,7 @@ arithmetic_expression:
     { annotateEmptyCommand (ArithmeticExpression.Variable(id)) $startpos }
   | a1 = arithmetic_expression o = arithmetic_operator a2 = arithmetic_expression
     { annotateEmptyCommand (ArithmeticExpression.BinaryOperation(o, a1, a2)) $startpos }
-  | LPAREN a = arithmetic_expression RPAREN
+  | LParen a = arithmetic_expression RParen
     { a }
 ;
 
@@ -152,7 +150,7 @@ boolean_expression:
     { annotateEmptyCommand (BooleanExpression.Or(b1, b2)) $startpos }
   | a1 = arithmetic_expression c = boolean_comparison_op a2 = arithmetic_expression
     { annotateEmptyCommand (BooleanExpression.Comparison(c, a1, a2)) $startpos }
-  | LPAREN b = boolean_expression RPAREN
+  | LParen b = boolean_expression RParen
     { b }
 ;
 
