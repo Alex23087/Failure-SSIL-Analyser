@@ -7,7 +7,6 @@
   let annotateFormula formula position = Prelude.Ast.LogicFormulas.annotate_parser formula position.Lexing.pos_lnum position.Lexing.pos_cnum
 %}
 
-/* commands */
 %token EqualEqual
 %token Skip
 %token Alloc
@@ -16,12 +15,8 @@
 %token RBracket
 %token Semicolon
 %token Question
-%token <int> INT
-%token <string> IDENTIFIER
 %token NonDet
 %token Eof
-
-/** formulas */
 %token LShift RShift
 %token LParen RParen
 %token True
@@ -96,26 +91,26 @@ toplevel_command_noformula:
 atomic_command:
   | Skip
     { annotateEmptyCommand (HeapAtomicCommand.Skip) $startpos }
-  | id = IDENTIFIER Equal a = arithmetic_expression
+  | id = Identifier Equal a = arithmetic_expression
     { annotateEmptyCommand (HeapAtomicCommand.Assignment(id, a)) $startpos }
-  | id = IDENTIFIER NonDet
+  | id = Identifier NonDet
     { annotateEmptyCommand (HeapAtomicCommand.NonDet(id)) $startpos }
   | b = boolean_expression Question
     { annotateEmptyCommand (HeapAtomicCommand.Guard(b)) $startpos }
-  | id = IDENTIFIER Equal Alloc LParen RParen
+  | id = Identifier Equal Alloc LParen RParen
     { annotateEmptyCommand (HeapAtomicCommand.Allocation(id)) $startpos }
-  | Free LParen id = IDENTIFIER RParen
+  | Free LParen id = Identifier RParen
     { annotateEmptyCommand (HeapAtomicCommand.Free(id)) $startpos }
-  | id1 = IDENTIFIER Equal LBracket id2 = IDENTIFIER RBracket
+  | id1 = Identifier Equal LBracket id2 = Identifier RBracket
     { annotateEmptyCommand (HeapAtomicCommand.ReadHeap(id1, id2)) $startpos }
-  | LBracket id1 = IDENTIFIER RBracket Equal a = arithmetic_expression
+  | LBracket id1 = Identifier RBracket Equal a = arithmetic_expression
     { annotateEmptyCommand (HeapAtomicCommand.WriteHeap(id1, a)) $startpos }
 ;
 
 arithmetic_expression:
-  | INT
+  | Integer
     { annotateEmptyCommand (ArithmeticExpression.Literal($1)) $startpos }
-  | id = IDENTIFIER
+  | id = Identifier
     { annotateEmptyCommand (ArithmeticExpression.Variable(id)) $startpos }
   | a1 = arithmetic_expression o = arithmetic_operator a2 = arithmetic_expression
     { annotateEmptyCommand (ArithmeticExpression.BinaryOperation(o, a1, a2)) $startpos }

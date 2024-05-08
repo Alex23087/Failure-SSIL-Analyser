@@ -41,7 +41,7 @@ rule next_token = parse
   | whitespace                            { next_token lexbuf }
   | newline                               { Lexing.new_line lexbuf; next_token lexbuf }
 
-  | int as i                              { Parser.INT (int_of_string i) }
+  | int as i                              { Parser.Integer (int_of_string i) }
   | "True"                                { Parser.True }
   | "False"                               { Parser.False }
 
@@ -49,7 +49,7 @@ rule next_token = parse
                                             (* look up identifier to see if it's a keyword *)
                                             try
                                               let keyword_token = Hashtbl.find keyword_table i in keyword_token
-                                            with Not_found -> Parser.IDENTIFIER i
+                                            with Not_found -> Parser.Identifier i
                                           }
   | "<<"                                  { state := 0; Parser.LShift }
   | '+'                                   { Parser.Plus }
