@@ -29,6 +29,7 @@
 %token <int> Integer
 %token Plus Minus Times Div Mod
 %token Dot
+%token If Then Else
 
 /* precedences */
 
@@ -41,7 +42,7 @@
 %left Plus Minus
 %left Times Div Mod
 %left Semicolon
-%nonassoc PREC
+%nonassoc HIGH
 
 %start <(Prelude.Ast.Commands.HeapRegularCommand.t, Prelude.Ast.LogicFormulas.Formula.t) Either.t> program
 %type <Prelude.Ast.Commands.HeapRegularCommand.t> toplevel_command
@@ -75,6 +76,19 @@ toplevel_command:
     { $1 }
   | star
     { $1 }
+  | If boolean_expression Then toplevel_command Else toplevel_command
+    {
+      let b_guard = HeapAtomicCommand.Guard($2) in
+      let b_guard_atom = annotateEmptyCommand b_guard $startpos($2) in
+      let b_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_guard_atom)) $startpos($2) in
+      let b_neg_guard = HeapAtomicCommand.Guard(annotateEmptyCommand (BooleanExpression.Not($2)) $startpos($2)) in
+      let b_neg_guard_atom = annotateEmptyCommand b_neg_guard $startpos($2) in
+      let b_neg_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_neg_guard_atom)) $startpos($2) in
+      let then_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_neg_guard_command, $4)) $startpos($4) in
+      let else_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, $6)) $startpos($6) in
+      let non_det_choice = annotateEmptyCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) $startpos in
+      non_det_choice
+    } %prec LOW
   | toplevel_command_noformula
     { $1 }
   | LParen toplevel_command RParen
@@ -196,7 +210,7 @@ formula:
     | False
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.False) $startpos }
     | Exists Identifier Dot formula
-      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Exists($2, $4)) $startpos } %prec PREC
+      { annotateFormula (Prelude.Ast.LogicFormulas.Formula.Exists($2, $4)) $startpos } %prec HIGH
     | formula And formula
       { annotateFormula (Prelude.Ast.LogicFormulas.Formula.And($1, $3)) $startpos }
     | formula Or formula
