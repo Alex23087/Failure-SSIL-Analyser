@@ -17,24 +17,27 @@ module CFG : sig
   type 'a item [@@deriving show]
   val make : 'a Node.t -> 'a t
   
+  (** returns the root item of the CFG *)
   val root : 'a t -> 'a item
 
+  (** returns the index of a given item in the CFG *)
   val idx : 'a t -> 'a item -> int
 
+  (** recursively fold on all the items in the CFG *)
   val fold : 'a t -> ('a t -> 'a item -> 'b -> 'b) -> 'b -> 'b
 
-  (** returns the current binding of id in cfg, or raises Not_found if no such binding exists *)
+  (** returns the current binding of a given node's id in the CFG, or raises Not_found if no such binding exists *)
   val get : 'a t -> int -> 'a item
 
-  (** returns the successors identifiers of id in cfg, or raises Not_found if id no exists in cfg *)
+  (** returns the successors identifiers of a given node's id in the CFG, or raises Not_found if no such id exists *)
   val succ_of : 'a t -> int -> int list
 
-  (** returns the predecessors identifiers of id in cfg, or raises Not_found if id no exists in cfg *)
+  (** returns the predecessors identifiers of a given node's id in the CFG, or raises Not_found if no such id exists *)
   val pred_of : 'a t -> int -> int list
 
-  (** returns the expression binded with id in cfg, or raises Not_found if id no exists in cfg *)
-  val get_exp : 'a t -> int -> 'a
+  (** returns the data structure bound with id in the CFG, or raises Not_found if no such id exists *)
+  val get_data : 'a t -> int -> 'a
 
-  (** updates the expression bound with id in cfg, or raises Not_found if id no exists in cfg *)
-  val set_exp : 'a t -> int -> 'a -> 'a t
+  (** updates the data structure bound with id in the CFG, or raises Not_found if no such id exists *)
+  val set_data : 'a t -> int -> 'a -> 'a t
 end

@@ -70,7 +70,10 @@ module CFG = struct
     succ  : int list;
   } [@@deriving show]
 
-  type 'a t = Cfg of ((int, 'a item) Hashtbl.t) * int
+  type 'a t = {
+    cfg: (int, 'a item) Hashtbl.t;
+    root_id: int
+  }
   [@@deriving show]
 
   let make_item idx exp pred succ = {idx = idx; exp = exp; pred = pred; succ = succ}
@@ -96,40 +99,38 @@ module CFG = struct
     in
     compute_pred initial_node;
     aux h initial_node;
-    Cfg(h, initial_node.id)
-
-  let idx (_ : 'a t) (item: 'a item) =
-    item.idx
+    {
+      cfg = h;
+      root_id = initial_node.id
+    }
   
-  (** returns the current binding of id in cfg, or raises Not_found if no such binding exists *)
   let get (cfg : 'a t) (id : int) = match cfg with
-    | Cfg(ht, _) -> Hashtbl.find ht id
+    | {cfg=ht; _} -> Hashtbl.find ht id
   
-  (** returns the successors identifiers of id in cfg, or raises Not_found if id no exists in cfg *)
   let succ_of (cfg : 'a t) (id : int) = (get cfg id).succ
 
-  (** returns the predecessors identifiers of id in cfg, or raises Not_found if id no exists in cfg *)
   let pred_of (cfg : 'a t) (id : int) = (get cfg id).pred
 
-  (** returns the expression binded with id in cfg, or raises Not_found if id no exists in cfg *)
-  let get_exp (cfg : 'a t) (id : int) = (get cfg id).exp
+  let get_data (cfg : 'a t) (id : int) = (get cfg id).exp
 
-  (** updates the expression bound with id in cfg, or raises Not_found if id no exists in cfg *)
-  let set_exp (cfg : 'a t) (id : int) (expr: 'a) =
+  let set_data (cfg : 'a t) (id : int) (expr: 'a) =
     let cfg = 
       match cfg with
-      | Cfg(ht, root) -> Cfg(Hashtbl.copy ht, root)
+      | {cfg= ht; root_id} -> {cfg= Hashtbl.copy ht; root_id}
     in
     let item = get cfg id in
     let _ =
       match cfg with
-      | Cfg(ht, _) -> Hashtbl.replace ht id (make_item item.idx expr item.pred item.succ)
+      | {cfg=ht; _} -> Hashtbl.replace ht id (make_item item.idx expr item.pred item.succ)
     in
     cfg
 
   let root (cfg : 'a t) =
     match cfg with
-    | Cfg(_, root) -> get cfg root
+    | {root_id; _} -> get cfg root_id
+
+  let idx (_ : 'a t) (item: 'a item) =
+    item.idx
 
   module IntSet = Set.Make(struct
     type t = int 
@@ -137,6 +138,7 @@ module CFG = struct
   end)
     
   let fold (cfg : 'a t) (fn: 'a t -> 'a item -> 'b -> 'b) (acc: 'b) =
+    (* performs a depth first visit of the graph *)
     let visited = IntSet.empty in
     let to_visit = [ idx cfg (root cfg) ] in
     let rec visit to_visit visited acc =
