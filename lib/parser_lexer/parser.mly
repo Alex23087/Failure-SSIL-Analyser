@@ -108,7 +108,7 @@ toplevel_command:
     }
   | While boolean_expression LBrace toplevel_command RBrace option(delimited(LShift, formula, RShift))
     {
-      (* thanks to braces there is no need to avoid sub-commands with formulae  *)
+      (* thanks to braces there is no need to avoid sub-commands with formulae *)
       rewriteWhile $startpos $2 $startpos($2) $4 $startpos($4) $6
     }
   | toplevel_command_noformula
