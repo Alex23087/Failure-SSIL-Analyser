@@ -79,6 +79,8 @@ rule next_token = parse
   | ')'                                   { Parser.RParen }
   | '['                                   { Parser.LBracket }
   | ']'                                   { Parser.RBracket }
+  | '{'                                   { Parser.LBrace }
+  | '}'                                   { Parser.RBrace }
   | ';'                                   { Parser.Semicolon }
 
   | "//"                                  { consume_single_line_comment lexbuf }

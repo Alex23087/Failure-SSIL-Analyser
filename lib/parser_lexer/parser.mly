@@ -25,14 +25,14 @@
 %token Skip
 %token Alloc
 %token Free
-%token LBracket
-%token RBracket
 %token Semicolon
 %token Question
 %token NonDet
 %token Eof
 %token LShift RShift
 %token LParen RParen
+%token LBracket RBracket
+%token LBrace RBrace
 %token True
 %token False
 %token Exists
@@ -95,7 +95,7 @@ toplevel_command:
     }
   | toplevel_command_noformula
     { $1 }
-  | LParen toplevel_command RParen
+  | LBrace toplevel_command RBrace
     { $2 }
   ;
 
