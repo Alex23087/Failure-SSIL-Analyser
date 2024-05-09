@@ -22,6 +22,7 @@
         ("then", Parser.Then);
         ("else", Parser.Else);
         ("while", Parser.While);
+        ("emp", Parser.Emp);
       ]
     in create_hashtable (List.length mapping) mapping
 }
@@ -51,7 +52,6 @@ rule next_token = parse
   | ">>"                                  { Parser.RShift }
   | "->"                                  { Parser.Arrow }
   | "-/>"                                 { Parser.Void }
-  | "emp"                                 { Parser.Emp }
   | "="                                   { Parser.Equal }
   | "!="                                  { Parser.NotEqual }
   | "&&"                                  { Parser.And }
