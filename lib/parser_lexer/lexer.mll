@@ -61,10 +61,10 @@ rule next_token = parse
   | "=="                                  { Parser.EqualEqual }
   | '='                                   { Parser.Equal }
   | "!="                                  { Parser.NotEqual }
-  | '<'                                   { Parser.LessThan }
   | "<="                                  { Parser.LessOrEqual }
-  | '>'                                   { Parser.GreaterThan }
+  | '<'                                   { Parser.LessThan }
   | ">="                                  { Parser.GreaterOrEqual }
+  | '>'                                   { Parser.GreaterThan }
   | "&&"                                  { Parser.And }
   | "||"                                  { Parser.Or }
   | '!'                                   { Parser.Not }
