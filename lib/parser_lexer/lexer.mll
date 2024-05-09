@@ -88,9 +88,9 @@ rule next_token = parse
   | "/*"                                  { consume_multi_line_comment lexbuf }
   | id as i                               {
                                             (* look up identifier to see if it's a keyword *)
-                                            try
-                                              let keyword_token = Hashtbl.find keyword_table i in keyword_token
-                                            with Not_found -> Parser.Identifier i
+                                            match Hashtbl.find_opt keyword_table i with
+                                              | Some keyword -> keyword
+                                              | None -> Parser.Identifier i
                                           }
   | eof                                   { Eof }
   | _ as c
