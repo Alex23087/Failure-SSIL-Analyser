@@ -52,19 +52,14 @@ rule next_token = parse
   | ">>"                                  { Parser.RShift }
   | "->"                                  { Parser.Arrow }
   | "-/>"                                 { Parser.Void }
-  | "="                                   { Parser.Equal }
-  | "!="                                  { Parser.NotEqual }
-  | "&&"                                  { Parser.And }
-  | "||"                                  { Parser.Or }
   | '+'                                   { Parser.Plus }
   | '-'                                   { Parser.Minus }
   | '*'                                   { Parser.Times }
   | '/'                                   { Parser.Div }
   | '%'                                   { Parser.Mod }
   | '.'                                   { Parser.Dot }
-
-  | '='                                   { Parser.Equal }
   | "=="                                  { Parser.EqualEqual }
+  | '='                                   { Parser.Equal }
   | "!="                                  { Parser.NotEqual }
   | '<'                                   { Parser.LessThan }
   | "<="                                  { Parser.LessOrEqual }
