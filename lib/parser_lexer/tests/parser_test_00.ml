@@ -149,5 +149,7 @@ let parsed_00 = let lexbuf = Lexing.from_string ~with_positions:true source_00 i
                 | Some command -> command
                 | None -> raise (Failure "test_00 is not a command");;
 
-(* let%test_unit "parser_test_00" =
-  [%test_eq: HeapRegularCommand.t] parsed_00 expected_00 *)
+let%test_unit "parser_test_00" =
+  [%test_eq: HeapRegularCommand.t] parsed_00 expected_00
+
+let a = List.compare

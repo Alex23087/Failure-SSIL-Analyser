@@ -16,6 +16,7 @@
 *)
 
 open Sexplib.Std
+open Ppx_compare_lib.Builtin
 
 module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
   open Base
@@ -28,7 +29,7 @@ module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
       | Times
       | Division
       | Modulo
-    [@@deriving show, sexp]
+    [@@deriving show, sexp, compare]
   end
 
   module BooleanComparison = struct
@@ -39,7 +40,7 @@ module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
       | LessOrEqual
       | GreaterThan
       | GreaterOrEqual
-    [@@deriving show, sexp]
+    [@@deriving show, sexp, compare]
   end
 
   module ArithmeticExpression = struct
@@ -48,7 +49,7 @@ module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
       | Variable of identifier
       | BinaryOperation of ArithmeticOperation.t * t * t
     and t = t_node AnnotatedNode.t
-    [@@deriving show, sexp]
+    [@@deriving show, sexp, compare]
   end
 
   module BooleanExpression = struct
@@ -60,7 +61,7 @@ module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
       | Or of t * t
       | Comparison of BooleanComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
     and t = t_node AnnotatedNode.t
-    [@@deriving show, sexp]
+    [@@deriving show, sexp, compare]
   end
 
   module HeapAtomicCommand = struct
@@ -74,7 +75,7 @@ module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
       | ReadHeap of identifier * identifier
       | WriteHeap of identifier * ArithmeticExpression.t
     and t = t_node AnnotatedNode.t
-    [@@deriving show, sexp]
+    [@@deriving show, sexp, compare]
 
     let modifiedVariables (command: t) =
       match command.node with
@@ -95,7 +96,7 @@ module HeapRegularCommands(Annotation: Base.AnnotationType) = struct
       | NondeterministicChoice of t * t
       | Star of t
     and t = t_node AnnotatedNode.t
-    [@@deriving show, sexp]
+    [@@deriving show, sexp, compare]
 
     let rec modifiedVariables (command: t) =
       match command.node with

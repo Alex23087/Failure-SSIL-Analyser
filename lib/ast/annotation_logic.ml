@@ -13,6 +13,7 @@
 module AnnotationLogic(Annotation: Base.AnnotationType) = struct
   open Base
   open Sexplib.Std
+  open Ppx_compare_lib.Builtin
   module AnnotatedNode = Base.AnnotatedNode(Annotation)
 
   module BinaryOperator = struct
@@ -22,7 +23,7 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
       | Times
       | Division
       | Modulo
-    [@@deriving show, sexp]
+    [@@deriving show, sexp, compare]
   end
 
   module ArithmeticExpression = struct
@@ -31,7 +32,7 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
       | Variable of identifier
       | Operation of BinaryOperator.t * t * t
     and t = t_node AnnotatedNode.t
-    [@@deriving show, sexp]
+    [@@deriving show, sexp, compare]
   end
 
   module BinaryComparison = struct
@@ -42,7 +43,7 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
       | GreaterOrEqual
       | Equals
       | NotEquals
-    [@@deriving show, sexp]
+    [@@deriving show, sexp, compare]
   end
 
   module Formula = struct
@@ -60,7 +61,7 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
       | Allocation of identifier * ArithmeticExpression.t
       | AndSeparately of t * t
     and t = t_node AnnotatedNode.t
-    [@@deriving show, sexp]
+    [@@deriving show, sexp, compare]
   end
 
   type t = Formula.t
@@ -68,4 +69,5 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
   let show = Formula.show
   let t_of_sexp = Formula.t_of_sexp
   let sexp_of_t = Formula.sexp_of_t
+  let compare = Formula.compare
 end

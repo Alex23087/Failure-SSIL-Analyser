@@ -8,19 +8,20 @@
     *)
 
 open Sexplib.Std
+open Ppx_compare_lib.Builtin
 
 module Ast = struct
   type identifier = Ast.identifier
   module IdentifierSet = struct include Ast.IdentifierSet end
 
   (** Position record, which holds where the given command or annotation is in the source files.*)
-  type position = {line: int; column: int} [@@deriving show, sexp]
+  type position = {line: int; column: int} [@@deriving show, sexp, compare]
 
   let make_position (line: int) (column: int) = {line; column}
 
   type logic_formulas_annotation = {
     position: position; (* [@opaque] *)
-  } [@@deriving show, sexp]
+  } [@@deriving show, sexp, compare]
 
   (** Concrete implementation of the Logic Formulas, with source-position annotations*)
   module LogicFormulas = struct
@@ -30,6 +31,7 @@ module Ast = struct
       let pp = pp_logic_formulas_annotation
       let t_of_sexp = logic_formulas_annotation_of_sexp
       let sexp_of_t = sexp_of_logic_formulas_annotation
+      let compare = compare_logic_formulas_annotation
     end)
     let make_annotation line column : AnnotatedNode.annotation =
       let position = make_position line column in {position}
@@ -51,7 +53,7 @@ module Ast = struct
     position: position; (* [@opaque] *)
     logic_formula: LogicFormulas.t option
   }
-  [@@deriving show, sexp]
+  [@@deriving show, sexp, compare]
 
   (** Concrete implementation of the Regular Commands, with source-position and logic formula in the annotation.
 
@@ -63,6 +65,7 @@ module Ast = struct
       let pp = pp_regular_formulas_annotation
       let t_of_sexp = regular_formulas_annotation_of_sexp
       let sexp_of_t = sexp_of_regular_formulas_annotation
+      let compare = compare_regular_formulas_annotation
     end)
 
     let make_annotation line column formula : AnnotatedNode.annotation =
