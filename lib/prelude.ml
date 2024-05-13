@@ -6,18 +6,21 @@
     - {{! Ast.LogicFormulas}LogicFormulas} - Logic Formulas concrete implementation, with {{! Ast.logic_formulas_annotation} annotations}.
     - {{! Ast.Commands}Commands} - Regular Commands concrete implementation, with {{! Ast.regular_formulas_annotation} annotations}.
     *)
+
+open Sexplib.Std
+
 module Ast = struct
   type identifier = Ast.identifier
   module IdentifierSet = struct include Ast.IdentifierSet end
 
   (** Position record, which holds where the given command or annotation is in the source files.*)
-  type position = {line: int; column: int} [@@deriving show]
+  type position = {line: int; column: int} [@@deriving show, sexp]
 
   let make_position (line: int) (column: int) = {line; column}
 
   type logic_formulas_annotation = {
     position: position; (* [@opaque] *)
-  } [@@deriving show]
+  } [@@deriving show, sexp]
 
   (** Concrete implementation of the Logic Formulas, with source-position annotations*)
   module LogicFormulas = struct
@@ -25,8 +28,9 @@ module Ast = struct
       type t = logic_formulas_annotation
       let show = show_logic_formulas_annotation
       let pp = pp_logic_formulas_annotation
+      let t_of_sexp = logic_formulas_annotation_of_sexp
+      let sexp_of_t = sexp_of_logic_formulas_annotation
     end)
-
     let make_annotation line column : AnnotatedNode.annotation =
       let position = make_position line column in {position}
 
@@ -39,7 +43,7 @@ module Ast = struct
 
     (** Utility function to update a logic formula*)
     let update_formula annotated_node new_formula =
-      let _, annotation = AnnotatedNode.unpack annotated_node in 
+      let _, annotation = AnnotatedNode.unpack annotated_node in
       AnnotatedNode.make new_formula annotation
   end
 
@@ -47,7 +51,7 @@ module Ast = struct
     position: position; (* [@opaque] *)
     logic_formula: LogicFormulas.t option
   }
-  [@@deriving show]
+  [@@deriving show, sexp]
 
   (** Concrete implementation of the Regular Commands, with source-position and logic formula in the annotation.
 
@@ -57,6 +61,8 @@ module Ast = struct
       type t = regular_formulas_annotation
       let show = show_regular_formulas_annotation
       let pp = pp_regular_formulas_annotation
+      let t_of_sexp = regular_formulas_annotation_of_sexp
+      let sexp_of_t = sexp_of_regular_formulas_annotation
     end)
 
     let make_annotation line column formula : AnnotatedNode.annotation =
@@ -72,7 +78,7 @@ module Ast = struct
 
     (** Utility function to update a Command's logic formula*)
     let update_formula annotated_node new_formula =
-      let node, annotation = AnnotatedNode.unpack annotated_node in 
+      let node, annotation = AnnotatedNode.unpack annotated_node in
       let position = annotation.position in
       AnnotatedNode.make node (make_annotation position.line position.column new_formula)
   end
