@@ -1,8 +1,9 @@
 open Lisproject.Ast
+open Sexplib.Std
 
 (* Instantiate the AST with the annotation type *)
 module ASTHRC = HeapRegularCommands(struct
-  type t = int (* int annotations *) [@@deriving show]
+  type t = int (* int annotations *) [@@deriving show, sexp]
 end)
 
 let counter = ref 0

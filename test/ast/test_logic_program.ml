@@ -1,8 +1,9 @@
 open Lisproject.Ast
+open Sexplib.Std
 
 (* Instantiate the AST with the annotation type *)
 module ASTLogic = AnnotationLogic(struct
-  type t = int (* int annotations *) [@@deriving show]
+  type t = int (* int annotations *) [@@deriving show, sexp]
 end)
 
 open ASTLogic
