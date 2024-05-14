@@ -1,8 +1,10 @@
 open Lisproject.Ast
+open Sexplib.Std
+open Ppx_compare_lib.Builtin
 
 (* Instantiate the AST with the annotation type *)
 module ASTHRC = HeapRegularCommands(struct
-  type t = int (* int annotations *)
+  type t = int (* int annotations *) [@@deriving show, sexp, compare]
 end)
 
 let counter = ref 0

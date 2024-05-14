@@ -1,32 +1,40 @@
 (include_subdirs unqualified)
 
-(test
+(executable
   (name test_ast_program)
   (libraries lisproject)
   (modules test_ast_program)
   (preprocess
-  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq)))
+  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_sexp_conv ppx_compare)))
 
-(test
+(executable
   (name test_cfg)
   (libraries lisproject)
   (modules test_cfg)
   (preprocess
-  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq))
+  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_sexp_conv ppx_compare))
 )
 
-(test
+(executable
   (name test_logic_program)
   (libraries lisproject)
   (modules test_logic_program)
   (preprocess
-  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq))
+  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_sexp_conv ppx_compare))
 )
 
-(test
+(executable
+  (name test_parser)
+  (libraries lisproject)
+  (modules test_parser)
+  (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_sexp_conv ppx_compare))
+)
+
+(executable
   (name test_ast_prelude)
   (libraries lisproject)
   (modules test_ast_prelude)
   (preprocess
-  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq))
+  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_sexp_conv ppx_compare))
 )
