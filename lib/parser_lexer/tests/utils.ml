@@ -1,5 +1,6 @@
 open Prelude.Ast.Commands
 open Prelude.Ast.LogicFormulas
+open Parsing
 
 let dummy_position = { Prelude.Ast.line = -1; column = -1 }
 
@@ -82,3 +83,16 @@ and remove_position_from_annotations_formulae_aexp (aexp: Prelude.Ast.LogicFormu
   | Prelude.Ast.LogicFormulas.ArithmeticExpression.Variable id -> Prelude.Ast.LogicFormulas.annotate (Prelude.Ast.LogicFormulas.ArithmeticExpression.Variable id) newAnnot
   | Prelude.Ast.LogicFormulas.ArithmeticExpression.Literal i -> Prelude.Ast.LogicFormulas.annotate (Prelude.Ast.LogicFormulas.ArithmeticExpression.Literal i) newAnnot
   | Prelude.Ast.LogicFormulas.ArithmeticExpression.Operation (op, ae1, ae2) -> Prelude.Ast.LogicFormulas.annotate (Prelude.Ast.LogicFormulas.ArithmeticExpression.Operation (op, (remove_position_from_annotations_formulae_aexp ae1), (remove_position_from_annotations_formulae_aexp ae2))) newAnnot
+
+
+let parse_command source = let lexbuf = Lexing.from_string ~with_positions:true source in
+              let ast = parse Lexer.lex lexbuf in
+                match Either.find_left ast with
+                | Some command -> remove_position_from_annotations command
+                | None -> raise (Failure "not a command");;
+
+let parse_formula source = let lexbuf = Lexing.from_string ~with_positions:true source in
+              let ast = parse Lexer.lex lexbuf in
+                match Either.find_right ast with
+                | Some formula -> remove_position_from_annotations_formulae formula
+                | None -> raise (Failure "not a formula");;
