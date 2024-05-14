@@ -1,5 +1,5 @@
 (** parsing utilities *)
-  exception Syntax_error of Location.lexeme_pos * string
+exception Syntax_error of Location.lexeme_pos * string
 
 (** tries to parse what's inside lexbuf using lexer as a scanner; *)
 let parse lexer lexbuf =
