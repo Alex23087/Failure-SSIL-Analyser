@@ -9,15 +9,17 @@
 
 (authors
   "Yuri Andriaccio"
+  "Alessandro Scala"
+  "Andrea Simone Costa"
+  "Elvis Rossi"
+  "Marco Antonio Corallo"
   "Samuele Bonini"
   "Andrea Castagna"
-  "Marco Antonio Corallo"
-  "Andrea Simone Costa"
   "Fabio Federico"
-  "Elvis Rossi"
   "Matteo Simone"
-  "Alessandro Scala"
 )
+
+(using menhir 3.0)
 
 (license GPL-3.0-or-later)
 
