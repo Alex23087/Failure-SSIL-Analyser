@@ -4,12 +4,12 @@ open Prelude.Ast.Commands.AnnotatedNode
 open Prelude.Ast.LogicFormulas.AnnotatedNode
 open Utils
 
-let source_00 = {|x = alloc();
+let source = {|x = alloc();
 [x] = 1 + 400 << (exists y . x -> y) * emp >>;
 free(x) << x -/> * emp >>
 |}
 
-let expected_00: HeapRegularCommand.t = {
+let expected: HeapRegularCommand.t = {
   node = (HeapRegularCommand.Sequence (
     {
       node = (HeapRegularCommand.Sequence (
@@ -143,5 +143,5 @@ let expected_00: HeapRegularCommand.t = {
 }
 ;;
 
-let%test_unit "parser_test_00" =
-  [%test_eq: HeapRegularCommand.t] (parse_command source_00) expected_00
+let%test_unit "test commands n. 00" =
+  [%test_eq: HeapRegularCommand.t] (parse_command source) expected
