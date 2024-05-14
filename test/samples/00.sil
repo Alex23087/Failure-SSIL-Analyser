@@ -1,3 +1,0 @@
-x = alloc();
-[x] = 1 + 400 << (exists y . x -> y) * emp >>;
-free(x) << x -/> * emp >>
