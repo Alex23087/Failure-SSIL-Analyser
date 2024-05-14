@@ -106,7 +106,7 @@ module Cfg = struct
 
   (** Control Flow Graph. *)
   type cfg = cfg_block Cfg.CFG.t
-  
+
   (** Control Flow Graphs' node item. *)
   type cfg_item = cfg_block Cfg.CFG.item
 end
