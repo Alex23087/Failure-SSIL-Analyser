@@ -1,13 +1,13 @@
 (include_subdirs unqualified)
 
-(test
+(executable
   (name test_ast_program)
   (libraries lisproject)
   (modules test_ast_program)
   (preprocess
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_sexp_conv ppx_compare)))
 
-(test
+(executable
   (name test_cfg)
   (libraries lisproject)
   (modules test_cfg)
@@ -15,7 +15,7 @@
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_sexp_conv ppx_compare))
 )
 
-(test
+(executable
   (name test_logic_program)
   (libraries lisproject)
   (modules test_logic_program)
@@ -23,7 +23,7 @@
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_sexp_conv ppx_compare))
 )
 
-(test
+(executable
   (name test_parser)
   (libraries lisproject)
   (modules test_parser)
@@ -31,7 +31,7 @@
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_sexp_conv ppx_compare))
 )
 
-(test
+(executable
   (name test_ast_prelude)
   (libraries lisproject)
   (modules test_ast_prelude)
