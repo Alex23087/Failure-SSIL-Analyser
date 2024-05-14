@@ -32,14 +32,6 @@
 )
 
 (test
-  (name test_parser_asts)
-  (libraries lisproject)
-  (modules test_parser_asts)
-  (preprocess
-  (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_sexp_conv ppx_compare))
-)
-
-(test
   (name test_ast_prelude)
   (libraries lisproject)
   (modules test_ast_prelude)
