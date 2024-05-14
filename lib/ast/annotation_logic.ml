@@ -3,15 +3,17 @@
 (**This is the Abstract Syntax Tree which represents the logic formulas used to annotate our programs.
   The data structure allows to add generic annotations to most of the grammar nodes, which
   in out case will be used to store position information in the source files.
-  
+
   The following is the grammar definition for our programs:
-  - {{! AnnotationLogic.Formula}Formula} ::= True | False | Exists Identifier Formula | Formula && Formula | Formula || Formula | ArithmeticExpression BinaryComparison ArithmeticExpression | Emp | x -> y | x -/> | Formula * Formula
+  - {{! AnnotationLogic.Formula}Formula} ::= True | False | Exists Identifier . Formula | Formula && Formula | Formula || Formula | ArithmeticExpression BinaryComparison ArithmeticExpression | Emp | x -> y | x -/> | Formula * Formula
   - {{! AnnotationLogic.BinaryComparison}BinaryComparison} ::= < | > | <= | >= | == | !=
   - {{! AnnotationLogic.ArithmeticExpression}ArithmeticExpression} ::= Int(n) | Identifier | ArithmeticExpression BinaryOperator ArithmeticExpression
   - {{! AnnotationLogic.BinaryOperator}BinaryOperator} ::= + | - | * | / | %
 *)
 module AnnotationLogic(Annotation: Base.AnnotationType) = struct
   open Base
+  open Sexplib.Std
+  open Ppx_compare_lib.Builtin
   module AnnotatedNode = Base.AnnotatedNode(Annotation)
 
   module BinaryOperator = struct
@@ -21,7 +23,7 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
       | Times
       | Division
       | Modulo
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
   end
 
   module ArithmeticExpression = struct
@@ -30,7 +32,7 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
       | Variable of identifier
       | Operation of BinaryOperator.t * t * t
     and t = t_node AnnotatedNode.t
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
   end
 
   module BinaryComparison = struct
@@ -41,7 +43,7 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
       | GreaterOrEqual
       | Equals
       | NotEquals
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
   end
 
   module Formula = struct
@@ -59,10 +61,13 @@ module AnnotationLogic(Annotation: Base.AnnotationType) = struct
       | Allocation of identifier * ArithmeticExpression.t
       | AndSeparately of t * t
     and t = t_node AnnotatedNode.t
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
   end
 
   type t = Formula.t
   let pp = Formula.pp
   let show = Formula.show
+  let t_of_sexp = Formula.t_of_sexp
+  let sexp_of_t = Formula.sexp_of_t
+  let compare = Formula.compare
 end
