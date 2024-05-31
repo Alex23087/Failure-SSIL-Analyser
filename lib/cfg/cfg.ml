@@ -4,3 +4,4 @@
 *)
 
 include Base
+include Ast2cfg

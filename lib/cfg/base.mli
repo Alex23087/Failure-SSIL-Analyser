@@ -1,9 +1,15 @@
 module Node : sig
   type 'a t [@@deriving show]
-  val make : 'a -> 'a t list -> 'a t
+  val make : 'a -> 'a t list -> int list -> 'a t
+
+  val getnodeid: 'a t -> int
 
   (** given a node with its successors, returns the number of nodes *)
   val length : 'a t -> int
+
+  (** given a node and an id, adds the latter to the predecessor list of the former *)
+  val addsucc : 'a t -> 'a t -> unit
+  val concat : 'a t -> 'a t -> unit
 end
 
 module Hashtbl : sig
