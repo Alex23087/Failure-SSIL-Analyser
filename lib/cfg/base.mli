@@ -10,6 +10,8 @@ module Node : sig
   (** given a node and an id, adds the latter to the predecessor list of the former *)
   val addsucc : 'a t -> 'a t -> unit
   val concat : 'a t -> 'a t -> unit
+
+  val structure_without_loops_destructive : 'a t -> unit
 end
 
 module Hashtbl : sig

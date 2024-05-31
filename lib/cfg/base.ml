@@ -24,7 +24,7 @@ module Node = struct
       exp           : 'a;
       mutable succ  : 'a t list;
       mutable pred  : int list;
-    } (* [@@deriving show] *)
+    } [@@deriving show]
 
   let make (exp: 'a) (succ: 'a t list) (pred: int list) : 'a t =
     {id = next_id(); exp = exp; succ = succ; pred = pred}
@@ -62,6 +62,18 @@ module Node = struct
   let addsucc (node : 'a t) (succ : 'a t) : unit =
     node.succ <- succ    :: node.succ;
     succ.pred <- node.id :: succ.pred
+
+  let rec structure_without_loops_destructive (node : 'a t) : unit =
+    (* recursive protection *)
+    let alreadyvisited = ref [] in
+    let rec helper (node : 'a t) : unit =
+      if List.mem node.id !alreadyvisited then
+        ();
+      alreadyvisited := node.id :: !alreadyvisited;
+      node.succ <- List.filter (fun x -> not (List.mem x.id !alreadyvisited)) node.succ;
+      List.iter helper node.succ
+    in
+    helper node
 end
 
 (** Auxiliary module for providing Hashtbl of a pretty printing function *)

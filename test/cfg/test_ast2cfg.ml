@@ -61,20 +61,20 @@ let () =
   (* Print it with show_rcmd *)
   (* print_endline (show root); *)
   let convertedroot = convert root in
-  let _print_command = (HeapAtomicCommand.pp (fun _ _ -> ())) in
+  let print_command (formatter : Format.formatter) =
+    List.iter (HeapAtomicCommand.pp (fun _ _ -> ()) formatter)
+  in
+  Node.structure_without_loops_destructive convertedroot;
+  print_endline (Node.show print_command convertedroot);
 
-  (* print_endline (Node.show (fun _ _ -> ()) convertedroot); *)
-  print_endline (string_of_int (Node.getnodeid convertedroot))
-
-
-
-  (* let root = annotate (HeapRegularCommand.Sequence( *)
-  (*   (annotate (HeapRegularCommand.Command(annotate (HeapAtomicCommand.Allocation("x"))))), *)
-  (*   (annotate (HeapRegularCommand.Sequence ( *)
-  (*   (annotate (HeapRegularCommand.Command (annotate(HeapAtomicCommand.WriteHeap("x", annotate (ArithmeticExpression.Literal 1)))))), *)
-  (*   (annotate (HeapRegularCommand.Command (annotate(HeapAtomicCommand.ReadHeap("y", "x"))))) *)
-  (*   )) *)
-  (*   ) *)
-  (* )) in *)
-  (* let convertedroot = convert root in *)
-  (* print_endline (Node.show (fun _ _ -> ()) convertedroot); *)
+  let root = annotate (HeapRegularCommand.Sequence(
+    (annotate (HeapRegularCommand.Command(annotate (HeapAtomicCommand.Allocation("x"))))),
+    (annotate (HeapRegularCommand.Sequence (
+    (annotate (HeapRegularCommand.Command (annotate(HeapAtomicCommand.WriteHeap("x", annotate (ArithmeticExpression.Literal 1)))))),
+    (annotate (HeapRegularCommand.Command (annotate(HeapAtomicCommand.ReadHeap("y", "x")))))
+    ))
+    )
+  )) in
+  let convertedroot = convert root in
+  Node.structure_without_loops_destructive convertedroot;
+  print_endline (Node.show print_command convertedroot);
