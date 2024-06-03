@@ -16,6 +16,8 @@
 *)
 module HeapRegularCommands = struct
   open Base
+  open Ppx_compare_lib.Builtin
+  open Sexplib.Std
 
   module ArithmeticOperation = struct
     type t =
@@ -24,7 +26,7 @@ module HeapRegularCommands = struct
       | Times
       | Division
       | Modulo
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
   end
 
   module BooleanComparison = struct
@@ -35,7 +37,7 @@ module HeapRegularCommands = struct
       | LessOrEqual
       | GreaterThan
       | GreaterOrEqual
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
   end
 
   module ArithmeticExpression = struct
@@ -44,7 +46,7 @@ module HeapRegularCommands = struct
       | Variable of identifier
       | BinaryOperation of ArithmeticOperation.t * 'a t * 'a t
     and 'a t = ('a t_node, 'a) AnnotatedNode.t
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
   end
 
   module BooleanExpression = struct
@@ -52,11 +54,11 @@ module HeapRegularCommands = struct
       | True
       | False
       | Not of 'a t
-      | And of 'a t * 'a t
       | Or of 'a t * 'a t
+      | And of 'a t * 'a t
       | Comparison of BooleanComparison.t * 'a ArithmeticExpression.t * 'a ArithmeticExpression.t
     and 'a t = ('a t_node, 'a) AnnotatedNode.t
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
   end
 
   module HeapAtomicCommand = struct
@@ -70,14 +72,14 @@ module HeapRegularCommands = struct
       | ReadHeap of identifier * identifier
       | WriteHeap of identifier * 'a ArithmeticExpression.t
     and 'a t = ('a t_node, 'a) AnnotatedNode.t
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
 
     let modifiedVariables (command: 'a t) =
       match command.node with
       | Skip                  -> (IdentifierSet.empty)
       | Assignment(id, _)     -> (IdentifierSet.singleton id)
       | NonDet(id)            -> (IdentifierSet.singleton id)
-      | Guard(_)              -> (IdentifierSet.empty) 
+      | Guard(_)              -> (IdentifierSet.empty)
       | Allocation(id)        -> (IdentifierSet.singleton id)
       | Free(_)               -> (IdentifierSet.empty)
       | ReadHeap(id, _)       -> (IdentifierSet.singleton id)
@@ -91,7 +93,7 @@ module HeapRegularCommands = struct
       | NondeterministicChoice of 'a t * 'a t
       | Star of 'a t
     and 'a t = ('a t_node, 'a) AnnotatedNode.t
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
 
     let rec modifiedVariables (command: 'a t) = 
       match command.node with

@@ -1,13 +1,16 @@
+open Sexplib.Std
+open Ppx_compare_lib.Builtin
+
 (**{1 Support data structures}*)
 
 (**Identifier type*)
-type identifier = string [@@deriving show]
+type identifier = string [@@deriving show, sexp, compare]
 
 module AnnotatedNode = struct
   type ('a, 'b) t = {
     node: 'a;
     annotation: 'b
-  } [@@deriving show]
+  } [@@deriving show, sexp, compare]
   let make (node: 'a) (annotation: 'b) = {node; annotation}
   let unpack (annotated_node: ('a, 'b) t) = (annotated_node.node, annotated_node.annotation)
   let annotation (annotated_node: ('a, 'b) t) = annotated_node.annotation

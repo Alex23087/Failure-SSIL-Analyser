@@ -9,7 +9,10 @@ type annotation = {
 }
 [@@deriving show]
 
-type t = annotation Ast.AnnotationLogic.t
+type t = annotation Ast.AnnotationLogic.Formula.t
+[@@deriving show]
+
+type arithmetic_t = annotation Ast.AnnotationLogic.ArithmeticExpression.t
 [@@deriving show]
 
 let make_annotation line column : annotation =
