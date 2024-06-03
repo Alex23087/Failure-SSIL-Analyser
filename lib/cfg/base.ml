@@ -19,12 +19,15 @@ let next_id () =
  *  predecessors
  *)
 module Node = struct
+  open Sexplib.Std
+  open Ppx_compare_lib.Builtin
+
   type 'a t = {
-      id            : int;
-      exp           : 'a;
-      mutable succ  : 'a t list;
-      mutable pred  : int list;
-    } [@@deriving show]
+    id            : int;
+    exp           : 'a;
+    mutable succ  : 'a t list;
+    mutable pred  : int list;
+  } [@@deriving show, sexp, compare]
 
   let make (exp: 'a) (succ: 'a t list) (pred: int list) : 'a t =
     {id = next_id(); exp = exp; succ = succ; pred = pred}
