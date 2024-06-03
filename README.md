@@ -8,7 +8,7 @@
 - `bash -c "sh <(curl -fsSL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)"`
 - `opam init`
 - `opam update`
-- `opam install dune ppx_deriving ppx_inline_test odoc`
+- `opam install dune ppx_deriving odoc ppx_inline_test menhirLib sexplib`
 
 ### Building and running
 - `make build`
@@ -30,3 +30,4 @@
     make: dune: No such file or directory
     ```
     solution: `eval $(opam env)`
+- The built documentation can be found at `_build/default/_doc/_html/index.html`

@@ -12,7 +12,16 @@ type annotation = {
 }
 [@@deriving show]
 
-type t = annotation Ast.HeapRegularCommands.t
+type t = annotation Ast.HeapRegularCommands.HeapRegularCommand.t
+[@@deriving show]
+
+type atomic_t = annotation Ast.HeapRegularCommands.HeapAtomicCommand.t
+[@@deriving show]
+
+type arithmetic_t = annotation Ast.HeapRegularCommands.ArithmeticExpression.t
+[@@deriving show]
+
+type boolean_t = annotation Ast.HeapRegularCommands.BooleanExpression.t
 [@@deriving show]
 
 let make_annotation line column (formula : LogicFormulas.t option) : annotation =

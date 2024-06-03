@@ -22,7 +22,7 @@ let starting_states (cfg: Cfg.t) =
   in
   let starting_states (cfg: Cfg.t) (item: Cfg.item) =
     let idx = Cfg.idx cfg item in
-    let block = Cfg.get_exp cfg idx in
+    let block = Cfg.get_data cfg idx in
     let map_fun x = {cfg; last_block = idx; last_statement = x} in
     let start_postconditions = block_start_postconditions block in
     List.map map_fun start_postconditions
@@ -43,7 +43,7 @@ let block_analysis_step (block: Cfg.block) (last_statement: int) : Cfg.block =
 
 let analysis_step (state: analysis_state) : analysis_state list * analysis_state list =
   let block_to_starting_state (cfg: Cfg.t) (idx: int) (block: Cfg.block) =
-    let cfg = Cfg.set_exp cfg idx block in
+    let cfg = Cfg.set_data cfg idx block in
     {
       cfg = cfg;
       last_block = idx;
@@ -52,10 +52,10 @@ let analysis_step (state: analysis_state) : analysis_state list * analysis_state
   in
 
   let cfg = state.cfg in
-  let current_block = Cfg.get_exp cfg state.last_block in
+  let current_block = Cfg.get_data cfg state.last_block in
   if state.last_statement = 0 then
     let map_fun idx =
-      let block = Cfg.get_exp cfg idx in
+      let block = Cfg.get_data cfg idx in
       let iteration_limit_reached = visit_limit block in
       let block = Cfg.update_formula_at_last block current_block.precondition in
       let state = block_to_starting_state cfg idx block in
