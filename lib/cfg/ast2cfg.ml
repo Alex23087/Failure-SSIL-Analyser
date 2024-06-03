@@ -26,6 +26,18 @@ let rec convert_helper(root: 'a HeapRegularCommand.t) :
      Node.addsucc !end1 root1;
      (root1, end1)
 
-let convert(root: 'a HeapRegularCommand.t) : 'a HeapAtomicCommand.t list Node.t =
+let rec simplify(root: 'a HeapAtomicCommand.t list Node.t) : unit =
+  match Node.succ root with
+  | [] -> ()
+  | [a] -> (
+    match Node.prev a with
+    | [] -> raise (Invalid_argument "Your graph is wrong")
+    | [_] -> Node.replaceexp root ((Node.getexp root) @ (Node.getexp a));
+             Node.setsucc root (Node.succ a)
+    | _ -> simplify a
+  )
+  | a -> List.iter simplify a
+
+let convert (root: 'a HeapRegularCommand.t) =
   match convert_helper(root) with
-  | (a, _) -> a
+  | (a, _) -> simplify a; a

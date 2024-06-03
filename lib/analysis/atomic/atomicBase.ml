@@ -18,11 +18,11 @@ let weakest_precondition (command: 'a HeapAtomicCommand.t) (post_condition: Norm
     let formula = command_bexpression_to_logic_formula expr annotation_conversion in
     let formula = existential_disjuntive_normal_form formula post_condition.last_phantom_id in
     conjunction_of_normalized_formulas formula post_condition formula.last_phantom_id
-  | Allocation(id) ->
+  | Allocation(_id) ->
     raise (Failure "not implemented")
-  | Free(id) ->
+  | Free(_id) ->
     raise (Failure "not implemented")
-  | ReadHeap(mem_id, id) ->
+  | ReadHeap(_mem_id, _id) ->
     raise (Failure "not implemented")
-  | WriteHeap(mem_id, expr) ->
+  | WriteHeap(_mem_id, _expr) ->
     raise (Failure "not implemented")

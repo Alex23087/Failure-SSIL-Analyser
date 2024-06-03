@@ -24,7 +24,7 @@ module Node = struct
 
   type 'a t = {
     id            : int;
-    exp           : 'a;
+    mutable exp   : 'a;
     mutable succ  : 'a t list;
     mutable pred  : int list;
   } [@@deriving show, sexp, compare]
@@ -43,28 +43,24 @@ module Node = struct
         List.fold_left (+) 1
     )
 
-  (* given two nodes tries to add the latter to the end of each of the leaves
-   * of the first *)
-  let concat (node : 'a t) (succ : 'a t) : unit =
-    let alreadyvisited = ref [] in
-    let rec concat_helper (node : 'a t) (succ : 'a t) : unit =
-      if not (List.mem node.id !alreadyvisited) then
-        match node.succ with
-        | [] ->
-           alreadyvisited := node.id :: !alreadyvisited;
-           node.succ <- [succ];
-           succ.pred <- node.id::(succ.pred)
-        | rest ->
-           List.iter (fun x ->
-               alreadyvisited := x.id :: !alreadyvisited;
-               concat_helper x succ
-             ) rest
-    in
-    concat_helper node succ
-
   let addsucc (node : 'a t) (succ : 'a t) : unit =
     node.succ <- succ    :: node.succ;
     succ.pred <- node.id :: succ.pred
+
+  let getexp (node : 'a t) : 'a =
+    node.exp
+
+  let setsucc (node : 'a t) (succ : 'a t list) : unit =
+    List.iter (fun x -> (* remove all backwards links*)
+        x.pred <- List.filter (fun x -> x != node.id) x.pred
+      ) node.succ;
+    List.iter (fun x -> (* add new backwards links *)
+        x.pred <- node.id :: x.pred
+      ) succ;
+    node.succ <- succ
+
+  let replaceexp (node : 'a t) (newexp : 'a) : unit =
+    node.exp <- newexp
 
   let rec structure_without_loops_destructive (node : 'a t) : unit =
     (* recursive protection *)
@@ -77,6 +73,12 @@ module Node = struct
       List.iter helper node.succ
     in
     helper node
+
+  let succ (node : 'a t) : 'a t list =
+    node.succ
+
+  let prev (node : 'a t) : int list =
+    node.pred
 end
 
 (** given a node and an id, adds the latter to the predecessor list of the former
@@ -119,7 +121,7 @@ module CFG = struct
 
   let make_item idx exp pred succ =
     {idx = idx; exp = exp; pred = pred; succ = succ}
-  
+
   (** starting from a node (the root), builds a CFG *)
   let make (initial_node : 'a Node.t) : 'a t =
     let h = Hashtbl.create (Node.length initial_node) in
@@ -145,7 +147,7 @@ module CFG = struct
 
   let get (cfg : 'a t) (id : int) = match cfg with
     | {cfg=ht; _} -> Hashtbl.find ht id
-  
+
   let succ_of (cfg : 'a t) (id : int) = (get cfg id).succ
 
   let pred_of (cfg : 'a t) (id : int) = (get cfg id).pred
@@ -153,7 +155,7 @@ module CFG = struct
   let get_data (cfg : 'a t) (id : int) = (get cfg id).exp
 
   let set_data (cfg : 'a t) (id : int) (expr: 'a) =
-    let cfg = 
+    let cfg =
       match cfg with
       | {cfg= ht; root_id} -> {cfg= Hashtbl.copy ht; root_id}
     in

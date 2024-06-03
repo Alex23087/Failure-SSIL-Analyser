@@ -2,16 +2,24 @@ module Node : sig
   type 'a t [@@deriving show]
   val make : 'a -> 'a t list -> int list -> 'a t
 
-  val getnodeid: 'a t -> int
+  val getnodeid : 'a t -> int
+
+  val getexp : 'a t -> 'a
 
   (** given a node with its successors, returns the number of nodes *)
   val length : 'a t -> int
 
-  (** given a node and an id, adds the latter to the predecessor list of the former *)
   val addsucc : 'a t -> 'a t -> unit
-  val concat : 'a t -> 'a t -> unit
+
+  val setsucc : 'a t -> 'a t list -> unit
+
+  val replaceexp : 'a t -> 'a -> unit
 
   val structure_without_loops_destructive : 'a t -> unit
+
+  val succ : 'a t -> 'a t list
+
+  val prev : 'a t -> int list
 end
 
 module CFG : sig
