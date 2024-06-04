@@ -14,6 +14,7 @@
   - {{! HeapRegularCommands.ArithmeticExpression}ArithmeticExpression} ::= Int(n) | Identifier | ArithmeticExpression BinaryOperator ArithmeticExpression
   - {{! HeapRegularCommands.ArithmeticOperation}BinaryOperator} ::= + | - | * | / | %
 *)
+
 module HeapRegularCommands = struct
   open Base
   open Ppx_compare_lib.Builtin
