@@ -1,12 +1,11 @@
 open DataStructures.Analysis
-open DataStructures.Analysis.State
 open Utils
 
 let get_postcondition = Commands.get_postcondition
 let update_postcondition = Commands.update_postcondition
 
 let starting_states (cfg: Cfg.t) =
-  let block_start_postconditions (block: Cfg.block) =
+  let block_start_postconditions (block: CfgBlock.t) =
     let fold_fun (start_indices, command_index) statement =
       match get_postcondition statement with
       | Some(_) -> command_index :: start_indices, command_index + 1
@@ -29,20 +28,20 @@ let starting_states (cfg: Cfg.t) =
   in
   Cfg.fold cfg (fun cfg x acc -> (starting_states cfg x) @ acc) []
 
-let visit_limit (block: Cfg.block) =
+let visit_limit (block: CfgBlock.t) =
   block.visit_count >= 10
 
-let block_analysis_step (block: Cfg.block) (last_statement: int) : Cfg.block =
+let block_analysis_step (block: CfgBlock.t) (last_statement: int) : CfgBlock.t =
   let annotation_conversion (annotation: Commands.annotation) : NormalForm.annotation =
     {position= annotation.position}
   in
   let statement = unwrap_option (List.nth_opt block.statements last_statement) "unexpected" in
   let postcondition = unwrap_option (get_postcondition statement) "unexpected" in
   let precondition = Some(Atomic.weakest_precondition statement postcondition annotation_conversion) in
-  Cfg.update_formula_at block (last_statement - 1) precondition
+  CfgBlock.update_formula_at block (last_statement - 1) precondition
 
 let analysis_step (state: analysis_state) : analysis_state list * analysis_state list =
-  let block_to_starting_state (cfg: Cfg.t) (idx: int) (block: Cfg.block) =
+  let block_to_starting_state (cfg: Cfg.t) (idx: int) (block: CfgBlock.t) =
     let cfg = Cfg.set_data cfg idx block in
     {
       cfg = cfg;
@@ -57,7 +56,7 @@ let analysis_step (state: analysis_state) : analysis_state list * analysis_state
     let map_fun idx =
       let block = Cfg.get_data cfg idx in
       let iteration_limit_reached = visit_limit block in
-      let block = Cfg.update_formula_at_last block current_block.precondition in
+      let block = CfgBlock.update_formula_at_last block current_block.precondition in
       let state = block_to_starting_state cfg idx block in
       if iteration_limit_reached then
         Either.Right(state)
