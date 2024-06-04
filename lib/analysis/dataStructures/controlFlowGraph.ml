@@ -1,9 +1,12 @@
-(** This module contains the concrete implementation of the Control Flow Graph data structures.
+(** This module contains the concrete implementation of the Control Flow Graph data structures,
+with the definition of the structures contained inside each block.
 
 Important definitions:
-- {{! Cfg.cfg_block}block} - CFG block record to represent sequences of atomic commands in source.
-- {{! Cfg.cfg}cfg} - Control Flow Graph, instanced on the blocks' record.
-- {{! Cfg.cfg_item}item} - Control Flow Graph's node, which represent a block of commands, with their predecessor and successor blocks.
+- {{! NormalForm.t}Normal Form} - Logic formulas represented in Existential Disjunctive Normal Form.
+- {{! Commands.t}Command} - Regular Commands with the updated annotation that contains formulas in normal form.
+- {{! Cfg.t}CFG} - Control Flow Graph, instanced on the blocks' record.
+- {{! Cfg.block}CFG Block} - CFG block record to represent sequences of atomic commands in source.
+- {{! Cfg.item}CFG Item} - Control Flow Graph's node, which represent a block of commands, with their predecessor and successor blocks.
 *)
 
 open Analysis_DataStructures_Base
