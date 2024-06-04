@@ -4,6 +4,7 @@ open DataStructures.Parser.Commands
 open Analysis_TestCommon
 
 let%test "illegal read" =
+  (* x = [x] *)
   let ast = annot_cmd (HeapRegularCommand.Command(
     annot_cmd (HeapAtomicCommand.ReadHeap(
       "x", "x"
@@ -12,7 +13,8 @@ let%test "illegal read" =
   in
   not (validate_ast ast)
 
-  let%test "legal read" =
+let%test "legal read" =
+  (* x = [y] *)
   let ast = annot_cmd (HeapRegularCommand.Command(
     annot_cmd (HeapAtomicCommand.ReadHeap(
       "x", "y"
@@ -22,6 +24,7 @@ let%test "illegal read" =
   validate_ast ast
 
 let%test "illegal write" =
+  (* [x] = x *)
   let ast = annot_cmd (HeapRegularCommand.Command(
     annot_cmd (HeapAtomicCommand.WriteHeap(
       "x", annot_cmd (
@@ -33,6 +36,7 @@ let%test "illegal write" =
   not (validate_ast ast)
 
 let%test "legal write" =
+  (* [x] = y *)
   let ast = annot_cmd (HeapRegularCommand.Command(
     annot_cmd (HeapAtomicCommand.WriteHeap(
       "x", annot_cmd (
@@ -44,6 +48,7 @@ let%test "legal write" =
   validate_ast ast
 
 let%test "sequencing" =
+  (* [x] = y; y = z *)
   let ast = annot_cmd (HeapRegularCommand.Sequence(
     annot_cmd (HeapRegularCommand.Command(
       annot_cmd (HeapAtomicCommand.WriteHeap(
@@ -64,6 +69,7 @@ let%test "sequencing" =
   validate_ast ast
   
 let%test "non deterministic fail" =
+  (* ([x] = x) + (y = z) *)
   let ast = annot_cmd (HeapRegularCommand.NondeterministicChoice(
     annot_cmd (HeapRegularCommand.Command(
       annot_cmd (HeapAtomicCommand.WriteHeap(
@@ -84,6 +90,7 @@ let%test "non deterministic fail" =
   not (validate_ast ast)
 
 let%test "illegal star" =
+  (* ([x] = x)* *)
   let ast = annot_cmd (HeapRegularCommand.Star(
     annot_cmd (HeapRegularCommand.Command(
       annot_cmd (HeapAtomicCommand.WriteHeap(

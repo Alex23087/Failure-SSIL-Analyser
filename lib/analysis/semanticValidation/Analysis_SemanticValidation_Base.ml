@@ -1,6 +1,14 @@
 open DataStructures
 open Parser
 
+(** Validate Semantics of a given program, from its AST
+
+A program is correct when two specific atomic commands follow some rules:
+- {{! Ast.HeapRegularCommands.HeapAtomicCommand.ReadHeap} ReadHeap}: when reading from the heap, it is not allowed to assign the same variable with its heap contents.
+- {{! Ast.HeapRegularCommands.HeapAtomicCommand.WriteHeap} WriteHeap}: when writing on the heap, it is not allowed to assign in a cell *x* an expression whose value depends on *x*.
+
+The rules are only enforced to easen the analysis and do not constitute a strict limitation, as they can be easily circumvented by rewriting the program, without changing its semantics.
+*)
 let validate_ast (ast: Commands.t) = 
   let rec validate_regular_command (cmd: Commands.t) =
     match cmd.node with
