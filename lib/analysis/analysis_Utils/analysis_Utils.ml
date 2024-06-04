@@ -39,6 +39,10 @@ let rec get_expr_identifiers (expr: 'a ArithmeticExpression.t) =
     let r_ids = get_expr_identifiers rexpr in
     IdentifierSet.union l_ids r_ids
 
+let identifier_in_expr (expr: 'a ArithmeticExpression.t) (id: identifier) =
+  let identifiers = get_expr_identifiers expr in
+  IdentifierSet.exists (fun x -> String.equal id x) identifiers
+
 let rec get_formula_identifiers (formula: 'a Formula.t) =
   match formula.node with
   | True | False | EmptyHeap ->
