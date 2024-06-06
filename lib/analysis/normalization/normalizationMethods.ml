@@ -4,24 +4,27 @@ open NormalForm
 open NormalizationUtils
 open Analysis_Utils
 
-let conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) (last_phantom_id: int) =
+let conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) =
   let make_and_disjoints (lformula: NormalForm.t) (rformula: NormalForm.t) =
     let cartesian = list_cartesian lformula.disjoints rformula.disjoints in
     List.map (fun (l, r) -> Formula.And(l, r)) cartesian
   in
+  let last_phantom_id = compute_last_phantom_id lformula rformula in
   merge_two_formulas lformula rformula last_phantom_id make_and_disjoints
 
-let separate_conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) (last_phantom_id: int) =
+let separate_conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) =
   let make_and_separately_disjoints (lformula: NormalForm.t) (rformula: NormalForm.t) =
     let cartesian = list_cartesian lformula.disjoints rformula.disjoints in
     List.map (fun (l, r) -> Formula.AndSeparately(l, r)) cartesian
   in
+  let last_phantom_id = compute_last_phantom_id lformula rformula in
   merge_two_formulas lformula rformula last_phantom_id make_and_separately_disjoints
 
-let disjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) (last_phantom_id: int) =
+let disjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) =
   let make_or_disjoints (lformula: NormalForm.t) (rformula: NormalForm.t) =
     lformula.disjoints @ rformula.disjoints
   in
+  let last_phantom_id = compute_last_phantom_id lformula rformula in
   merge_two_formulas lformula rformula last_phantom_id make_or_disjoints
 
 let existentialization_of_identifier (exist_id: identifier) (subformula: NormalForm.t) =
@@ -40,9 +43,3 @@ let existentialization_of_identifier (exist_id: identifier) (subformula: NormalF
     match IdentifierSet.find_opt exist_id free_variables with
     | Some(_) -> NormalForm.make (IdentifierSet.add exist_id variables) disjoints phantom_id
     | None -> NormalForm.make variables disjoints phantom_id
-
-let merge_two_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) (last_phantom_id: int) make_disjoints =
-  let (lformula, rformula, last_phantom_id) = rename_common_free_variables lformula rformula last_phantom_id in
-  let bound_variables = IdentifierSet.union lformula.variables rformula.variables in
-  let disjoints = make_disjoints lformula rformula in
-  NormalForm.make bound_variables disjoints last_phantom_id

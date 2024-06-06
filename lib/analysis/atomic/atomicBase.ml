@@ -14,7 +14,7 @@ let compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: Norm
   | Guard(expr) ->
     let formula = command_bexpression_to_logic_formula expr (fun _ -> ()) in
     let formula = existential_disjuntive_normal_form formula post_condition.last_phantom_id in
-    conjunction_of_normalized_formulas formula post_condition formula.last_phantom_id
+    conjunction_of_normalized_formulas formula post_condition
   | Allocation(id) ->
     raise (Failure "not implemented")
   | Free(id) ->

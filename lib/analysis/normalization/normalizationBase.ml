@@ -14,12 +14,12 @@ let rec existential_disjuntive_normal_form (formula: 'a Ast.AnnotationLogic.t) (
     (* normalize recursively *)
     let lformula = existential_disjuntive_normal_form lformula last_phantom_id in
     let rformula = existential_disjuntive_normal_form rformula lformula.last_phantom_id in
-    conjunction_of_normalized_formulas lformula rformula rformula.last_phantom_id
+    conjunction_of_normalized_formulas lformula rformula
   | AndSeparately(lformula, rformula) ->
     (* normalize recursively *)
     let lformula = existential_disjuntive_normal_form lformula last_phantom_id in
     let rformula = existential_disjuntive_normal_form rformula lformula.last_phantom_id in
-    separate_conjunction_of_normalized_formulas lformula rformula rformula.last_phantom_id
+    separate_conjunction_of_normalized_formulas lformula rformula
   | Exists(id, subformula) ->
     (* normalize recursively *)
     let subformula = existential_disjuntive_normal_form subformula last_phantom_id in
@@ -28,6 +28,6 @@ let rec existential_disjuntive_normal_form (formula: 'a Ast.AnnotationLogic.t) (
     (* normalize recursively *)
     let lformula = existential_disjuntive_normal_form lformula last_phantom_id in
     let rformula = existential_disjuntive_normal_form rformula lformula.last_phantom_id in
-    disjunction_of_normalized_formulas lformula rformula rformula.last_phantom_id
+    disjunction_of_normalized_formulas lformula rformula
 and existential_disjuntive_normal_expr (expr: 'a Ast.AnnotationLogic.ArithmeticExpression.t) =
   remove_annotation_in_expr expr

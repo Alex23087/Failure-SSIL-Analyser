@@ -62,6 +62,12 @@ let rename_common_free_variables (lformula: NormalForm.t) (rformula: NormalForm.
   let rformula = NormalForm.make variables disjoints last_phantom_id in
   (lformula, rformula, last_phantom_id)
 
+let compute_last_phantom_id (lformula: NormalForm.t) (rformula: NormalForm.t): int =
+  if lformula.last_phantom_id > rformula.last_phantom_id then
+    lformula.last_phantom_id
+  else
+    rformula.last_phantom_id
+
 let merge_two_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) (last_phantom_id: int) make_disjoints =
   let (lformula, rformula, last_phantom_id) = rename_common_free_variables lformula rformula last_phantom_id in
   let bound_variables = IdentifierSet.union lformula.variables rformula.variables in
