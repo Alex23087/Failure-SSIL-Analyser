@@ -45,7 +45,7 @@ let rec existential_disjuntive_normal_form (formula: 'a Ast.AnnotationLogic.t) (
   match formula.node with
   | True | False | EmptyHeap | NonAllocated(_)
   | Comparison(_, _, _) | Allocation(_, _) ->
-    let formula = remove_annotation formula in
+    let formula = remove_annotation_in_formula formula in
     NormalForm.make IdentifierSet.empty [formula] last_phantom_id
   | And(lformula, rformula) ->
     (* normalize recursively *)

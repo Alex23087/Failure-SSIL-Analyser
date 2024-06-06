@@ -10,6 +10,7 @@ let weakest_precondition (command: 'a HeapAtomicCommand.t) (post_condition: Norm
     post_condition
   | Assignment(id, expr) ->
     let expr = command_expression_to_logic_expression expr (fun _ -> ()) in
+    let expr = remove_annotation_in_expr expr in
     substitute_expression_in_normalized_formula post_condition expr id
   | NonDet(id) ->
     existentialization_of_identifier id post_condition

@@ -6,38 +6,35 @@ open DataStructures
 open DataStructures.Analysis
 
 let annotate = DataStructures.AnnotatedNode.make
-let remove_annotation (formula: 'a Ast.AnnotationLogic.t) : NormalForm.Formula.t =
-  let rec remove_annotation_in_formula (formula: 'a Ast.AnnotationLogic.t) =
-    match formula.node with
-    | True -> NormalForm.Formula.True
-    | False -> NormalForm.Formula.False
-    | And(left, right) -> 
-      let left = remove_annotation_in_formula left in
-      let right = remove_annotation_in_formula right in
-      NormalForm.Formula.And(left, right)
-    | AndSeparately(left, right) -> 
-      let left = remove_annotation_in_formula left in
-      let right = remove_annotation_in_formula right in
-      NormalForm.Formula.AndSeparately(left, right)
-    | Comparison(op, lexpr, rexpr) ->
-      let lexpr = remove_annotation_in_expr lexpr in
-      let rexpr = remove_annotation_in_expr rexpr in
-      NormalForm.Formula.Comparison(op, lexpr, rexpr)
-    | EmptyHeap -> NormalForm.Formula.EmptyHeap
-    | NonAllocated(id) -> NormalForm.Formula.NonAllocated(id)
-    | Allocation(id, expr) -> NormalForm.Formula.Allocation(id, (remove_annotation_in_expr expr))
-    | Exists(_, _) -> raise (Failure "")
-    | Or(_, _) -> raise (Failure "")
-  and remove_annotation_in_expr expr =
-    match expr.node with
-    | Literal(value) -> NormalForm.ArithmeticExpression.Literal(value)
-    | Variable(id) -> NormalForm.ArithmeticExpression.Variable(id)
-    | Operation(op, lexpr, rexpr) ->
-      let lexpr = remove_annotation_in_expr lexpr in
-      let rexpr = remove_annotation_in_expr rexpr in
-      NormalForm.ArithmeticExpression.Operation(op, lexpr, rexpr)
-  in
-  remove_annotation_in_formula formula
+let rec remove_annotation_in_formula (formula: 'a Ast.AnnotationLogic.t) : NormalForm.Formula.t =
+  match formula.node with
+  | True -> NormalForm.Formula.True
+  | False -> NormalForm.Formula.False
+  | And(left, right) -> 
+    let left = remove_annotation_in_formula left in
+    let right = remove_annotation_in_formula right in
+    NormalForm.Formula.And(left, right)
+  | AndSeparately(left, right) -> 
+    let left = remove_annotation_in_formula left in
+    let right = remove_annotation_in_formula right in
+    NormalForm.Formula.AndSeparately(left, right)
+  | Comparison(op, lexpr, rexpr) ->
+    let lexpr = remove_annotation_in_expr lexpr in
+    let rexpr = remove_annotation_in_expr rexpr in
+    NormalForm.Formula.Comparison(op, lexpr, rexpr)
+  | EmptyHeap -> NormalForm.Formula.EmptyHeap
+  | NonAllocated(id) -> NormalForm.Formula.NonAllocated(id)
+  | Allocation(id, expr) -> NormalForm.Formula.Allocation(id, (remove_annotation_in_expr expr))
+  | Exists(_, _) -> raise (Failure "Existentialization of identifiers do not appear in normalized formulas")
+  | Or(_, _) -> raise (Failure "Disunctions of formulas do not appear in normalized formulas")
+and remove_annotation_in_expr expr =
+  match expr.node with
+  | Literal(value) -> NormalForm.ArithmeticExpression.Literal(value)
+  | Variable(id) -> NormalForm.ArithmeticExpression.Variable(id)
+  | Operation(op, lexpr, rexpr) ->
+    let lexpr = remove_annotation_in_expr lexpr in
+    let rexpr = remove_annotation_in_expr rexpr in
+    NormalForm.ArithmeticExpression.Operation(op, lexpr, rexpr)
 
 (* https://stackoverflow.com/a/10893700 *)
 let list_cartesian l l' =
