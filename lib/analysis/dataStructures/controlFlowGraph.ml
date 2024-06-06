@@ -11,55 +11,8 @@ Important definitions:
 
 open Analysis_DataStructures_Base
 
-(** Normalized Logic Formulas
-
-Logic formulas are normalized in Existential Disjunctive Normal Form, which easens the implementation of the analysis.
-A normalized formula consists in:
-- A set of existentialized identifiers.
-- A list of disjoint formulas. Each disjoint is a formula composed only of atomic propositions, conjunctions and separate conjunctions.
-- An annotation, the same type as of the non normalized formulas coming from the AST.
-
-Additionally, a number of support information is kept:
-- A so called phantom identifier, which is used to generate fresh names without having to rescan the names in the formulas.
-*)
-module NormalForm = struct
-  type t = {
-    variables: IdentifierSet.t; [@opaque]
-    disjoints: LogicFormulas.t list;
-    annotation: annotation;
-    last_phantom_id: int;
-  }
-  and annotation = LogicFormulas.annotation
-  [@@deriving show]
-
-  let make variables disjoints annotation phantom_id =
-    {variables; disjoints; annotation; last_phantom_id = phantom_id}
-end
-
-(** Commands for CFG
-
-The commands' data structures update their annotation to use normalized formulas when used in the Control Flow Graph.
-*)
-module Commands = struct
-  type annotation = {
-    position: position;
-    postcondition: NormalForm.t option;
-  }
-  [@@deriving show]
-
-  type t = annotation Ast.HeapRegularCommands.HeapAtomicCommand.t
-  [@@deriving show]
-
-  let get_postcondition (command: ('a, annotation) AnnotatedNode.t) =
-    command.annotation.postcondition
-
-  let update_postcondition (command: ('a, annotation) AnnotatedNode.t) postcondition =
-    let annotation = {
-      position = command.annotation.position;
-      postcondition
-    } in
-    AnnotatedNode.update_annotation command annotation
-end
+include NormalizedFormulas
+include CfgCommands
 
 (** The data structure used in the CFG blocks and its functions.
 
