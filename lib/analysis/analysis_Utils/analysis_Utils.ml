@@ -4,7 +4,6 @@ include CommandToLogicConversion
 
 open DataStructures
 open Parser
-open LogicFormulas
 
 open Ast.AnnotationLogic
 
@@ -15,18 +14,39 @@ let remove_annotation (formula: 'a Ast.AnnotationLogic.t) : DataStructures.Analy
       match formula.node with
       | True -> Formula.True
       | False -> Formula.False
-      | Exists(id, expr) -> raise (Failure "")
-      | And(left, right) -> raise (Failure "")
-      | AndSeparately(left, right) -> raise (Failure "")
-      | Or(left, right) -> raise (Failure "")
-      | Comparison(op, lexpr, rexpr) -> raise (Failure "")
-      | EmptyHeap -> raise (Failure "")
-      | NonAllocated(id) -> (Formula.NonAllocated id)
-      | Allocation(id, expr) -> raise (Failure "")
+      | Exists(id, formula) -> Formula.Exists(id, (remove_annotation_in_formula formula))
+      | And(left, right) -> 
+        let left = remove_annotation_in_formula left in
+        let right = remove_annotation_in_formula right in
+        Formula.And(left, right)
+      | AndSeparately(left, right) -> 
+        let left = remove_annotation_in_formula left in
+        let right = remove_annotation_in_formula right in
+        Formula.AndSeparately(left, right)
+      | Or(left, right) ->
+        let left = remove_annotation_in_formula left in
+        let right = remove_annotation_in_formula right in
+        Formula.Or(left, right)
+      | Comparison(op, lexpr, rexpr) ->
+        let lexpr = remove_annotation_in_expr lexpr in
+        let rexpr = remove_annotation_in_expr rexpr in
+        Formula.Comparison(op, lexpr, rexpr)
+      | EmptyHeap -> Formula.EmptyHeap
+      | NonAllocated(id) -> Formula.NonAllocated(id)
+      | Allocation(id, expr) -> Formula.Allocation(id, (remove_annotation_in_expr expr))
     in
     annotate formula ()
-  and remove_annotation_in_bexpr expr =
-    raise (Failure "")
+  and remove_annotation_in_expr expr =
+    let expr =
+      match expr.node with
+      | Literal(value) -> ArithmeticExpression.Literal(value)
+      | Variable(id) -> ArithmeticExpression.Variable(id)
+      | Operation(op, lexpr, rexpr) ->
+        let lexpr = remove_annotation_in_expr lexpr in
+        let rexpr = remove_annotation_in_expr rexpr in
+        ArithmeticExpression.Operation(op, lexpr, rexpr)
+    in
+    annotate expr ()
   in
   remove_annotation_in_formula formula
 
