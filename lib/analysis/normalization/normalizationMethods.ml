@@ -1,8 +1,10 @@
 open DataStructures
 open DataStructures.Analysis
 open NormalForm
-open NormalizationUtils
+
+open Utils
 open Analysis_Utils
+open NormalizationUtils
 
 let conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) =
   let make_and_disjoints (lformula: NormalForm.t) (rformula: NormalForm.t) =

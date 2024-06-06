@@ -18,11 +18,7 @@ let rename_variable_in_set (variables: IdentifierSet.t) (var: identifier) (new_n
   | Some(_) -> IdentifierSet.add new_name (IdentifierSet.remove var variables)
   | None -> variables
 
-let rec rename_variable_in_normal_formula (formula: NormalForm.t) (var: identifier) (new_name: identifier) =
-  let variables = rename_variable_in_set formula.variables var new_name in
-  let disjoints = List.map (function x -> rename_variable_in_formula x var new_name) formula.disjoints in
-  NormalForm.make variables disjoints formula.last_id_generator
-and rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_name: identifier) =
+let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_name: identifier) =
   let rename_variable_name (var: identifier) (old_name: identifier) (new_name: identifier) =
     if var = old_name then new_name else var
   in
