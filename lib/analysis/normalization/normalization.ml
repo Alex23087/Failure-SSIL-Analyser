@@ -1,1 +1,2 @@
 include NormalizationBase
+include NormalizationMethods

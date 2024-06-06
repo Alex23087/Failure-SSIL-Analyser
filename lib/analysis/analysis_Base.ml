@@ -32,12 +32,9 @@ let visit_limit (block: CfgBlock.t) =
   block.visit_count >= 10
 
 let block_analysis_step (block: CfgBlock.t) (last_statement: int) : CfgBlock.t =
-  let annotation_conversion (annotation: Commands.annotation) : NormalForm.annotation =
-    {position= annotation.position}
-  in
   let statement = unwrap_option (List.nth_opt block.statements last_statement) "unexpected" in
   let postcondition = unwrap_option (get_postcondition statement) "unexpected" in
-  let precondition = Some(Atomic.weakest_precondition statement postcondition annotation_conversion) in
+  let precondition = Some(Atomic.compute_precondition statement postcondition) in
   CfgBlock.update_formula_at block (last_statement - 1) precondition
 
 let analysis_step (state: analysis_state) : analysis_state list * analysis_state list =

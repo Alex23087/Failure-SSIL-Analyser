@@ -1,25 +1,28 @@
 open AtomicBase
 open Normalization
-open Analysis_Utils
-open DataStructures.Parser.LogicFormulas
-module Commands = Ast.HeapRegularCommands
+open DataStructures.Analysis.NormalForm
 
 open Analysis_TestCommon
 
-let annotation_conversion = command_annotation_to_logic_annotation
+(* Alias for better readability *)
+module Commands = Ast.HeapRegularCommands
+module PFormula = DataStructures.Parser.LogicFormulas.Formula
+module PBinaryComparison = DataStructures.Parser.LogicFormulas.BinaryComparison
+module PArithmeticExpression = DataStructures.Parser.LogicFormulas.ArithmeticExpression
+module PBinaryOperator = DataStructures.Parser.LogicFormulas.BinaryOperator
 
 let%test "weakest precondition on skip" =
   let command = annot_cmd Commands.HeapAtomicCommand.Skip in
   let post_condition =
-    annot (Formula.Exists(
+    annot (PFormula.Exists(
       "x",
-      annot (Formula.NonAllocated("x"))
+      annot (PFormula.NonAllocated("x"))
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition annotation_conversion in
+  let pre_condition = compute_precondition command post_condition in
   let expected_variables = "x" :: [] in
-  let expected_disjoints = annot (Formula.NonAllocated("x")) :: [] in
+  let expected_disjoints = Formula.NonAllocated("x") :: [] in
   test_expected_free_variables pre_condition expected_variables &&
   test_expected_disjoints pre_condition expected_disjoints 
 
@@ -31,31 +34,31 @@ let%test "weakest precondition on assignment" =
     ))
   in
   let post_condition = 
-    annot (Formula.Or(
-      annot (Formula.Comparison(
-        BinaryComparison.Equals,
-        annot (ArithmeticExpression.Variable("x")),
-        annot (ArithmeticExpression.Variable("y"))
+    annot (PFormula.Or(
+      annot (PFormula.Comparison(
+        PBinaryComparison.Equals,
+        annot (PArithmeticExpression.Variable("x")),
+        annot (PArithmeticExpression.Variable("y"))
       )),
-      annot (Formula.NonAllocated("x"))
+      annot (PFormula.NonAllocated("x"))
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition annotation_conversion in
+  let pre_condition = compute_precondition command post_condition in
   let expected_disjoints =
-    annot (Formula.And(
-      annot (Formula.NonAllocated("0$x")),
-      annot (Formula.Comparison(
+    Formula.And(
+      Formula.NonAllocated("0$x"),
+      Formula.Comparison(
         BinaryComparison.Equals,
-        annot (ArithmeticExpression.Variable("0$x")),
-        annot (ArithmeticExpression.Literal(5))
-      ))
-    )) ::
-    annot (Formula.Comparison(
+        ArithmeticExpression.Variable("0$x"),
+        ArithmeticExpression.Literal(5)
+      )
+    ) ::
+    Formula.Comparison(
       BinaryComparison.Equals,
-      annot (ArithmeticExpression.Literal(5)),
-      annot (ArithmeticExpression.Variable("y"))
-    )) :: []
+      ArithmeticExpression.Literal(5),
+      ArithmeticExpression.Variable("y")
+    ) :: []
   in
   test_expected_free_variables pre_condition [] &&
   test_expected_disjoints pre_condition expected_disjoints 
@@ -76,23 +79,23 @@ let%test "weakest precondition on guard" =
     ))
   in
   let post_condition =
-    annot (Formula.NonAllocated("y"))
+    annot (PFormula.NonAllocated("y"))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition annotation_conversion in
+  let pre_condition = compute_precondition command post_condition in
   let expected_disjoints =
-    annot (Formula.And(
-      annot (Formula.Comparison(
+    Formula.And(
+      Formula.Comparison(
         BinaryComparison.LessOrEqual,
-        annot (ArithmeticExpression.Variable("x")),
-        annot (ArithmeticExpression.Literal(17))
-      )),
-      annot (Formula.NonAllocated("y"))
-    )) :: 
-    annot (Formula.And(
-      annot (Formula.False),
-      annot (Formula.NonAllocated("y"))
-    )) :: []
+        ArithmeticExpression.Variable("x"),
+        ArithmeticExpression.Literal(17)
+      ),
+      Formula.NonAllocated("y")
+    ) :: 
+    Formula.And(
+      Formula.False,
+      Formula.NonAllocated("y")
+    ) :: []
   in
   test_expected_disjoints pre_condition expected_disjoints 
 
@@ -101,21 +104,21 @@ let%test "weakest precondition on non deterministic assignment" =
     annot_cmd (Commands.HeapAtomicCommand.NonDet("x"))
   in
   let post_condition =
-    annot (Formula.Comparison(
-      BinaryComparison.GreaterThan,
-      annot (ArithmeticExpression.Variable("x")),
-      annot (ArithmeticExpression.Variable("y"))
+    annot (PFormula.Comparison(
+      PBinaryComparison.GreaterThan,
+      annot (PArithmeticExpression.Variable("x")),
+      annot (PArithmeticExpression.Variable("y"))
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition annotation_conversion in
+  let pre_condition = compute_precondition command post_condition in
   let expected_variables = "x" :: [] in
   let expected_disjoints =
-    annot (Formula.Comparison(
+    Formula.Comparison(
       BinaryComparison.GreaterThan,
-      annot (ArithmeticExpression.Variable("x")),
-      annot (ArithmeticExpression.Variable("y"))
-    )) :: []
+      ArithmeticExpression.Variable("x"),
+      ArithmeticExpression.Variable("y")
+    ) :: []
   in
   test_expected_free_variables pre_condition expected_variables &&
   test_expected_disjoints pre_condition expected_disjoints 

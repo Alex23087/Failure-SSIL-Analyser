@@ -1,4 +1,4 @@
-type identifier = Ast.identifier
+type identifier = Ast.identifier [@@deriving show]
 module AnnotatedNode = struct include Ast.AnnotatedNode end [@@deriving show]
 module IdentifierSet = struct include Ast.IdentifierSet end [@@deriving show]
 

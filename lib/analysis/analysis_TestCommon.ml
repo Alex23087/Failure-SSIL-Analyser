@@ -23,7 +23,7 @@ let test_expected_free_variables (normalized: NormalForm.t) (variables: identifi
     in
     false
 
-let test_expected_disjoints (normalized: NormalForm.t) (expected: LogicFormulas.t list) =
+let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.Formula.t list) =
   match List.for_all (fun expected ->
     let compare_fn actual = equal_formulas expected actual in
     Option.is_some (List.find_opt compare_fn normalized.disjoints)
@@ -31,5 +31,5 @@ let test_expected_disjoints (normalized: NormalForm.t) (expected: LogicFormulas.
   | true -> true
   | false ->
     print_endline "actual disjoints: ";
-    List.iter (fun x -> print_endline (LogicFormulas.show x)) normalized.disjoints;
+    List.iter (fun x -> print_endline (NormalForm.Formula.show x)) normalized.disjoints;
     false
