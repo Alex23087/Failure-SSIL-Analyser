@@ -11,9 +11,6 @@ let annot formula =
   let annotation = LogicFormulas.make_annotation 0 0 in
   annotate formula annotation
 
-let annot_unit formula =
-  annotate formula ()
-
 let test_expected_free_variables (normalized: NormalForm.t) (variables: identifier list) =
   match IdentifierSet.subset (IdentifierSet.of_list (variables)) normalized.variables with
   | true -> true
@@ -26,7 +23,7 @@ let test_expected_free_variables (normalized: NormalForm.t) (variables: identifi
     in
     false
 
-let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.Formulas.t list) =
+let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.Formula.t list) =
   match List.for_all (fun expected ->
     let compare_fn actual = equal_formulas expected actual in
     Option.is_some (List.find_opt compare_fn normalized.disjoints)
@@ -34,5 +31,5 @@ let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.For
   | true -> true
   | false ->
     print_endline "actual disjoints: ";
-    List.iter (fun x -> print_endline (NormalForm.Formulas.show x)) normalized.disjoints;
+    List.iter (fun x -> print_endline (NormalForm.Formula.show x)) normalized.disjoints;
     false

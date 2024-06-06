@@ -3,7 +3,7 @@ open DataStructures.Analysis
 open Analysis_Utils
 
 let normal_form_free_variables (formula: NormalForm.t) =
-  let ids = List.map get_formula_identifiers formula.disjoints in
+  let ids = List.map get_normal_form_disjoint_identifiers formula.disjoints in
   let ids = List.fold_left (fun acc ids -> IdentifierSet.union acc ids) IdentifierSet.empty ids in
   IdentifierSet.diff ids formula.variables
 

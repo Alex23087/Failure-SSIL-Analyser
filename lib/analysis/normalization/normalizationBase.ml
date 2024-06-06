@@ -1,20 +1,20 @@
 open DataStructures
-open DataStructures.Parser.LogicFormulas
 open DataStructures.Analysis
+open NormalForm
 open Analysis_Utils
 open VariableHandling
 
 let conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) (last_phantom_id: int) =
   let make_and_disjoints (lformula: NormalForm.t) (rformula: NormalForm.t) =
     let cartesian = list_cartesian lformula.disjoints rformula.disjoints in
-    List.map (fun (l, r) -> annotate (Formula.And(l, r)) ()) cartesian
+    List.map (fun (l, r) -> Formula.And(l, r)) cartesian
   in
   merge_two_formulas lformula rformula last_phantom_id make_and_disjoints
 
 let separate_conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) (last_phantom_id: int) =
   let make_and_separately_disjoints (lformula: NormalForm.t) (rformula: NormalForm.t) =
     let cartesian = list_cartesian lformula.disjoints rformula.disjoints in
-    List.map (fun (l, r) -> annotate (Formula.AndSeparately(l, r)) ()) cartesian
+    List.map (fun (l, r) -> Formula.AndSeparately(l, r)) cartesian
   in
   merge_two_formulas lformula rformula last_phantom_id make_and_separately_disjoints
 

@@ -1,12 +1,11 @@
 open DataStructures
-open DataStructures.Parser.LogicFormulas
 open DataStructures.Analysis
 open NormalForm
 open Analysis_Utils
 
-let substitute_expression_in_normalized_formula (formula: NormalForm.t) (changing_expr: 'a ArithmeticExpression.t) (changed_id: identifier) =
-  let rec substitute_expression_in_expression (expr: 'a ArithmeticExpression.t) (changing_expr: 'a ArithmeticExpression.t) (changed_id: identifier) =
-    match expr.node with
+let substitute_expression_in_normalized_formula (formula: NormalForm.t) (changing_expr: ArithmeticExpression.t) (changed_id: identifier) =
+  let rec substitute_expression_in_expression (expr: ArithmeticExpression.t) (changing_expr: ArithmeticExpression.t) (changed_id: identifier) =
+    match expr with
     | Literal(_) -> expr
     | Variable(id) ->
       if id = changed_id then
@@ -16,60 +15,48 @@ let substitute_expression_in_normalized_formula (formula: NormalForm.t) (changin
     | Operation(op, lexpr, rexpr) ->
       let lexpr = substitute_expression_in_expression lexpr changing_expr changed_id in
       let rexpr = substitute_expression_in_expression rexpr changing_expr changed_id in
-      update_formula expr (ArithmeticExpression.Operation(op, lexpr, rexpr))
+      ArithmeticExpression.Operation(op, lexpr, rexpr)
   in
-  let rec substitute_expression_in_formula (formula: 'a Formula.t) (changing_expr: 'a ArithmeticExpression.t) (changed_id: identifier) (renamed_id: identifier) =
-    match formula.node with
+  let rec substitute_expression_in_formula (formula: Formula.t) (changing_expr: ArithmeticExpression.t) (changed_id: identifier) (renamed_id: identifier) =
+    match formula with
     | True | False | EmptyHeap ->
       formula, false
     | Allocation(id, expr) ->
       let expr = substitute_expression_in_expression expr changing_expr changed_id in
       if id = changed_id then
-        match get_variable_from_expression changing_expr with
-        | Some(changing_id) ->
-          update_formula formula (Formula.Allocation(changing_id, expr)), false
-        | None  ->
-          update_formula formula (Formula.Allocation(renamed_id, expr)), true
+        match get_variable_from_normal_form_expr changing_expr with
+        | Some(changing_id) -> Formula.Allocation(changing_id, expr), false
+        | None  -> Formula.Allocation(renamed_id, expr), true
       else
-        let formula = update_formula formula (Formula.Allocation(id, expr)) in
-        formula, false
+        Formula.Allocation(id, expr), false
     | NonAllocated(id) ->
       if id = changed_id then
-        match get_variable_from_expression changing_expr with
-        | Some(changing_id) ->
-          update_formula formula (Formula.NonAllocated(changing_id)), false
-        | None  ->
-          update_formula formula (Formula.NonAllocated(renamed_id)), true
+        match get_variable_from_normal_form_expr changing_expr with
+        | Some(changing_id) -> Formula.NonAllocated(changing_id), false
+        | None  -> Formula.NonAllocated(renamed_id), true
       else
         formula, false
     | Comparison(op, lexpr, rexpr) ->
       let lexpr = substitute_expression_in_expression lexpr changing_expr changed_id in
       let rexpr = substitute_expression_in_expression rexpr changing_expr changed_id in
-      let formula = update_formula formula (Formula.Comparison(op, lexpr, rexpr)) in
-      formula, false
+      Formula.Comparison(op, lexpr, rexpr), false
     | And(lformula, rformula) ->
       let lformula, lrenamed = substitute_expression_in_formula lformula changing_expr changed_id renamed_id in
       let rformula, rrenamed = substitute_expression_in_formula rformula changing_expr changed_id renamed_id in
-      let formula = update_formula formula (Formula.And(lformula, rformula)) in
-      formula, lrenamed || rrenamed
+      Formula.And(lformula, rformula), lrenamed || rrenamed
     | AndSeparately(lformula, rformula) ->
       let lformula, lrenamed = substitute_expression_in_formula lformula changing_expr changed_id renamed_id in
       let rformula, rrenamed = substitute_expression_in_formula rformula changing_expr changed_id renamed_id in
-      let formula = update_formula formula (Formula.AndSeparately(lformula, rformula)) in
-      formula, lrenamed || rrenamed
-    | Exists(_, _) ->
-      raise (Failure "Formulas of existential abstraction cannot be contained in normal form disjoints")
-    | Or(_, _) ->
-      raise (Failure "Disjunction of formulas cannot be contained in normal form disjoints")
+      Formula.AndSeparately(lformula, rformula), lrenamed || rrenamed
   in
   let original_phantom_id = formula.last_phantom_id in
   let renamed_var, renamed_phantom_id = new_variable_name changed_id original_phantom_id in
-  let id_expr = annotate (ArithmeticExpression.Variable(renamed_var)) () in
-  let renamed_equal_formula = annotate (Formula.Comparison(BinaryComparison.Equals, id_expr, changing_expr)) () in
-  let substitute_in_disjoint (formula: 'a Formula.t) (disjoints: 'a Formula.t list) (accum_renamed_used: bool) =
+  let id_expr = ArithmeticExpression.Variable(renamed_var) in
+  let renamed_equal_formula = Formula.Comparison(BinaryComparison.Equals, id_expr, changing_expr) in
+  let substitute_in_disjoint (formula: Formula.t) (disjoints: Formula.t list) (accum_renamed_used: bool) =
     let formula, renamed_used = substitute_expression_in_formula formula changing_expr changed_id renamed_var in
     let formula = if renamed_used then
-      annotate (Formula.And(formula, renamed_equal_formula)) ()
+      Formula.And(formula, renamed_equal_formula)
     else
       formula
     in

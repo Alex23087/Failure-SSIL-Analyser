@@ -12,19 +12,34 @@ Additionally, a number of support information is kept:
 - A so called phantom identifier, which is used to generate fresh names without having to rescan the names in the formulas.
 *)
 module NormalForm = struct
-  module Formulas = struct
-    include Ast.AnnotationLogic
-    
-    type t = unit Ast.AnnotationLogic.Formula.t
-    [@@deriving show]
+  module BinaryOperator = struct include Ast.AnnotationLogic.BinaryOperator end
 
-    type arithmetic_t = unit Ast.AnnotationLogic.ArithmeticExpression.t
+  module ArithmeticExpression = struct
+    type t =
+      | Literal of int
+      | Variable of identifier
+      | Operation of BinaryOperator.t * t * t
+    [@@deriving show]
+  end
+
+  module BinaryComparison = struct include Ast.AnnotationLogic.BinaryComparison end
+
+  module Formula = struct
+    type t =
+      | True
+      | False
+      | And of t * t
+      | Comparison of BinaryComparison.t * ArithmeticExpression.t * ArithmeticExpression.t
+      | EmptyHeap
+      | NonAllocated of identifier
+      | Allocation of identifier * ArithmeticExpression.t
+      | AndSeparately of t * t
     [@@deriving show]
   end
 
   type t = {
     variables: IdentifierSet.t; [@opaque]
-    disjoints: Formulas.t list;
+    disjoints: Formula.t list;
     last_phantom_id: int;
   }
   [@@deriving show]
