@@ -18,8 +18,22 @@ let weakest_precondition (command: 'a HeapAtomicCommand.t) (post_condition: Norm
     let formula = command_bexpression_to_logic_formula expr annotation_conversion in
     let formula = existential_disjuntive_normal_form formula post_condition.last_phantom_id in
     conjunction_of_normalized_formulas formula post_condition formula.last_phantom_id
-  | Allocation(id) ->
-    raise (Failure "not implemented")
+  | Allocation(id) -> (* idea: apply the disj rule, solving each disjunction indipendentely *)
+    (* apply alloc semantics to one formula *)
+    let apply_alloc (post : LogicFormulas.t) : LogicFormulas.t = match post.node with
+    | True -> True
+    | False
+    | And(exp1, exp2) 
+    | Comparison(bin, exp1, exp2)
+    | EmptyHeap
+    | NonAllocated(_) -> False
+    | Allocation(x, v) -> 
+
+    | Exists(id, exp) ->
+      raise (Failure "Cannot have an existentialization as subformula")
+    | Or(e1, e2) -> 
+      raise (Failure "Cannot have a disjunction as subformula")
+
   | Free(id) ->
     raise (Failure "not implemented")
   | ReadHeap(mem_id, id) ->
