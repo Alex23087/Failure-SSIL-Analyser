@@ -32,6 +32,9 @@ module Node = struct
   let make (exp: 'a) (succ: 'a t list) (pred: int list) : 'a t =
     {id = next_id(); exp = exp; succ = succ; pred = pred}
 
+  let makeWithId (id: int) (exp: 'a) (succ: 'a t list) (pred: int list) : 'a t =
+    {id = id; exp = exp; succ = succ; pred = pred}
+
   let getnodeid (node: 'a t): int = node.id
 
   (** given a node with its successors, returns the number of nodes *)
