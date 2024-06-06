@@ -62,7 +62,7 @@ module Node = struct
   let replaceexp (node : 'a t) (newexp : 'a) : unit =
     node.exp <- newexp
 
-  let rec structure_without_loops_destructive (node : 'a t) : unit =
+  let structure_without_loops_destructive (node : 'a t) : unit =
     (* recursive protection *)
     let alreadyvisited = ref [] in
     let rec helper (node : 'a t) : unit =

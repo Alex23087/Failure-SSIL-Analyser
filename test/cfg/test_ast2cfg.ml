@@ -60,7 +60,7 @@ let () =
   )) in
   (* Print it with show_rcmd *)
   (* print_endline (show root); *)
-  let convertedroot = convert root in
+  let convertedroot = Ast2cfgConverter.convert root in
   let print_command (formatter : Format.formatter) =
     List.iter (HeapAtomicCommand.pp (fun _ _ -> ()) formatter)
   in
@@ -75,6 +75,6 @@ let () =
     ))
     )
   )) in
-  let convertedroot = convert root in
+  let convertedroot = Ast2cfgConverter.convert root in
   Node.structure_without_loops_destructive convertedroot;
   print_endline (Node.show print_command convertedroot);

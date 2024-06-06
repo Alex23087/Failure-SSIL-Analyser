@@ -1,5 +1,5 @@
 module Node : sig
-  type 'a t [@@deriving show]
+  type 'a t [@@deriving show, sexp, compare]
   val make : 'a -> 'a t list -> int list -> 'a t
 
   val getnodeid : 'a t -> int
