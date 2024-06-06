@@ -10,5 +10,5 @@ let expected: Formula.t = {
 }
 ;;
 
-let%test_unit "test formulae n. 01" =
+let%test_unit "test formulae n. 00" =
   [%test_eq: Formula.t] (parse_formula source) expected
