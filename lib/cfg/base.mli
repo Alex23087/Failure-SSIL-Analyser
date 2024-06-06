@@ -1,5 +1,7 @@
 module Node : sig
-  type 'a t [@@deriving show, sexp, compare]
+  type 'a t [@@deriving show, sexp]
+  val compare : 'a t -> 'a t -> bool
+  
   val make : 'a -> 'a t list -> int list -> 'a t
 
   val makeWithId : int -> 'a -> 'a t list -> int list -> 'a t

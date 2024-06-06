@@ -20,14 +20,63 @@ let next_id () =
  *)
 module Node = struct
   open Sexplib.Std
-  open Ppx_compare_lib.Builtin
 
   type 'a t = {
-    id            : int;
-    mutable exp   : 'a;
-    mutable succ  : 'a t list;
-    mutable pred  : int list;
-  } [@@deriving show, sexp, compare]
+      id            : int;
+      mutable exp   : 'a;
+      mutable succ  : 'a t list;
+      mutable pred  : int list;
+    } [@@deriving show, sexp]
+
+  let compare (node1: 'a t) (node2: 'a t) : bool =
+    (* severely limited, only checks isomorphism for two children for each node,
+       also doesn't return true for every isomophic graphs that have two
+       children for each node, only for some *)
+    (* TODO: make it better *)
+    let associations = ref (Hashtbl.create 100) in (* lets hope that 100 is big enough *)
+    Hashtbl.add !associations node1.id node2.id;
+
+    let alreadyvisited = ref [] in
+
+    let rec helper (node1: 'a t) (node2: 'a t) : bool =
+      if List.mem node1.id !alreadyvisited then
+        true
+      else (
+        alreadyvisited := node1.id :: !alreadyvisited;
+        match (Hashtbl.find_opt !associations node1.id, node2.id) with
+        | (Some a, b) -> (
+          match (a == b, node1.exp = node2.exp, node1.succ, node2.succ) with
+          | (true, true, [], []) -> true (* end of the graph *)
+          | (true, true, [node1succ], [node2succ]) -> (* easy case, only 1 child *)
+           Hashtbl.add !associations node1succ.id node2succ.id;
+           helper node1succ node2succ
+          | (true, true, a, b) when (List.length a) != (List.length b) -> (* not the right ammount of children *)
+             false
+          | (true, true, [n11; n12], [n21; n22]) -> (
+            match (n11.exp = n21.exp, n11.exp = n22.exp) with
+            | (true, _) -> (
+              Hashtbl.add !associations n11.id n21.id;
+              Hashtbl.add !associations n12.id n22.id;
+              (helper n11 n21) && (helper n12 n22)
+            )
+            | (_, true) -> (
+              Hashtbl.add !associations n11.id n22.id;
+              Hashtbl.add !associations n12.id n21.id;
+              (helper n11 n22) && (helper n12 n21)
+            )
+            | (false, false) -> false
+          )
+          | (true, true, _, _) -> (* Sir, This Is A Wendy's *)
+             false
+          | _ ->
+             false
+        )
+        | (None, _) -> (* first time we see node1 (happens only at the beginning) *)
+           false
+      )
+    in
+    helper node1 node2
+
 
   let make (exp: 'a) (succ: 'a t list) (pred: int list) : 'a t =
     {id = next_id(); exp = exp; succ = succ; pred = pred}
@@ -104,7 +153,7 @@ module CFG = struct
 
     let pp pp_key pp_value ppf values =
       Hashtbl.iter (fun key data ->
-        Format.fprintf ppf "@[<1>%a: %a@]@." pp_key key pp_value data) values
+          Format.fprintf ppf "@[<1>%a: %a@]@." pp_key key pp_value data) values
 
   end
 
@@ -117,10 +166,10 @@ module CFG = struct
 
   (* The CFG is implemented as an Hashtable <id, (exp, predecessors, successors)> *)
   type 'a t = {
-    cfg: (int, 'a item) Hashtbl.t;
-    root_id: int
-  }
-  [@@deriving show]
+      cfg: (int, 'a item) Hashtbl.t;
+      root_id: int
+    }
+               [@@deriving show]
 
   let make_item idx exp pred succ =
     {idx = idx; exp = exp; pred = pred; succ = succ}

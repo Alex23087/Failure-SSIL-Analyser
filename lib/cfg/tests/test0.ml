@@ -4,10 +4,6 @@ open Ast2cfg
 open Cfg_Tests_Utils
 open HeapRegularCommands
 
-(* TODO: make the test not depend on each other, on the order of operations
-         or on the actual value of the id
-         (also equality checks every loop so it doesn't stop) *)
-
 (* -------------------------------------------------------------------------- *)
 (*                   test ast to cfg Command&Allocation                       *)
 let source =
@@ -16,10 +12,10 @@ let source =
   ))
 
 let expected: ((unit HeapAtomicCommand.t) list Node.t) =
-  Node.makeWithId 1 [ annotate (HeapAtomicCommand.Allocation "x") ] [] []
+  Node.make [ annotate (HeapAtomicCommand.Allocation "x") ] [] []
 
-let%test_unit "test ast to cfg Command&Allocation" =
-  [%test_eq: _ Node.t] (Ast2cfgConverter.convert source) expected
+let%test "test ast to cfg Command&Allocation" =
+  Node.compare (Ast2cfgConverter.convert source) expected
 
 
 (* -------------------------------------------------------------------------- *)
@@ -35,11 +31,11 @@ let source =
   ))
 
 let expected: ((unit HeapAtomicCommand.t) list Node.t) =
-  Node.makeWithId 3 [ annotate (HeapAtomicCommand.Allocation "x");
-                      annotate (HeapAtomicCommand.Allocation "x") ] [] []
+  Node.make [ annotate (HeapAtomicCommand.Allocation "x");
+              annotate (HeapAtomicCommand.Allocation "x") ] [] []
 
-let%test_unit "test ast to cfg Sequence C&C" =
-  [%test_eq: _ Node.t] (Ast2cfgConverter.convert source) expected
+let%test "test ast to cfg Sequence C&C" =
+  Node.compare (Ast2cfgConverter.convert source) expected
 
 
 (* -------------------------------------------------------------------------- *)
@@ -52,36 +48,38 @@ let source =
   ))
 
 let expected: ((unit HeapAtomicCommand.t) list Node.t) =
-  Node.makeWithId 4 [ annotate (HeapAtomicCommand.Allocation "x"); ] [] [4]
+  Node.make [ annotate (HeapAtomicCommand.Allocation "x") ] [] []
+let () = Node.addsucc expected expected
 
-let%test_unit "test ast to cfg Star" =
-  [%test_eq: _ Node.t] (convert_for_star source) expected
+
+let%test "test ast to cfg Star" =
+  Node.compare (Ast2cfgConverter.convert source) expected
 
 
 (* -------------------------------------------------------------------------- *)
-(*                          test ast to cfg Star                              *)
+(*                         test ast to cfg NonDet                             *)
 let source =
   annotate ( HeapRegularCommand.NondeterministicChoice (
     annotate ( HeapRegularCommand.Command (
         annotate ( HeapAtomicCommand.Allocation "x")
     )),
     annotate ( HeapRegularCommand.Command (
-        annotate ( HeapAtomicCommand.Allocation "x")
+        annotate ( HeapAtomicCommand.Allocation "y")
     ))
   ))
 
 let expected: ((unit HeapAtomicCommand.t) list Node.t) =
-  Node.makeWithId 7 [] [
-      Node.makeWithId 5 [ annotate ( HeapAtomicCommand.Allocation "x") ] [
-          Node.makeWithId 8 [] [] [5; 6]
-        ] [7];
-      Node.makeWithId 6 [ annotate ( HeapAtomicCommand.Allocation "x") ] [
-          Node.makeWithId 8 [] [] [5; 6]
-        ] [7]
+  Node.makeWithId 1 [] [
+      Node.makeWithId 2 [ annotate ( HeapAtomicCommand.Allocation "x") ] [
+          Node.makeWithId 4 [] [] [2; 3]
+        ] [1];
+      Node.makeWithId 3 [ annotate ( HeapAtomicCommand.Allocation "y") ] [
+          Node.makeWithId 4 [] [] [2; 3]
+        ] [1]
     ] []
 
-let%test_unit "test ast to cfg Star" =
-  [%test_eq: _ Node.t] (Ast2cfgConverter.convert source) expected
+let%test "test ast to cfg NonDet" =
+  Node.compare (Ast2cfgConverter.convert source) expected
 
 
 (* -------------------------------------------------------------------------- *)
@@ -129,5 +127,6 @@ let source = annotate (HeapRegularCommand.Sequence(
     ))
   ))
 
-let%test_unit "test ast to cfg Sequence C&C" =
-  [%test_eq: _] (let _ = Ast2cfgConverter.convert source in ()) ()
+let%test_unit "test ast to cfg Everything" =
+  let _ = Ast2cfgConverter.convert source in
+  ()

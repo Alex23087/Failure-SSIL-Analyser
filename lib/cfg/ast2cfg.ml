@@ -30,13 +30,15 @@ module Ast2cfgConverter = struct
   let rec simplify(root: 'a HeapAtomicCommand.t list Node.t) : unit =
     match Node.succ root with
     | [] -> ()
-    | [a] -> (
+    | [a] when Node.getnodeid a != Node.getnodeid root -> (
       match Node.prev a with
       | [] -> raise (Invalid_argument "Your graph is wrong")
-      | [_] -> Node.replaceexp root ((Node.getexp root) @ (Node.getexp a));
-               Node.setsucc root (Node.succ a)
+      | [_] ->
+         Node.replaceexp root ((Node.getexp root) @ (Node.getexp a));
+         Node.setsucc root (Node.succ a)
       | _ -> simplify a
     )
+    | [_] -> ()
     | a -> List.iter simplify a
 
   let convert (root: 'a HeapRegularCommand.t) : 'a HeapAtomicCommand.t list Node.t =
