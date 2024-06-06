@@ -1,12 +1,38 @@
 open DataStructures
 open DataStructures.Analysis
+open NormalForm
 open Analysis_Utils
 
-let normal_form_free_variables (formula: NormalForm.t) =
-  let ids = List.map get_normal_form_disjoint_identifiers formula.disjoints in
-  let ids = List.fold_left (fun acc ids -> IdentifierSet.union acc ids) IdentifierSet.empty ids in
-  IdentifierSet.diff ids formula.variables
-
+let rec remove_annotation_in_formula (formula: 'a Ast.AnnotationLogic.t) : Formula.t =
+  match formula.node with
+  | True -> Formula.True
+  | False -> Formula.False
+  | And(left, right) -> 
+    let left = remove_annotation_in_formula left in
+    let right = remove_annotation_in_formula right in
+    Formula.And(left, right)
+  | AndSeparately(left, right) -> 
+    let left = remove_annotation_in_formula left in
+    let right = remove_annotation_in_formula right in
+    Formula.AndSeparately(left, right)
+  | Comparison(op, lexpr, rexpr) ->
+    let lexpr = remove_annotation_in_expr lexpr in
+    let rexpr = remove_annotation_in_expr rexpr in
+    Formula.Comparison(op, lexpr, rexpr)
+  | EmptyHeap -> Formula.EmptyHeap
+  | NonAllocated(id) -> Formula.NonAllocated(id)
+  | Allocation(id, expr) -> Formula.Allocation(id, (remove_annotation_in_expr expr))
+  | Exists(_, _) -> raise (Failure "Existentialization of identifiers do not appear in normalized formulas")
+  | Or(_, _) -> raise (Failure "Disunctions of formulas do not appear in normalized formulas")
+and remove_annotation_in_expr expr =
+  match expr.node with
+  | Literal(value) -> ArithmeticExpression.Literal(value)
+  | Variable(id) -> ArithmeticExpression.Variable(id)
+  | Operation(op, lexpr, rexpr) ->
+    let lexpr = remove_annotation_in_expr lexpr in
+    let rexpr = remove_annotation_in_expr rexpr in
+    ArithmeticExpression.Operation(op, lexpr, rexpr)
+    
 let rename_common_free_variables (lformula: NormalForm.t) (rformula: NormalForm.t) (last_phantom_id: int) =
   let lformula_free, lformula_bound = normal_form_free_variables lformula, lformula.variables in
   let rformula_free, rformula_bound = normal_form_free_variables rformula, rformula.variables in
@@ -35,11 +61,6 @@ let rename_common_free_variables (lformula: NormalForm.t) (rformula: NormalForm.
   in
   let rformula = NormalForm.make variables disjoints last_phantom_id in
   (lformula, rformula, last_phantom_id)
-
-let rename_variable_in_normal_formula (formula: NormalForm.t) (var: identifier) (new_name: identifier) =
-  let variables = rename_variable_in_set formula.variables var new_name in
-  let disjoints = List.map (function x -> rename_variable_in_formula x var new_name) formula.disjoints in
-  NormalForm.make variables disjoints formula.last_phantom_id
 
 let merge_two_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) (last_phantom_id: int) make_disjoints =
   let (lformula, rformula, last_phantom_id) = rename_common_free_variables lformula rformula last_phantom_id in

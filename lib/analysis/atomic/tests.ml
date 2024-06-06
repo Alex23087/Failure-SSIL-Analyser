@@ -20,7 +20,7 @@ let%test "weakest precondition on skip" =
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition in
+  let pre_condition = compute_precondition command post_condition in
   let expected_variables = "x" :: [] in
   let expected_disjoints = Formula.NonAllocated("x") :: [] in
   test_expected_free_variables pre_condition expected_variables &&
@@ -44,7 +44,7 @@ let%test "weakest precondition on assignment" =
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition in
+  let pre_condition = compute_precondition command post_condition in
   let expected_disjoints =
     Formula.And(
       Formula.NonAllocated("0$x"),
@@ -82,7 +82,7 @@ let%test "weakest precondition on guard" =
     annot (PFormula.NonAllocated("y"))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition in
+  let pre_condition = compute_precondition command post_condition in
   let expected_disjoints =
     Formula.And(
       Formula.Comparison(
@@ -111,7 +111,7 @@ let%test "weakest precondition on non deterministic assignment" =
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition in
+  let pre_condition = compute_precondition command post_condition in
   let expected_variables = "x" :: [] in
   let expected_disjoints =
     Formula.Comparison(

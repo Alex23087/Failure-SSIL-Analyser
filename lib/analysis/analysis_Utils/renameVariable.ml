@@ -1,5 +1,6 @@
 open DataStructures
-open DataStructures.Analysis.NormalForm
+open DataStructures.Analysis
+open NormalForm
 
 let new_variable_name (old_var: identifier) (phantom_id: int) =
   let substr = String.split_on_char '$' old_var in
@@ -17,7 +18,11 @@ let rename_variable_in_set (variables: IdentifierSet.t) (var: identifier) (new_n
   | Some(_) -> IdentifierSet.add new_name (IdentifierSet.remove var variables)
   | None -> variables
 
-let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_name: identifier) =
+let rec rename_variable_in_normal_formula (formula: NormalForm.t) (var: identifier) (new_name: identifier) =
+  let variables = rename_variable_in_set formula.variables var new_name in
+  let disjoints = List.map (function x -> rename_variable_in_formula x var new_name) formula.disjoints in
+  NormalForm.make variables disjoints formula.last_phantom_id
+and rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_name: identifier) =
   let rename_variable_name (var: identifier) (old_name: identifier) (new_name: identifier) =
     if var = old_name then new_name else var
   in
@@ -52,8 +57,7 @@ let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_
     let lformula = rename_variable_in_formula lformula var new_name in
     let rformula = rename_variable_in_formula rformula var new_name in
     Formula.AndSeparately(lformula, rformula)
-
-let rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) (disjoints: Formula.t list) (phantom_id: int) =
+and rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) (disjoints: Formula.t list) (phantom_id: int) =
   let (new_var, phantom_id) = new_variable_name var phantom_id in
   let variables = IdentifierSet.add new_var (IdentifierSet.remove var variables) in
   let disjoints = List.map (fun x -> rename_variable_in_formula x var new_var) disjoints in
