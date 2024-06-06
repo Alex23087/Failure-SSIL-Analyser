@@ -9,7 +9,7 @@ A normalized formula consists in:
 - An annotation, the same type as of the non normalized formulas coming from the AST.
 
 Additionally, a number of support information is kept:
-- A so called phantom identifier, which is used to generate fresh names without having to rescan the names in the formulas.
+- A identifier generator number, which is used to generate fresh names without having to rescan the names in the formulas.
 *)
 module NormalForm = struct
   module BinaryOperator = struct include Ast.AnnotationLogic.BinaryOperator end
@@ -40,10 +40,10 @@ module NormalForm = struct
   type t = {
     variables: IdentifierSet.t; [@opaque]
     disjoints: Formula.t list;
-    last_phantom_id: int;
+    last_id_generator: int;
   }
   [@@deriving show]
 
-  let make variables disjoints phantom_id =
-    {variables; disjoints; last_phantom_id = phantom_id}
+  let make variables disjoints id_generator =
+    {variables; disjoints; last_id_generator = id_generator}
 end
