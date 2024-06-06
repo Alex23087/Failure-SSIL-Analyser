@@ -32,10 +32,10 @@ let%test "disjoint merging" =
   ) in
   let normalized = existential_disjuntive_normal_form formula 0 in
   let expected_disjoints = 
-    annot (Formula.NonAllocated("x")) :: 
-    annot (Formula.NonAllocated("y")) :: 
-    annot (Formula.NonAllocated("z")) :: 
-    annot (Formula.NonAllocated("w")) :: []
+    annot_unit (Formula.NonAllocated("x")) :: 
+    annot_unit (Formula.NonAllocated("y")) :: 
+    annot_unit (Formula.NonAllocated("z")) :: 
+    annot_unit (Formula.NonAllocated("w")) :: []
   in
   test_expected_disjoints normalized expected_disjoints
 
@@ -55,18 +55,18 @@ let%test "and distribution" =
     ))
   ) in 
   let normalized = existential_disjuntive_normal_form formula 0 in
-  let expected_disjoints = annot ( Formula.And(
-    annot (Formula.NonAllocated("x")),
-    annot (Formula.NonAllocated("z"))
-  )) :: annot ( Formula.And(
-    annot (Formula.NonAllocated("x")),
-    annot (Formula.NonAllocated("w"))
-  )) :: annot ( Formula.And(
-    annot (Formula.NonAllocated("y")),
-    annot (Formula.NonAllocated("z"))
-  )) :: annot ( Formula.And(
-    annot (Formula.NonAllocated("y")),
-    annot (Formula.NonAllocated("w"))
+  let expected_disjoints = annot_unit ( Formula.And(
+    annot_unit (Formula.NonAllocated("x")),
+    annot_unit (Formula.NonAllocated("z"))
+  )) :: annot_unit ( Formula.And(
+    annot_unit (Formula.NonAllocated("x")),
+    annot_unit (Formula.NonAllocated("w"))
+  )) :: annot_unit ( Formula.And(
+    annot_unit (Formula.NonAllocated("y")),
+    annot_unit (Formula.NonAllocated("z"))
+  )) :: annot_unit ( Formula.And(
+    annot_unit (Formula.NonAllocated("y")),
+    annot_unit (Formula.NonAllocated("w"))
   )) :: []
   in
   test_expected_disjoints normalized expected_disjoints
@@ -87,18 +87,18 @@ let%test "and separately distribution" =
     ))
   ) in 
   let normalized = existential_disjuntive_normal_form formula 0 in
-  let expected_disjoints = annot ( Formula.AndSeparately(
-    annot (Formula.NonAllocated("x")),
-    annot (Formula.NonAllocated("z"))
-  )) :: annot ( Formula.AndSeparately(
-    annot (Formula.NonAllocated("x")),
-    annot (Formula.NonAllocated("w"))
-  )) :: annot ( Formula.AndSeparately(
-    annot (Formula.NonAllocated("y")),
-    annot (Formula.NonAllocated("z"))
-  )) :: annot ( Formula.AndSeparately(
-    annot (Formula.NonAllocated("y")),
-    annot (Formula.NonAllocated("w"))
+  let expected_disjoints = annot_unit ( Formula.AndSeparately(
+    annot_unit (Formula.NonAllocated("x")),
+    annot_unit (Formula.NonAllocated("z"))
+  )) :: annot_unit ( Formula.AndSeparately(
+    annot_unit (Formula.NonAllocated("x")),
+    annot_unit (Formula.NonAllocated("w"))
+  )) :: annot_unit ( Formula.AndSeparately(
+    annot_unit (Formula.NonAllocated("y")),
+    annot_unit (Formula.NonAllocated("z"))
+  )) :: annot_unit ( Formula.AndSeparately(
+    annot_unit (Formula.NonAllocated("y")),
+    annot_unit (Formula.NonAllocated("w"))
   )) :: []
   in
   test_expected_disjoints normalized expected_disjoints
@@ -125,19 +125,19 @@ let%test "variables renaming when merging normalized forms" =
   let normalized = existential_disjuntive_normal_form formula 0 in
   let expected_identifiers = "x" :: "0$y" :: "1$x" :: [] in
   let expected_disjoints =
-    annot (Formula.AndSeparately(
-      annot (Formula.And(
-        annot (Formula.NonAllocated("x")),
-        annot (Formula.NonAllocated("0$y"))
+    annot_unit (Formula.AndSeparately(
+      annot_unit (Formula.And(
+        annot_unit (Formula.NonAllocated("x")),
+        annot_unit (Formula.NonAllocated("0$y"))
       )),
-      annot (Formula.NonAllocated("1$x"))
+      annot_unit (Formula.NonAllocated("1$x"))
     )) ::
-    annot (Formula.AndSeparately(
-      annot (Formula.And(
-        annot (Formula.NonAllocated("x")),
-        annot (Formula.NonAllocated("0$y"))
+    annot_unit (Formula.AndSeparately(
+      annot_unit (Formula.And(
+        annot_unit (Formula.NonAllocated("x")),
+        annot_unit (Formula.NonAllocated("0$y"))
       )),
-      annot (Formula.NonAllocated("y"))
+      annot_unit (Formula.NonAllocated("y"))
     )) :: []
   in
   test_expected_free_variables normalized expected_identifiers &&

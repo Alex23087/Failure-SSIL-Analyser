@@ -1,12 +1,9 @@
 open AtomicBase
 open Normalization
-open Analysis_Utils
 open DataStructures.Parser.LogicFormulas
 module Commands = Ast.HeapRegularCommands
 
 open Analysis_TestCommon
-
-let annotation_conversion = command_annotation_to_logic_annotation
 
 let%test "weakest precondition on skip" =
   let command = annot_cmd Commands.HeapAtomicCommand.Skip in
@@ -17,9 +14,9 @@ let%test "weakest precondition on skip" =
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition annotation_conversion in
+  let pre_condition = weakest_precondition command post_condition in
   let expected_variables = "x" :: [] in
-  let expected_disjoints = annot (Formula.NonAllocated("x")) :: [] in
+  let expected_disjoints = annot_unit (Formula.NonAllocated("x")) :: [] in
   test_expected_free_variables pre_condition expected_variables &&
   test_expected_disjoints pre_condition expected_disjoints 
 
@@ -41,20 +38,20 @@ let%test "weakest precondition on assignment" =
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition annotation_conversion in
+  let pre_condition = weakest_precondition command post_condition in
   let expected_disjoints =
-    annot (Formula.And(
-      annot (Formula.NonAllocated("0$x")),
-      annot (Formula.Comparison(
+    annot_unit (Formula.And(
+      annot_unit (Formula.NonAllocated("0$x")),
+      annot_unit (Formula.Comparison(
         BinaryComparison.Equals,
-        annot (ArithmeticExpression.Variable("0$x")),
-        annot (ArithmeticExpression.Literal(5))
+        annot_unit (ArithmeticExpression.Variable("0$x")),
+        annot_unit (ArithmeticExpression.Literal(5))
       ))
     )) ::
-    annot (Formula.Comparison(
+    annot_unit (Formula.Comparison(
       BinaryComparison.Equals,
-      annot (ArithmeticExpression.Literal(5)),
-      annot (ArithmeticExpression.Variable("y"))
+      annot_unit (ArithmeticExpression.Literal(5)),
+      annot_unit (ArithmeticExpression.Variable("y"))
     )) :: []
   in
   test_expected_free_variables pre_condition [] &&
@@ -79,19 +76,19 @@ let%test "weakest precondition on guard" =
     annot (Formula.NonAllocated("y"))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition annotation_conversion in
+  let pre_condition = weakest_precondition command post_condition in
   let expected_disjoints =
-    annot (Formula.And(
-      annot (Formula.Comparison(
+    annot_unit (Formula.And(
+      annot_unit (Formula.Comparison(
         BinaryComparison.LessOrEqual,
-        annot (ArithmeticExpression.Variable("x")),
-        annot (ArithmeticExpression.Literal(17))
+        annot_unit (ArithmeticExpression.Variable("x")),
+        annot_unit (ArithmeticExpression.Literal(17))
       )),
-      annot (Formula.NonAllocated("y"))
+      annot_unit (Formula.NonAllocated("y"))
     )) :: 
-    annot (Formula.And(
-      annot (Formula.False),
-      annot (Formula.NonAllocated("y"))
+    annot_unit (Formula.And(
+      annot_unit (Formula.False),
+      annot_unit (Formula.NonAllocated("y"))
     )) :: []
   in
   test_expected_disjoints pre_condition expected_disjoints 
@@ -108,13 +105,13 @@ let%test "weakest precondition on non deterministic assignment" =
     ))
   in
   let post_condition = existential_disjuntive_normal_form post_condition 0 in
-  let pre_condition = weakest_precondition command post_condition annotation_conversion in
+  let pre_condition = weakest_precondition command post_condition in
   let expected_variables = "x" :: [] in
   let expected_disjoints =
-    annot (Formula.Comparison(
+    annot_unit (Formula.Comparison(
       BinaryComparison.GreaterThan,
-      annot (ArithmeticExpression.Variable("x")),
-      annot (ArithmeticExpression.Variable("y"))
+      annot_unit (ArithmeticExpression.Variable("x")),
+      annot_unit (ArithmeticExpression.Variable("y"))
     )) :: []
   in
   test_expected_free_variables pre_condition expected_variables &&

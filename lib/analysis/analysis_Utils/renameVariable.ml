@@ -60,7 +60,7 @@ let rec rename_variable_in_formula (disjoint: 'a Formula.t) (var: identifier) (n
     let rformula = rename_variable_in_formula rformula var new_name in
     update_formula disjoint (Formula.AndSeparately(lformula, rformula))
 
-let rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) (disjoints: LogicFormulas.t list) (phantom_id: int) =
+let rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) (disjoints: 'a Formula.t list) (phantom_id: int) =
   let (new_var, phantom_id) = new_variable_name var phantom_id in
   let variables = IdentifierSet.add new_var (IdentifierSet.remove var variables) in
   let disjoints = List.map (fun x -> rename_variable_in_formula x var new_var) disjoints in

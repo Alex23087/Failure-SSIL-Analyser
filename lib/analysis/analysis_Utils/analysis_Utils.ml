@@ -6,17 +6,29 @@ open DataStructures
 open Parser
 open LogicFormulas
 
-let annotate = DataStructures.AnnotatedNode.make
+open Ast.AnnotationLogic
 
-let first_annotation (annot1: LogicFormulas.annotation) (annot2: LogicFormulas.annotation) =
-  if annot1.position.line < annot2.position.line then
-    annot1
-  else if annot1.position.line > annot2.position.line then
-    annot2
-  else if annot1.position.column <= annot2.position.column then
-    annot1
-  else
-    annot2
+let annotate = DataStructures.AnnotatedNode.make
+let remove_annotation (formula: 'a Ast.AnnotationLogic.t) : DataStructures.Analysis.NormalForm.Formulas.t =
+  let rec remove_annotation_in_formula (formula: 'a Ast.AnnotationLogic.t) =
+    let formula =
+      match formula.node with
+      | True -> Formula.True
+      | False -> Formula.False
+      | Exists(id, expr) -> raise (Failure "")
+      | And(left, right) -> raise (Failure "")
+      | AndSeparately(left, right) -> raise (Failure "")
+      | Or(left, right) -> raise (Failure "")
+      | Comparison(op, lexpr, rexpr) -> raise (Failure "")
+      | EmptyHeap -> raise (Failure "")
+      | NonAllocated(id) -> (Formula.NonAllocated id)
+      | Allocation(id, expr) -> raise (Failure "")
+    in
+    annotate formula ()
+  and remove_annotation_in_bexpr expr =
+    raise (Failure "")
+  in
+  remove_annotation_in_formula formula
 
 (* https://stackoverflow.com/a/10893700 *)
 let list_cartesian l l' =
@@ -26,9 +38,6 @@ let get_variable_from_expression (expr: 'a ArithmeticExpression.t) =
   match expr.node with
   | Variable(id) -> Some(id)
   | _ -> None
-
-let command_annotation_to_logic_annotation (annotation: Commands.annotation) : annotation =
-  {position=annotation.position}
     
 let rec get_expr_identifiers (expr: 'a ArithmeticExpression.t) =
   match expr.node with
