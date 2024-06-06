@@ -22,8 +22,8 @@ let rec remove_annotation_in_formula (formula: 'a Ast.AnnotationLogic.t) : Formu
   | EmptyHeap -> Formula.EmptyHeap
   | NonAllocated(id) -> Formula.NonAllocated(id)
   | Allocation(id, expr) -> Formula.Allocation(id, (remove_annotation_in_expr expr))
-  | Exists(_, _) -> raise (Failure "Existentialization of identifiers do not appear in normalized formulas")
-  | Or(_, _) -> raise (Failure "Disunctions of formulas do not appear in normalized formulas")
+  | Exists(_, _) -> raise (Failure "Existentialization of identifiers does not appear in normalized formulas")
+  | Or(_, _) -> raise (Failure "Disjunctions of formulas does not appear in normalized formulas")
 and remove_annotation_in_expr expr =
   match expr.node with
   | Literal(value) -> ArithmeticExpression.Literal(value)
