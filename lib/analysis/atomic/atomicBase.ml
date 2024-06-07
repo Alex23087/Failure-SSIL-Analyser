@@ -58,7 +58,7 @@ and apply_alloc (vars : IdentifierSet.t) (id : identifier) (post : Formula.t) : 
       let t = compress_andSeparately non_matching_list in 
       let id_t = get_normal_form_disjoint_identifiers t in  (* identifiers in non-matching list (t) *)
       let fv_t = IdentifierSet.diff id_t vars in (* remove bound identifiers from id_t *)
-      if (IdentifierSet.find_opt x (* This x is unknown *) fv_t |> Option.is_none) 
+      if (IdentifierSet.find_opt id fv_t |> Option.is_none) 
         then AndSeparately(EmptyHeap, t)
         else False
     | _ -> False
