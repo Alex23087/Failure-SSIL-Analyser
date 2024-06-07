@@ -1,8 +1,7 @@
-(** The module CFG_Node includes the modules
- *  Node: that provides the abstraction of a CFG node
+(** The module Cfg__cfg provides the module
  *  CFG: that provides the abstraction of a CFG
- *  The module CFG_Node also provides some internal functions
- *    for working with these two modules without exposing their internals
+ *  The module CFG__cfg also provides some internal functions
+ *    for working with the structure without exposing their internals
  *)
 open Cfg__node
 

@@ -1,5 +1,10 @@
 open Cfg__node
 
+(** The module Cfg__cfg provides the module
+ *  CFG: that provides the abstraction of a CFG
+ *  The module CFG__cfg also provides some internal functions
+ *    for working with the structure without exposing their internals
+ *)
 module CFG : sig
   (** The Control Flow Graph data structure *)
   type 'a t [@@deriving show]

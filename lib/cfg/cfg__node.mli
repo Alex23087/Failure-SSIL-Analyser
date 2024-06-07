@@ -1,3 +1,8 @@
+(** The module CFG__node provides the module
+ *  Node: that provides the abstraction of a CFG node
+ *  The module CFG__node also provides some internal functions
+ *    for working with the structure without exposing their internals
+ *)
 module Node : sig
   type 'a t [@@deriving show, sexp]
 
