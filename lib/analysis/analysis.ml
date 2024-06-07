@@ -13,5 +13,21 @@ This module implements functions to transform generic formulas into Existential 
 plus other utility functions to compute operations on normalized formulas.
 *)
 module Normalization = Normalization
+
+(** {1 Expression Substitution}
+
+This module provides functions to substitute identifiers with expressions in normalized formulas.
+*)
 module ExpressionSubstitution = ExpressionSubstitution
+
+(** {1 Atomic Analysis}
+
+This module provides functions to analyze atomic commands, i.e. compute the pre-condition of an atomic command given a post-condition.
+*)
 module Atomic = Atomic
+
+(** {1 Utility Functions}
+
+A set of utility functions used throughout the analysis.
+*)
+module Utils = Analysis_Utils
