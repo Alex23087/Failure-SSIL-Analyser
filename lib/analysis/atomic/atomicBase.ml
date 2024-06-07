@@ -16,9 +16,9 @@ let rec compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: 
     let formula = command_bexpression_to_logic_formula expr (fun _ -> ()) in
     let formula = existential_disjuntive_normal_form formula post_condition.last_id_generator in
     conjunction_of_normalized_formulas formula post_condition
-  | Allocation(id) -> (* idea: apply the disj rule, solving each disjunction indipendentely *)
+  | Allocation(id) -> (* solve each disjunction indipendentely (disj rule) *)
     let disjoints = List.map (apply_alloc (post_condition.variables) id) (post_condition.disjoints) in (*TODO*)
-    raise (Failure "not implemented")
+    make (post_condition.variables) disjoints (post_condition.last_id_generator)
   | Free(id) ->
     raise (Failure "not implemented")
   | ReadHeap(mem_id, id) ->
@@ -35,6 +35,16 @@ and expand_andSeparately (formula : Formula.t) : Formula.t list =
   | AndSeparately(exp1, exp2) -> 
     (expand_andSeparately exp1) @ (expand_andSeparately exp2)
   | _ -> [formula]
+
+(* compress_andSeparately take a list of formulas and returns 
+   an andSeparately between each item of the list
+   i.e. [e1; e2; e3] -> AndSeparately(e1, AndSeparately(e2, e3))
+ *)
+and compress_andSeparately (formula : Formula.t list) : Formula.t =
+  match formula with
+  | []  -> EmptyHeap
+  | [x] -> x
+  | x::xs -> List.fold_left (fun x y -> Formula.AndSeparately(x, y)) x xs
 
 (* apply alloc semantics to single formula *)
 and apply_alloc (vars : IdentifierSet.t) (id : identifier) (post : Formula.t) : Formula.t = 
@@ -62,9 +72,5 @@ and apply_alloc (vars : IdentifierSet.t) (id : identifier) (post : Formula.t) : 
         then AndSeparately(EmptyHeap, t)
         else False
     | _ -> False
-  )
+    )
   | _ -> False
-
-and compress_andSeparately (formula : Formula.t list) : Formula.t =
-  raise (Failure "Not implemented")
-  (* List.fold_left ()... TODO*)
