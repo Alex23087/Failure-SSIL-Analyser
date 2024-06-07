@@ -58,7 +58,7 @@ let%test "test ast to cfg Star" =
   let expected: ((unit HeapAtomicCommand.t) list Node.t) =
     Node.make [ annotate (HeapAtomicCommand.Allocation "x") ] [] []
   in
-  Node.addsucc expected expected;
+  Node.add_succ expected expected;
   Node.compare (Converter.convert source) expected
 
 
@@ -78,12 +78,12 @@ let%test "test ast to cfg NonDet" =
   in
 
   let expected: ((unit HeapAtomicCommand.t) list Node.t) =
-    Node.makeWithId 1 [] [
-        Node.makeWithId 2 [ annotate ( HeapAtomicCommand.Allocation "x") ] [
-            Node.makeWithId 4 [] [] [2; 3]
+    Node.make_with_id 1 [] [
+        Node.make_with_id 2 [ annotate ( HeapAtomicCommand.Allocation "x") ] [
+            Node.make_with_id 4 [] [] [2; 3]
           ] [1];
-        Node.makeWithId 3 [ annotate ( HeapAtomicCommand.Allocation "y") ] [
-            Node.makeWithId 4 [] [] [2; 3]
+        Node.make_with_id 3 [ annotate ( HeapAtomicCommand.Allocation "y") ] [
+            Node.make_with_id 4 [] [] [2; 3]
           ] [1]
       ] []
   in

@@ -41,23 +41,23 @@ module CFG = struct
     let h = Hashtbl.create (Node.length initial_node) in
 
     let rec aux (h : (int, 'a item) Hashtbl.t) (node : 'a Node.t) : unit =
-      match Node.succ node with
+      match Node.get_succ node with
       | [] -> (* the node has not successors, insert it *)
-         Hashtbl.add h (Node.getnodeid node) (make_item (Node.getnodeid node) (Node.getexp node) (Node.prev node) [])
+         Hashtbl.add h (Node.get_id node) (make_item (Node.get_id node) (Node.get_exp node) (Node.get_pred node) [])
 
       | x::xs ->  (* insert node' successors into the HT *)
-         let id_succ = List.map (fun (x : 'a Node.t) : int -> Node.getnodeid x) (Node.succ x) in
-         Hashtbl.add h (Node.getnodeid x) (make_item (Node.getnodeid x) (Node.getexp x) (Node.prev x) id_succ);
-         List.iter (aux h) (Node.succ x);
+         let id_succ = List.map (fun (x : 'a Node.t) : int -> Node.get_id x) (Node.get_succ x) in
+         Hashtbl.add h (Node.get_id x) (make_item (Node.get_id x) (Node.get_exp x) (Node.get_pred x) id_succ);
+         List.iter (aux h) (Node.get_succ x);
          List.iter (aux h) xs;
 
          (* insert node itself *)
-         let id_node_succ = List.map (fun (x : 'a Node.t) : int -> Node.getnodeid x) (Node.succ node) in
-         Hashtbl.add h (Node.getnodeid node) (make_item (Node.getnodeid node) (Node.getexp node) (Node.prev node) id_node_succ)
+         let id_node_succ = List.map (fun (x : 'a Node.t) : int -> Node.get_id x) (Node.get_succ node) in
+         Hashtbl.add h (Node.get_id node) (make_item (Node.get_id node) (Node.get_exp node) (Node.get_pred node) id_node_succ)
     in
     Node.compute_pred initial_node;
     aux h initial_node;
-    {cfg = h; root_id = Node.getnodeid initial_node}
+    {cfg = h; root_id = Node.get_id initial_node}
 
   let get (cfg : 'a t) (id : int) = match cfg with
     | {cfg=ht; _} -> Hashtbl.find ht id
