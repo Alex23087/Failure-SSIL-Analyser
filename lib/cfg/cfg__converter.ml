@@ -1,7 +1,7 @@
 open Ast.HeapRegularCommands
-open Base
+open Cfg__node
 
-module Ast2cfgConverter = struct
+module Converter = struct
   let rec convert_helper(root: 'a HeapRegularCommand.t) :
             'a HeapAtomicCommand.t list Node.t *
               'a HeapAtomicCommand.t list Node.t ref =

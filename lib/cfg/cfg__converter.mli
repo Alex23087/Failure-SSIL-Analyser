@@ -1,6 +1,6 @@
 open Ast.HeapRegularCommands
-open Base
+open Cfg__node
 
-module Ast2cfgConverter : sig
+module Converter : sig
   val convert : 'a HeapRegularCommand.t -> 'a HeapAtomicCommand.t list Node.t
 end
