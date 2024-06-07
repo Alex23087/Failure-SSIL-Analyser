@@ -6,6 +6,7 @@ open Utils
 open Analysis_Utils
 open NormalizationUtils
 
+(** Computes the conjunction of two normalized formulas. *)
 let conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) =
   let make_and_disjoints (lformula: NormalForm.t) (rformula: NormalForm.t) =
     let cartesian = list_cartesian lformula.disjoints rformula.disjoints in
@@ -14,6 +15,7 @@ let conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: Norma
   let last_id_generator = compute_last_id_generator lformula rformula in
   merge_two_formulas lformula rformula last_id_generator make_and_disjoints
 
+(** Compute the separate conjunction of two normalized formulas. *)
 let separate_conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) =
   let make_and_separately_disjoints (lformula: NormalForm.t) (rformula: NormalForm.t) =
     let cartesian = list_cartesian lformula.disjoints rformula.disjoints in
@@ -22,6 +24,7 @@ let separate_conjunction_of_normalized_formulas (lformula: NormalForm.t) (rformu
   let last_id_generator = compute_last_id_generator lformula rformula in
   merge_two_formulas lformula rformula last_id_generator make_and_separately_disjoints
 
+(** Compute the disjunction of two normalized formulas. *)
 let disjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) =
   let make_or_disjoints (lformula: NormalForm.t) (rformula: NormalForm.t) =
     lformula.disjoints @ rformula.disjoints
@@ -29,6 +32,8 @@ let disjunction_of_normalized_formulas (lformula: NormalForm.t) (rformula: Norma
   let last_id_generator = compute_last_id_generator lformula rformula in
   merge_two_formulas lformula rformula last_id_generator make_or_disjoints
 
+(** [existentialization_of_identifier] [id] [formula] adds the given identifier [id] in
+the set of existentialized names for the given [formula] *)
 let existentialization_of_identifier (exist_id: identifier) (subformula: NormalForm.t) =
   let variables = subformula.variables in
   let disjoints = subformula.disjoints in
