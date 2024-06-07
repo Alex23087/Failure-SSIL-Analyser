@@ -58,3 +58,13 @@ and rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) 
   let variables = IdentifierSet.add new_var (IdentifierSet.remove var variables) in
   let disjoints = List.map (fun x -> rename_variable_in_formula x var new_var) disjoints in
   (variables, disjoints, id_generator)
+
+(** Generate a fresh identifier and bind it in the formula
+@param formula the formula to update
+@return a pair containing a fresh variable and the updated formula
+*)
+let generate_fresh_existentialized_variable (formula: NormalForm.t) =
+  let fresh_var_name = "#fresh_var" in
+  let (fresh_var_name, id_generator) = new_variable_name fresh_var_name formula.last_id_generator in
+  let variables = IdentifierSet.add fresh_var_name formula.variables in
+  fresh_var_name, NormalForm.make variables formula.disjoints, id_generator

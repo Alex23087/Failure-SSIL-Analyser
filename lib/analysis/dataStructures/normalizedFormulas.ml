@@ -6,7 +6,6 @@ Logic formulas are normalized in Existential Disjunctive Normal Form, which ease
 A normalized formula consists in:
 - A set of existentialized identifiers.
 - A list of disjoint formulas. Each disjoint is a formula composed only of atomic propositions, conjunctions and separate conjunctions.
-- An annotation, the same type as of the non normalized formulas coming from the AST.
 
 Additionally, a number of support information is kept:
 - A identifier generator number, which is used to generate fresh names without having to rescan the names in the formulas.
