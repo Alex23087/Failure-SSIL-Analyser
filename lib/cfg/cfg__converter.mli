@@ -8,5 +8,5 @@ open Cfg__node
  *  CFG.
  *)
 module Converter : sig
-  val convert : 'a HeapRegularCommand.t -> 'a HeapAtomicCommand.t list Node.t
+  val convert : ?keep_structure:bool -> 'a HeapRegularCommand.t -> 'a HeapAtomicCommand.t list Node.t
 end

@@ -33,21 +33,54 @@ module Converter = struct
        Node.add_succ !end1 root1;
        (root1, end1)
 
-  let rec simplify(root: 'a HeapAtomicCommand.t list Node.t) : unit =
-    match Node.get_succ root with
-    | [] -> ()
-    | [a] when Node.get_id a != Node.get_id root -> (
-      match Node.get_pred a with
-      | [] -> raise (Invalid_argument "Your graph is wrong")
-      | [_] ->
-         Node.set_exp root ((Node.get_exp root) @ (Node.get_exp a));
-         Node.set_succ root (Node.get_succ a)
-      | _ -> simplify a
-    )
-    | [_] -> ()
-    | a -> List.iter simplify a
+  let simplify (keep_structure: bool) (root: 'a HeapAtomicCommand.t list Node.t) : unit =
+    let alreadyvisited = ref [] in
 
-  let convert (root: 'a HeapRegularCommand.t) : 'a HeapAtomicCommand.t list Node.t =
+    let rec apply_and_recurse (root) (a) (keep_structure) : unit =
+      Node.set_exp root ((Node.get_exp root) @ (Node.get_exp a));
+      Node.set_succ root (Node.get_succ a);
+      help_simplify keep_structure root
+    and help_simplify (keep_structure: bool) (root: 'a HeapAtomicCommand.t list Node.t) : unit =
+      if List.mem (Node.get_id root) !alreadyvisited then
+        ()
+      else (
+        alreadyvisited := (Node.get_id root) :: !alreadyvisited;
+        match Node.get_succ root with
+        | [] -> ()
+        | [a] when Node.get_id a != Node.get_id root -> (
+          match Node.get_pred a with
+          | [] -> raise (Invalid_argument "Your graph is wrong")
+          | [_] -> (
+            match (keep_structure, Node.get_exp root, Node.get_exp a) with
+            | (true, root_exp::_, a_exp::_) -> (
+              match (root_exp.node, a_exp.node) with
+              | (Skip, Skip) -> (apply_and_recurse root a keep_structure)
+              | (Assignment(_, _), Assignment(_, _)) -> (apply_and_recurse root a keep_structure)
+              | (NonDet(_), NonDet(_)) -> (apply_and_recurse root a keep_structure)
+              | (Guard(_), Guard(_)) -> (apply_and_recurse root a keep_structure)
+              | (Allocation(_), Allocation(_)) -> (apply_and_recurse root a keep_structure)
+              | (Free(_), Free(_)) -> (apply_and_recurse root a keep_structure)
+              | (ReadHeap(_, _), ReadHeap(_, _)) -> (apply_and_recurse root a keep_structure)
+              | (WriteHeap(_, _), WriteHeap(_, _)) -> (apply_and_recurse root a keep_structure)
+              | _ -> help_simplify keep_structure a
+            )
+            | (true, _, _) -> (
+              help_simplify keep_structure a
+            )
+            | (false, _, _) -> (
+              apply_and_recurse root a keep_structure
+            )
+          )
+          | _ -> help_simplify keep_structure a
+        )
+        | [a] when Node.get_id a = Node.get_id root -> ()
+        | a -> List.iter (help_simplify keep_structure) a
+      )
+    in
+    help_simplify keep_structure root
+
+
+  let convert ?(keep_structure: bool = true) (root: 'a HeapRegularCommand.t) : 'a HeapAtomicCommand.t list Node.t =
     match convert_helper(root) with
-    | (a, _) -> simplify a; a
+    | (a, _) -> simplify keep_structure a; a
 end
