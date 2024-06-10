@@ -66,6 +66,6 @@ and rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) 
 *)
 let generate_fresh_existentialized_variable (formula: NormalForm.t) =
   let fresh_var_name = "#fresh_var" in
-  let (fresh_var_name, id_generator) = new_variable_name fresh_var_name formula.last_id_generator in
+  let (fresh_var_name, id_generator) = new_variable_name fresh_var_name formula.id_generator in
   let variables = IdentifierSet.add fresh_var_name formula.variables in
   fresh_var_name, NormalForm.make variables formula.disjoints id_generator

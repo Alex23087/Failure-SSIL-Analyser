@@ -20,11 +20,11 @@ let compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: Norm
     conjunction_of_normalized_formulas formula post_condition
   | Allocation(id) -> (* solve each disjunction indipendentely (disj rule) *)
     let disjoints = List.map (apply_alloc (post_condition.variables) id) (post_condition.disjoints) in
-    make (post_condition.variables) disjoints (post_condition.last_id_generator)
+    make (post_condition.variables) disjoints (post_condition.id_generator)
   | Free(id) ->
     let fresh_var, post_condition = generate_fresh_existentialized_variable post_condition in 
     let disjoints = List.map (apply_free (post_condition.variables) id fresh_var) (post_condition.disjoints) in
-    make (post_condition.variables) disjoints (post_condition.last_id_generator)
+    make (post_condition.variables) disjoints (post_condition.id_generator)
   | ReadHeap(mem_id, id) ->
     raise (Failure "not implemented")
   | WriteHeap(mem_id, expr) ->
