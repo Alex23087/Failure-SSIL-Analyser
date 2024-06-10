@@ -24,6 +24,11 @@ let test_expected_bound_variables (normalized: NormalForm.t) (num_bound_vars: in
     in
     false
 
+(* print a list of formulas *)
+let print_formulas lst =
+  print_endline "actual disjoints: ";
+  List.iter (fun item -> print_endline (NormalForm.Formula.show item)) lst
+
 (* Check the list of actual disjoints is the same of expected disjoints *)
 let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.Formula.t list) =
   let rec test_expected_disjoints list1 list2 =
@@ -38,5 +43,6 @@ let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.For
         | [] -> false
         | [_] -> test_expected_disjoints list1 list2
         | _::xs -> test_expected_disjoints list1 (xs @ list2)
-    in
-  test_expected_disjoints normalized.disjoints expected
+    in match test_expected_disjoints normalized.disjoints expected with
+    | true -> true
+    | false -> print_formulas normalized.disjoints; false
