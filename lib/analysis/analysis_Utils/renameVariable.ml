@@ -1,17 +1,18 @@
 open DataStructures
 open DataStructures.Analysis
 open NormalForm
+open NormalFormUtils
 
-let new_variable_name (old_var: identifier) (id_generator: int) =
+let new_variable_name (old_var: identifier) (id_generator: id_generator) =
   let substr = String.split_on_char '$' old_var in
   if List.length substr > 2 then
     raise (Failure "Found more than two $ characters in a variable name")
   else if List.length substr = 2 then
     let var_name = List.nth substr 1 in
-    ((string_of_int id_generator) ^ "$" ^ var_name, id_generator + 1)
+    ((string_of_int id_generator.last_id) ^ "$" ^ var_name, update_id_generator id_generator)
   else
     let var_name = List.hd substr in
-    ((string_of_int id_generator) ^ "$" ^ var_name, id_generator + 1)
+    ((string_of_int id_generator.last_id) ^ "$" ^ var_name, update_id_generator id_generator)
 
 let rename_variable_in_set (variables: IdentifierSet.t) (var: identifier) (new_name: identifier) =
   match IdentifierSet.find_opt var variables with
@@ -53,7 +54,7 @@ let rec rename_variable_in_formula (disjoint: Formula.t) (var: identifier) (new_
     let lformula = rename_variable_in_formula lformula var new_name in
     let rformula = rename_variable_in_formula rformula var new_name in
     Formula.AndSeparately(lformula, rformula)
-and rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) (disjoints: Formula.t list) (id_generator: int) =
+and rename_variable_in_disjoints (var: identifier) (variables: IdentifierSet.t) (disjoints: Formula.t list) (id_generator: id_generator) =
   let (new_var, id_generator) = new_variable_name var id_generator in
   let variables = IdentifierSet.add new_var (IdentifierSet.remove var variables) in
   let disjoints = List.map (fun x -> rename_variable_in_formula x var new_var) disjoints in

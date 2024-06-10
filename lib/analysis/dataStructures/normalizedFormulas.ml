@@ -6,9 +6,6 @@ Logic formulas are normalized in Existential Disjunctive Normal Form, which ease
 A normalized formula consists in:
 - A set of existentialized identifiers.
 - A list of disjoint formulas. Each disjoint is a formula composed only of atomic propositions, conjunctions and separate conjunctions.
-
-Additionally, a number of support information is kept:
-- A identifier generator number, which is used to generate fresh names without having to rescan the names in the formulas.
 *)
 module NormalForm = struct
   module BinaryOperator = struct include Ast.AnnotationLogic.BinaryOperator end
@@ -36,13 +33,20 @@ module NormalForm = struct
     [@@deriving show]
   end
 
+  (** The id_generator data structure is used to keep track of variable renamings.
+  It is an implementation detail and thus should not be visible outside. *)
+  type id_generator = {
+    first_id: int;
+    last_id: int;
+  }
+
   type t = {
     variables: IdentifierSet.t; [@opaque]
     disjoints: Formula.t list;
-    last_id_generator: int;
+    id_generator: id_generator; [@opaque]
   }
   [@@deriving show]
 
   let make variables disjoints id_generator =
-    {variables; disjoints; last_id_generator = id_generator}
+    {variables; disjoints; id_generator}
 end

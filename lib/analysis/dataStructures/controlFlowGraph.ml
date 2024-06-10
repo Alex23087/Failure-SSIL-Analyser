@@ -9,8 +9,6 @@ Important definitions:
 - {{! Cfg.item}CFG Item} - Control Flow Graph's node, which represent a block of commands, with their predecessor and successor blocks.
 *)
 
-open Analysis_DataStructures_Base
-
 include NormalizedFormulas
 include CfgCommands
 

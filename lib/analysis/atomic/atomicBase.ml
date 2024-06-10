@@ -3,6 +3,7 @@ open NormalForm
 open HeapSemantics
 open Ast.HeapRegularCommands
 
+(** Computes the pre-condition of the given atomic command and post-condition *)
 let compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: NormalForm.t) =
   match command.node with
   | Skip ->
@@ -15,7 +16,7 @@ let compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: Norm
     existentialization_of_identifier id post_condition
   | Guard(expr) ->
     let formula = command_bexpression_to_logic_formula expr (fun _ -> ()) in
-    let formula = existential_disjuntive_normal_form formula post_condition.last_id_generator in
+    let formula = existential_disjuntive_normal_form formula in
     conjunction_of_normalized_formulas formula post_condition
   | Allocation(id) -> (* solve each disjunction indipendentely (disj rule) *)
     let disjoints = List.map (apply_alloc (post_condition.variables) id) (post_condition.disjoints) in

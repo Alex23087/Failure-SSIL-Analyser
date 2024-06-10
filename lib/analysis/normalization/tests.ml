@@ -15,7 +15,7 @@ let%test "existentialized non bound variable" =
     ))
   )
   in
-  let normalized = existential_disjuntive_normal_form formula 0 in
+  let normalized = existential_disjuntive_normal_form formula in
   test_expected_free_variables normalized ("x"::[])
 
 let%test "disjoint merging" =
@@ -33,7 +33,7 @@ let%test "disjoint merging" =
       ))
     ))
   ) in
-  let normalized = existential_disjuntive_normal_form formula 0 in
+  let normalized = existential_disjuntive_normal_form formula in
   let expected_disjoints = 
     Formula.NonAllocated("x") :: 
     Formula.NonAllocated("y") :: 
@@ -57,7 +57,7 @@ let%test "and distribution" =
       ))
     ))
   ) in 
-  let normalized = existential_disjuntive_normal_form formula 0 in
+  let normalized = existential_disjuntive_normal_form formula in
   let expected_disjoints = Formula.And(
     Formula.NonAllocated("x"),
     Formula.NonAllocated("z")
@@ -89,7 +89,7 @@ let%test "and separately distribution" =
       ))
     ))
   ) in 
-  let normalized = existential_disjuntive_normal_form formula 0 in
+  let normalized = existential_disjuntive_normal_form formula in
   let expected_disjoints = Formula.AndSeparately(
     Formula.NonAllocated("x"),
     Formula.NonAllocated("z")
@@ -125,20 +125,20 @@ let%test "variables renaming when merging normalized forms" =
       ))
     )
   ) in 
-  let normalized = existential_disjuntive_normal_form formula 0 in
-  let expected_identifiers = "x" :: "0$y" :: "1$x" :: [] in
+  let normalized = existential_disjuntive_normal_form formula in
+  let expected_identifiers = "x" :: "0$x" :: "1$y" :: [] in
   let expected_disjoints =
     Formula.AndSeparately(
       Formula.And(
         Formula.NonAllocated("x"),
-        Formula.NonAllocated("0$y")
+        Formula.NonAllocated("1$y")
       ),
-      Formula.NonAllocated("1$x")
+      Formula.NonAllocated("0$x")
     ) ::
     Formula.AndSeparately(
       Formula.And(
         Formula.NonAllocated("x"),
-        Formula.NonAllocated("0$y")
+        Formula.NonAllocated("1$y")
       ),
       Formula.NonAllocated("y")
     ) :: []
