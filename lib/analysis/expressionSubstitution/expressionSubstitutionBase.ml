@@ -8,7 +8,7 @@ open ExpressionSubstitutionUtils
 the identifier [id] with the expression [expr] in every expression in the normalized [formula].
 *)
 let substitute_expression_in_normalized_formula (formula: NormalForm.t) (changing_expr: ArithmeticExpression.t) (changed_id: identifier) =
-  let original_id_generator = formula.last_id_generator in
+  let original_id_generator = formula.id_generator in
   let renamed_var, renamed_id_generator = new_variable_name changed_id original_id_generator in
   let id_expr = ArithmeticExpression.Variable(renamed_var) in
   let renamed_equal_formula = Formula.Comparison(BinaryComparison.Equals, id_expr, changing_expr) in

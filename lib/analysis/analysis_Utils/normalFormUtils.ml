@@ -60,3 +60,6 @@ let normal_form_free_variables (formula: NormalForm.t) =
   let ids = List.map get_normal_form_disjoint_identifiers formula.disjoints in
   let ids = List.fold_left (fun acc ids -> IdentifierSet.union acc ids) IdentifierSet.empty ids in
   IdentifierSet.diff ids formula.variables
+
+let update_id_generator (id_generator: NormalForm.id_generator) =
+  {first_id = id_generator.first_id; last_id = id_generator.last_id + 1}

@@ -32,43 +32,54 @@ and remove_annotation_in_expr expr =
     let lexpr = remove_annotation_in_expr lexpr in
     let rexpr = remove_annotation_in_expr rexpr in
     ArithmeticExpression.Operation(op, lexpr, rexpr)
-    
-let rename_common_free_variables (lformula: NormalForm.t) (rformula: NormalForm.t) (last_id_generator: int) =
+
+let rename_variable_in_disjoints elem (variables, disjoints, id_generator) =
+  rename_variable_in_disjoints elem variables disjoints id_generator
+
+let rename_common_free_variables (lformula: NormalForm.t) (rformula: NormalForm.t) (last_id_generator: id_generator) =
   let lformula_free, lformula_bound = normal_form_free_variables lformula, lformula.variables in
   let rformula_free, rformula_bound = normal_form_free_variables rformula, rformula.variables in
 
   (* rename the bound variables in lformula that are free in rformula *)
   let lformula_vars_to_rename = IdentifierSet.inter lformula_bound rformula_free in
   let (variables, disjoints, last_id_generator) =
-    IdentifierSet.fold (fun elem (variables, disjoints, id_generator) -> rename_variable_in_disjoints elem variables disjoints id_generator)
-    lformula_vars_to_rename (lformula.variables, lformula.disjoints, last_id_generator)
+    IdentifierSet.fold rename_variable_in_disjoints lformula_vars_to_rename (lformula.variables, lformula.disjoints, last_id_generator)
   in
   let lformula = NormalForm.make variables disjoints last_id_generator in
 
   (* rename the bound variables in rformula that are free in lformula *)
   let rformula_vars_to_rename = IdentifierSet.inter rformula_bound lformula_free in
   let (variables, disjoints, last_id_generator) =
-    IdentifierSet.fold (fun elem (variables, disjoints, id_generator) -> rename_variable_in_disjoints elem variables disjoints id_generator)
-    rformula_vars_to_rename (rformula.variables, rformula.disjoints, last_id_generator)
+    IdentifierSet.fold rename_variable_in_disjoints rformula_vars_to_rename (rformula.variables, rformula.disjoints, last_id_generator)
   in
   let rformula = NormalForm.make variables disjoints last_id_generator in
 
-  (* rename the common bound variables only in the rformulas (it would have been indifferent if were renamed them in lformulas) *)
+  (* rename the common bound variables only in the rformulas (it would have been indifferent if they were renamed in lformulas) *)
   let common_vars_to_rename = IdentifierSet.inter lformula_bound rformula_bound in
   let (variables, disjoints, last_id_generator) =
-    IdentifierSet.fold (fun elem (variables, disjoints, id_generator) -> rename_variable_in_disjoints elem variables disjoints id_generator)
-    common_vars_to_rename (rformula.variables, rformula.disjoints, last_id_generator)
+    IdentifierSet.fold rename_variable_in_disjoints common_vars_to_rename (rformula.variables, rformula.disjoints, last_id_generator)
   in
   let rformula = NormalForm.make variables disjoints last_id_generator in
   (lformula, rformula, last_id_generator)
 
-let compute_last_id_generator (lformula: NormalForm.t) (rformula: NormalForm.t): int =
-  if lformula.last_id_generator > rformula.last_id_generator then
-    lformula.last_id_generator
-  else
-    rformula.last_id_generator
+let greatest_id_generator (lformula: NormalForm.t) (rformula: NormalForm.t) =
+  let lgen, rgen = lformula.id_generator, rformula.id_generator in
+  {first_id = min lgen.first_id rgen.first_id; last_id = max lgen.last_id rgen.last_id}
 
-let merge_two_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) (last_id_generator: int) make_disjoints =
+let rename_common_bound_variables (lformula: NormalForm.t) (rformula: NormalForm.t) =
+  let last_id_generator = greatest_id_generator lformula rformula in
+  if lformula.id_generator.last_id < rformula.id_generator.first_id then
+    rformula, last_id_generator
+  else
+    let common_vars_to_rename = IdentifierSet.inter lformula.variables rformula.variables in
+    let (variables, disjoints, last_id_generator) =
+      IdentifierSet.fold rename_variable_in_disjoints common_vars_to_rename (rformula.variables, rformula.disjoints, last_id_generator)
+    in
+    let rformula = NormalForm.make variables disjoints last_id_generator in
+    rformula, last_id_generator
+
+let merge_two_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) make_disjoints =
+  let rformula, last_id_generator = rename_common_bound_variables lformula rformula in
   let (lformula, rformula, last_id_generator) = rename_common_free_variables lformula rformula last_id_generator in
   let bound_variables = IdentifierSet.union lformula.variables rformula.variables in
   let disjoints = make_disjoints lformula rformula in

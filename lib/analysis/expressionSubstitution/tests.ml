@@ -23,7 +23,7 @@ let%test "substitute identifer only expression" =
         annot (PArithmeticExpression.Variable("y"))
     ))
   )) in
-  let normalized = existential_disjuntive_normal_form formula 0 in
+  let normalized = existential_disjuntive_normal_form formula in
   let substituted_id = "x" in
   let substituting_expression = ArithmeticExpression.Variable("z") in
   let normalized = substitute_expression_in_normalized_formula normalized substituting_expression substituted_id in
@@ -54,7 +54,7 @@ let%test "substitute non identifier only expression" =
         annot (PArithmeticExpression.Variable("y"))
     ))
   )) in
-  let normalized = existential_disjuntive_normal_form formula 0 in
+  let normalized = existential_disjuntive_normal_form formula in
   let substituted_id = "x" in
   let substituting_expression =
     ArithmeticExpression.Operation(
