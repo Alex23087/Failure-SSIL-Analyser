@@ -1,10 +1,10 @@
 open Ast.HeapRegularCommands
-open Cfg__node
+open Cfg_Node
 
 (** The module Cfg__converter provides the module
  *  Converter: that provides a method convert that given an AST converts it
  *  to a CFG composed by nodes from the Cfg__node module.
- *  See {!module:Cfg__cfg.CFG.make} to convert the resulting structure to a
+ *  See {!module:Cfg_Base.CFG.make} to convert the resulting structure to a
  *  CFG.
  *)
 module Converter = struct

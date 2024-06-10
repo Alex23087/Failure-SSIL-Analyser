@@ -1,6 +1,6 @@
 open Ast
-open Cfg__node
-open Cfg__converter
+open Cfg_Node
+open Cfg_Converter
 open Sexplib.Std
 open Ppx_compare_lib.Builtin
 

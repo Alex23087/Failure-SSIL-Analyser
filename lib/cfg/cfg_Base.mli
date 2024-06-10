@@ -1,4 +1,4 @@
-open Cfg__node
+open Cfg_Node
 
 (** The module Cfg__cfg provides the module
  *  CFG: that provides the abstraction of a CFG

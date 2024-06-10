@@ -1,7 +1,7 @@
 open Ast
 open Base
-open Cfg__node
-open Cfg__converter
+open Cfg_Node
+open Cfg_Converter
 open Cfg_Tests_Utils
 open HeapRegularCommands
 

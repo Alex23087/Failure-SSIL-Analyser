@@ -3,7 +3,7 @@
  *  The module CFG__cfg also provides some internal functions
  *    for working with the structure without exposing their internals
  *)
-open Cfg__node
+open Cfg_Node
 
 (** The CFG is implemented as an Hashtable <id, (exp, predecessors, successors)> *)
 module CFG = struct
