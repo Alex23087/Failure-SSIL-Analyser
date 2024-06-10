@@ -11,25 +11,32 @@ let annot formula =
   let annotation = LogicFormulas.make_annotation 0 0 in
   annotate formula annotation
 
-let test_expected_free_variables (normalized: NormalForm.t) (variables: identifier list) =
-  match IdentifierSet.subset (IdentifierSet.of_list (variables)) normalized.variables with
-  | true -> true
-  | false ->
+(* Check the number of expected bound variables *)
+let test_expected_bound_variables (normalized: NormalForm.t) (num_bound_vars: int) =
+  if IdentifierSet.cardinal normalized.variables = num_bound_vars then
+    true
+  else
     let _ = if IdentifierSet.is_empty normalized.variables then
       print_endline "actual identifiers: None"
     else
       print_endline "actual identifiers: ";
-      IdentifierSet.iter (fun x -> print_endline x) normalized.variables
+      IdentifierSet.iter print_endline normalized.variables
     in
     false
 
+(* Check the list of actual disjoints is the same of expected disjoints *)
 let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.Formula.t list) =
-  match List.for_all (fun expected ->
-    let compare_fn actual = equal_formulas expected actual in
-    Option.is_some (List.find_opt compare_fn normalized.disjoints)
-  ) expected with
-  | true -> true
-  | false ->
-    print_endline "actual disjoints: ";
-    List.iter (fun x -> print_endline (NormalForm.Formula.show x)) normalized.disjoints;
-    false
+  let rec test_expected_disjoints list1 list2 =
+    match list1, list2 with
+    | [], [] -> true
+    | [], _::_ -> false
+    | [l], [r] -> equal_formulas l r
+    | l::list1, list2 ->
+        let compare_fn x = equal_formulas l x in
+        let r, list2 = List.partition compare_fn list2 in
+        match r with
+        | [] -> false
+        | [_] -> test_expected_disjoints list1 list2
+        | _::xs -> test_expected_disjoints list1 (xs @ list2)
+    in
+  test_expected_disjoints normalized.disjoints expected
