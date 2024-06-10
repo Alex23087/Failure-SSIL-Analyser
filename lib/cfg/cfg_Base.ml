@@ -1,41 +1,32 @@
-(** The module Cfg__cfg provides the module
- *  CFG: that provides the abstraction of a CFG
- *  The module CFG__cfg also provides some internal functions
- *    for working with the structure without exposing their internals
- *)
 open Cfg_Node
 
-(** The CFG is implemented as an Hashtable <id, (exp, predecessors, successors)> *)
 module CFG = struct
   (* Auxiliary module for providing Hashtbl of a pretty printing function *)
   module Hashtbl = struct
     include Hashtbl
 
     let pp pp_key pp_value ppf values =
-      Hashtbl.iter (fun key data ->
-          Format.fprintf ppf "@[<1>%a: %a@]@." pp_key key pp_value data) values
-
+      Hashtbl.iter (fun key data -> Format.fprintf ppf "@[<1>%a: %a@]@." pp_key key pp_value data) values
   end
 
-
   type 'a item = {
-      idx   : int;
-      exp   : 'a;
-      pred  : int list;
-      succ  : int list;
-    } [@@deriving show]
+    idx   : int;
+    exp   : 'a;
+    pred  : int list;
+    succ  : int list;
+  } [@@deriving show]
 
   (* The CFG is implemented as an Hashtable <id, (exp, predecessors, successors)> *)
   type 'a t = {
-      cfg: (int, 'a item) Hashtbl.t;
-      root_id: int
-    }
-               [@@deriving show]
+    cfg: (int, 'a item) Hashtbl.t;
+    root_id: int
+  }
+  [@@deriving show]
 
   let make_item idx exp pred succ : 'a item =
     {idx = idx; exp = exp; pred = pred; succ = succ}
 
-  (** starting from a node (the root), builds a CFG *)
+  (* starting from a node (the root), builds a CFG *)
   let make (initial_node : 'a Node.t) : 'a t =
     let h = Hashtbl.create (Node.length initial_node) in
 
@@ -44,7 +35,7 @@ module CFG = struct
       | [] -> (* the node has not successors, insert it *)
          Hashtbl.add h (Node.get_id node) (make_item (Node.get_id node) (Node.get_exp node) (Node.get_pred node) [])
 
-      | x::xs ->  (* insert node' successors into the HT *)
+      | x::xs -> (* insert node' successors into the HT *)
          let id_succ = List.map (fun (x : 'a Node.t) : int -> Node.get_id x) (Node.get_succ x) in
          Hashtbl.add h (Node.get_id x) (make_item (Node.get_id x) (Node.get_exp x) (Node.get_pred x) id_succ);
          List.iter (aux h) (Node.get_succ x);
@@ -88,9 +79,9 @@ module CFG = struct
 
   (* Auxiliary module used into the fold function *)
   module IntSet = Set.Make(struct
-                      type t = int
-                      let compare = compare
-                    end)
+    type t = int
+    let compare = compare
+  end)
 
   let fold (cfg : 'a t) (fn: 'a t -> 'a item -> 'b -> 'b) (acc: 'b) =
     (* performs a depth first visit of the graph *)

@@ -1,12 +1,6 @@
 open Ast.HeapRegularCommands
 open Cfg_Node
 
-(** The module Cfg__converter provides the module
- *  Converter: that provides a method convert that given an AST converts it
- *  to a CFG composed by nodes from the Cfg__node module.
- *  See {!module:Cfg_Base.CFG.make} to convert the resulting structure to a
- *  CFG.
- *)
 module Converter = struct
   let rec convert_helper(root: 'a HeapRegularCommand.t) :
             'a HeapAtomicCommand.t list Node.t *
@@ -78,7 +72,6 @@ module Converter = struct
       )
     in
     help_simplify keep_structure root
-
 
   let convert ?(keep_structure: bool = true) (root: 'a HeapRegularCommand.t) : 'a HeapAtomicCommand.t list Node.t =
     match convert_helper(root) with

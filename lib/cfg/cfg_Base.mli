@@ -1,16 +1,14 @@
 open Cfg_Node
 
-(** The module Cfg__cfg provides the module
- *  CFG: that provides the abstraction of a CFG
- *  The module CFG__cfg also provides some internal functions
- *    for working with the structure without exposing their internals
- *)
+(** The module CFG provides the abstraction of a Control Flow Graph. *)
 module CFG : sig
   (** The Control Flow Graph data structure *)
   type 'a t [@@deriving show]
 
   (** The Control Flow Graph's internal item *)
   type 'a item [@@deriving show]
+
+  (** Given a tree composed of nodes, constructs an actual Control Flow Graph. *)
   val make : 'a Node.t -> 'a t
   
   (** returns the root item of the CFG *)
