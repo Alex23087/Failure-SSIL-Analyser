@@ -15,6 +15,7 @@ let alloc_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (id : id
     let t = compress_andSeparately non_matching_list in 
     let id_t = get_normal_form_disjoint_identifiers t in  (* identifiers in non-matching list (t) *)
     let fv_t = IdentifierSet.diff id_t vars in (* remove bound identifiers from id_t *)
+    (* check wether the non-matching list contains modified vars (in this case only id) *)
     if (IdentifierSet.find_opt id fv_t |> Option.is_none) 
       then AndSeparately(EmptyHeap, t)
       else False
