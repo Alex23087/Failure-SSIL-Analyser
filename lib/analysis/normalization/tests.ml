@@ -16,7 +16,7 @@ let%test "existentialized non bound variable" =
   )
   in
   let normalized = existential_disjuntive_normal_form formula in
-  test_expected_free_variables normalized ("x"::[])
+  test_expected_bound_variables normalized 1
 
 let%test "disjoint merging" =
   let formula = annot (
@@ -126,7 +126,6 @@ let%test "variables renaming when merging normalized forms" =
     )
   ) in 
   let normalized = existential_disjuntive_normal_form formula in
-  let expected_identifiers = "x" :: "0$x" :: "1$y" :: [] in
   let expected_disjoints =
     Formula.AndSeparately(
       Formula.And(
@@ -143,5 +142,5 @@ let%test "variables renaming when merging normalized forms" =
       Formula.NonAllocated("y")
     ) :: []
   in
-  test_expected_free_variables normalized expected_identifiers &&
+  test_expected_bound_variables normalized 3 &&
   test_expected_disjoints normalized expected_disjoints
