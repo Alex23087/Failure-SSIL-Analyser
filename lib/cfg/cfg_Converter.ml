@@ -48,13 +48,13 @@ module Converter = struct
             match (keep_structure, Node.get_exp root, Node.get_exp a) with
             | (true, root_exp::_, a_exp::_) -> (
               match (root_exp.node, a_exp.node) with
-              | (Skip, Skip) -> (apply_and_recurse root a keep_structure)
-              | (Assignment(_, _), Assignment(_, _)) -> (apply_and_recurse root a keep_structure)
-              | (NonDet(_), NonDet(_)) -> (apply_and_recurse root a keep_structure)
-              | (Guard(_), Guard(_)) -> (apply_and_recurse root a keep_structure)
-              | (Allocation(_), Allocation(_)) -> (apply_and_recurse root a keep_structure)
-              | (Free(_), Free(_)) -> (apply_and_recurse root a keep_structure)
-              | (ReadHeap(_, _), ReadHeap(_, _)) -> (apply_and_recurse root a keep_structure)
+              | (Skip, Skip)
+              | (Assignment(_, _), Assignment(_, _))
+              | (NonDet(_), NonDet(_))
+              | (Guard(_), Guard(_))
+              | (Allocation(_), Allocation(_))
+              | (Free(_), Free(_))
+              | (ReadHeap(_, _), ReadHeap(_, _))
               | (WriteHeap(_, _), WriteHeap(_, _)) -> (apply_and_recurse root a keep_structure)
               | _ -> help_simplify keep_structure a
             )
