@@ -1,5 +1,4 @@
 open Ast
-open Base
 open Cfg_Node
 open Cfg_Converter
 open Cfg_Tests_Utils
