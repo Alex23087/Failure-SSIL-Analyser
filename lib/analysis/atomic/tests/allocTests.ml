@@ -1,17 +1,7 @@
 open AtomicBase
 open Normalization
 open DataStructures.Analysis.NormalForm
-
-open Analysis_TestCommon
-
-(* Alias for better readability *)
-module Commands = Ast.HeapRegularCommands
-module PFormula = DataStructures.Parser.LogicFormulas.Formula
-module PBinaryComparison = DataStructures.Parser.LogicFormulas.BinaryComparison
-module PArithmeticExpression = DataStructures.Parser.LogicFormulas.ArithmeticExpression
-module PBinaryOperator = DataStructures.Parser.LogicFormulas.BinaryOperator
-
-(************************** Alloc tests ****************************)
+open Analysis_TestUtils
 
 (* << emp >> x := alloc() << x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << x -> v >>" =
@@ -157,7 +147,7 @@ let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints 
 
-(************************** Frame Rule on Alloc tests ****************************)
+(***************************** Frame Rule *********************************)
 
 (* << emp * emp >> x := alloc() << emp * x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << emp * x -> v >>" =

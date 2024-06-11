@@ -46,3 +46,10 @@ let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.For
     in match test_expected_disjoints normalized.disjoints expected with
     | true -> true
     | false -> print_formulas normalized.disjoints; false
+
+(* Alias for better readability *)
+module Commands = Ast.HeapRegularCommands
+module PFormula = DataStructures.Parser.LogicFormulas.Formula
+module PBinaryComparison = DataStructures.Parser.LogicFormulas.BinaryComparison
+module PArithmeticExpression = DataStructures.Parser.LogicFormulas.ArithmeticExpression
+module PBinaryOperator = DataStructures.Parser.LogicFormulas.BinaryOperator

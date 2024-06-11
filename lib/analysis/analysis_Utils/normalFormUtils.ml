@@ -44,8 +44,8 @@ let rec get_normal_form_disjoint_identifiers (formula: Formula.t) =
   match formula with
   | True | False | EmptyHeap ->
     IdentifierSet.empty
-  | Allocation(id, _) | NonAllocated(id) ->
-    IdentifierSet.singleton id
+  | Allocation(id, expr) -> IdentifierSet.add id (get_normal_form_expr_identifiers expr)
+  | NonAllocated(id) -> IdentifierSet.singleton id
   | Comparison(_, lexpr, rexpr) ->
     IdentifierSet.union (get_normal_form_expr_identifiers lexpr) (get_normal_form_expr_identifiers rexpr)
     | And(lformula, rformula) | AndSeparately(lformula, rformula) ->
