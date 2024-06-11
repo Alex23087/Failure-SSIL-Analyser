@@ -2,4 +2,5 @@ include DataStructures
 include DataStructures.Analysis
 include Normalization
 include ExpressionSubstitution
+include FormulaSimplification
 include Analysis_Utils
