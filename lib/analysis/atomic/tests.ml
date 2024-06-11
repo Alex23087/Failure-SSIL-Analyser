@@ -23,7 +23,7 @@ let%test "weakest precondition on skip" =
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints = Formula.NonAllocated("x") :: [] in
   test_expected_bound_variables pre_condition 1 &&
-  test_expected_disjoints pre_condition expected_disjoints 
+  test_expected_disjoints pre_condition expected_disjoints ["x"]
 
 let%test "weakest precondition on assignment" =
   let command =
@@ -46,10 +46,10 @@ let%test "weakest precondition on assignment" =
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints =
     Formula.And(
-      Formula.NonAllocated("0$x"),
+      Formula.NonAllocated("a"),
       Formula.Comparison(
         BinaryComparison.Equals,
-        ArithmeticExpression.Variable("0$x"),
+        ArithmeticExpression.Variable("a"),
         ArithmeticExpression.Literal(5)
       )
     ) ::
@@ -59,8 +59,8 @@ let%test "weakest precondition on assignment" =
       ArithmeticExpression.Variable("y")
     ) :: []
   in
-  test_expected_bound_variables pre_condition 0 &&
-  test_expected_disjoints pre_condition expected_disjoints 
+  test_expected_bound_variables pre_condition 1 &&
+  test_expected_disjoints pre_condition expected_disjoints ["a"]
 
 let%test "weakest precondition on guard" =
   let command =
@@ -96,8 +96,10 @@ let%test "weakest precondition on guard" =
       Formula.NonAllocated("y")
     ) :: []
   in
-  test_expected_disjoints pre_condition expected_disjoints 
+  test_expected_bound_variables pre_condition 0 &&
+  test_expected_disjoints pre_condition expected_disjoints []
 
+(* << Exists x. x > y >> x = nondet() << x > y >> *)
 let%test "weakest precondition on non deterministic assignment" =
   let command =
     annot_cmd (Commands.HeapAtomicCommand.NonDet("x"))
@@ -119,4 +121,4 @@ let%test "weakest precondition on non deterministic assignment" =
     ) :: []
   in
   test_expected_bound_variables pre_condition 1 &&
-  test_expected_disjoints pre_condition expected_disjoints 
+  test_expected_disjoints pre_condition expected_disjoints ["x"]

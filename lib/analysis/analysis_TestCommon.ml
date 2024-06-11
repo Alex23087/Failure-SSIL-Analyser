@@ -29,20 +29,10 @@ let print_formulas lst =
   print_endline "actual disjoints: ";
   List.iter (fun item -> print_endline (NormalForm.Formula.show item)) lst
 
-(* Check the list of actual disjoints is the same of expected disjoints *)
-let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.Formula.t list) =
-  let rec test_expected_disjoints list1 list2 =
-    match list1, list2 with
-    | [], [] -> true
-    | [], _::_ -> false
-    | [l], [r] -> equal_formulas l r
-    | l::list1, list2 ->
-        let compare_fn x = equal_formulas l x in
-        let r, list2 = List.partition compare_fn list2 in
-        match r with
-        | [] -> false
-        | [_] -> test_expected_disjoints list1 list2
-        | _::xs -> test_expected_disjoints list1 (xs @ list2)
-    in match test_expected_disjoints normalized.disjoints expected with
-    | true -> true
-    | false -> print_formulas normalized.disjoints; false
+(* [test_expected_disjoints formula expected bound_name] checks that the list of actual disjoints in [formula]
+  is the same of [expected] disjoints. [bound_names] is the set of bound names of the expected disjoints, which are
+  unified with the names in the actual formula, as two formulas are equal up to alpha-conversion (bound names renaming). *)
+let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.Formula.t list) (bound_names: identifier list) =
+  let bound_names = IdentifierSet.of_list bound_names in
+  let expected = NormalForm.make bound_names expected {first_id = 0; last_id = 0} in
+  equal_formulas normalized expected
