@@ -7,10 +7,14 @@ open Prelude.Ast.LogicFormulas.BinaryOperator
 open F_utils
 open Utils
 
-let source = {|<< true >>|}
+let source = {|<< x -/> || emp >>|}
 
-let expected: Formula.t = test_node (True)
+let expected: Formula.t =
+  test_node (Or (
+    test_node (NonAllocated "x"),
+    test_node (EmptyHeap)
+  ))
 ;;
 
-let%test_unit "test formulae n. 00" =
+let%test_unit "test formulae n. 07" =
   [%test_eq: Formula.t] (parse_formula source) expected

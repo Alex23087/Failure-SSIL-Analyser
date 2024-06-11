@@ -1,57 +1,22 @@
 open Prelude.Ast.LogicFormulas
-open Prelude.Ast.LogicFormulas.AnnotatedNode
+open Prelude.Ast.LogicFormulas.Formula
+open Prelude.Ast.LogicFormulas.BinaryComparison
+open Prelude.Ast.LogicFormulas.ArithmeticExpression
+open Prelude.Ast.LogicFormulas.BinaryOperator
+
+open F_utils
 open Utils
 
 let source = {|<< ((y -> v) * (x = y)) && (x = v) >>|}
 
-let expected: Formula.t = {
-  node = (And (
-    {
-      node = (AndSeparately (
-        {
-          node = (Allocation (
-            "y",
-            {
-              node = (Variable "v");
-              annotation = { position = dummy_position }
-            }
-          ));
-          annotation = { position = dummy_position }
-        }, 
-        {
-          node = (Comparison (
-            Equals,
-            {
-              node = (Variable "x");
-              annotation = { position = dummy_position }
-            },
-            {
-              node = (Variable "y");
-              annotation = { position = dummy_position }
-            }
-          ));
-          annotation = { position = dummy_position }
-        }
-      ));
-      annotation = {position = dummy_position}
-    },
-    {
-    node = (Comparison (
-          Equals,
-          {
-            node = (Variable "x");
-            annotation = { position = dummy_position }
-          },
-          {
-            node = (Variable "v");
-            annotation = { position = dummy_position }
-          }
-        ));
-        annotation = { position = dummy_position }
-    }
-  ));
-  annotation = { position = dummy_position }
-}
+let expected: Formula.t =
+  test_node (And (
+    test_node (AndSeparately (
+        test_node (Allocation ("y", test_node(Variable "v"))), 
+        test_node (Comparison ( Equals, test_node (Variable "x"), test_node (Variable "y")))
+    )),
+    test_node (Comparison ( Equals, test_node (Variable "x"), test_node (Variable "v")))
+  ))
 ;;
 
 let%test_unit "test formulae n. 02" =

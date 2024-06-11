@@ -1,38 +1,19 @@
 open Prelude.Ast.LogicFormulas
-open Prelude.Ast.LogicFormulas.AnnotatedNode
+open Prelude.Ast.LogicFormulas.Formula
+open Prelude.Ast.LogicFormulas.BinaryComparison
+open Prelude.Ast.LogicFormulas.ArithmeticExpression
+open Prelude.Ast.LogicFormulas.BinaryOperator
+
+open F_utils
 open Utils
 
 let source = {|<< (y -> v) * (v = x) >>|}
 
-let expected: Formula.t = {
-  node = (AndSeparately (
-    {
-      node = (Allocation (
-        "y",
-        {
-          node = (Variable "v");
-          annotation = { position = dummy_position }
-        }
-      ));
-      annotation = { position = dummy_position }
-    }, 
-    {
-      node = (Comparison (
-        Equals,
-        {
-          node = (Variable "v");
-          annotation = { position = dummy_position }
-        },
-        {
-          node = (Variable "x");
-          annotation = { position = dummy_position }
-        }
-      ));
-      annotation = { position = dummy_position }
-    }
-  ));
-  annotation = {position = dummy_position}
-}
+let expected: Formula.t = 
+  test_node (AndSeparately (
+    test_node (Allocation ("y", test_node (Variable "v"))),
+    test_node (Comparison (Equals, test_node (Variable "v"), test_node(Variable "x")))
+  ))
 ;;
 
 let%test_unit "test formulae n. 01" =
