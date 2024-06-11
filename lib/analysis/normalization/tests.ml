@@ -16,7 +16,11 @@ let%test "existentialized non bound variable" =
   )
   in
   let normalized = existential_disjuntive_normal_form formula in
-  test_expected_bound_variables normalized 1
+  let expected_disjoints =
+    Formula.NonAllocated("x") :: []
+  in
+  test_expected_bound_variables normalized 1 &&
+  test_expected_disjoints normalized expected_disjoints ["x"]
 
 let%test "disjoint merging" =
   let formula = annot (
@@ -40,7 +44,8 @@ let%test "disjoint merging" =
     Formula.NonAllocated("z") :: 
     Formula.NonAllocated("w") :: []
   in
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 0 &&
+  test_expected_disjoints normalized expected_disjoints []
 
 let%test "and distribution" =
   let formula = annot (
@@ -72,7 +77,8 @@ let%test "and distribution" =
     Formula.NonAllocated("w")
   ) :: []
   in
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 0 &&
+  test_expected_disjoints normalized expected_disjoints []
 
 let%test "and separately distribution" =
   let formula = annot (
@@ -104,7 +110,8 @@ let%test "and separately distribution" =
     Formula.NonAllocated("w")
   ) :: []
   in
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 0 &&
+  test_expected_disjoints normalized expected_disjoints []
 
 let%test "variables renaming when merging normalized forms" =
   let formula = annot (
@@ -130,17 +137,17 @@ let%test "variables renaming when merging normalized forms" =
     Formula.AndSeparately(
       Formula.And(
         Formula.NonAllocated("x"),
-        Formula.NonAllocated("1$y")
+        Formula.NonAllocated("a")
       ),
-      Formula.NonAllocated("0$x")
+      Formula.NonAllocated("b")
     ) ::
     Formula.AndSeparately(
       Formula.And(
         Formula.NonAllocated("x"),
-        Formula.NonAllocated("1$y")
+        Formula.NonAllocated("a")
       ),
       Formula.NonAllocated("y")
     ) :: []
   in
   test_expected_bound_variables normalized 3 &&
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_disjoints normalized expected_disjoints ["a"; "b"; "x"]

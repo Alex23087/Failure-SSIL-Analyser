@@ -23,4 +23,5 @@ let substitute_expression_in_normalized_formula (formula: NormalForm.t) (changin
   in
   let disjoints, renamed_used = List.fold_left (fun (disjoints, renamed_used) x -> substitute_in_disjoint x disjoints renamed_used) ([], false) formula.disjoints in
   let id_generator = if renamed_used then renamed_id_generator else original_id_generator in
-  NormalForm.make formula.variables disjoints id_generator
+  let variables = if renamed_used then IdentifierSet.add renamed_var formula.variables else formula.variables in
+  NormalForm.make variables disjoints id_generator

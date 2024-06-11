@@ -16,7 +16,7 @@ let%test "precondition on x := alloc(), post-condition = << x -> v >>" =
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints = Formula.EmptyHeap :: [] in
   test_expected_bound_variables pre_condition 0 &&
-  test_expected_disjoints pre_condition expected_disjoints
+  test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> x := alloc() << x -/> v >> *)
 let%test "precondition on x := alloc(), post-condition = << x -/> >>" =
@@ -26,7 +26,7 @@ let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> x := alloc() << y -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << y -> v >>" =
@@ -41,7 +41,7 @@ let%test "precondition on x := alloc(), post-condition = << y -> v >>" =
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints = Formula.False :: [] in
   test_expected_bound_variables pre_condition 0 &&
-  test_expected_disjoints pre_condition expected_disjoints
+  test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> x := alloc() << Exists x . x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << Exists x . x -> v >>" =
@@ -59,7 +59,7 @@ let%test "precondition on x := alloc(), post-condition = << Exists x . x -> v >>
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints = Formula.False :: [] in
   test_expected_bound_variables pre_condition 1 &&
-  test_expected_disjoints pre_condition expected_disjoints
+  test_expected_disjoints pre_condition expected_disjoints ["v"]
 
 (* << false >> x := alloc() << false >> *)
 let%test "precondition on x := alloc(), post-condition = << false >>" =
@@ -69,7 +69,7 @@ let%test "precondition on x := alloc(), post-condition = << false >>" =
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints = Formula.False :: [] in
   test_expected_bound_variables pre_condition 0 &&
-  test_expected_disjoints pre_condition expected_disjoints
+  test_expected_disjoints pre_condition expected_disjoints []
 
 (* << true >> x := alloc() << true >> *)
 let%test "precondition on x := alloc(), post-condition = << true >>" =
@@ -79,7 +79,7 @@ let%test "precondition on x := alloc(), post-condition = << true >>" =
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints = Formula.True :: [] in
   test_expected_bound_variables pre_condition 0 &&
-  test_expected_disjoints pre_condition expected_disjoints
+  test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> x := alloc() << emp >> *)
 let%test "precondition on x := alloc(), post-condition = << emp >>" =
@@ -89,7 +89,7 @@ let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false || false >> x := alloc() << emp || emp >> *)
 let%test "precondition on x := alloc(), post-condition = << emp || emp >>" =
@@ -105,7 +105,7 @@ let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.False :: Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false || emp >> x := alloc() << emp || x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << emp || x -> v >>" =
@@ -125,7 +125,7 @@ let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.EmptyHeap :: Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> x := alloc() << emp && x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << emp && x -> v >>" =
@@ -145,7 +145,7 @@ let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (***************************** Frame Rule *********************************)
 
@@ -167,7 +167,7 @@ let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.AndSeparately( Formula.EmptyHeap, Formula.EmptyHeap ) :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> x := alloc() << emp * y -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << emp * y -> v >>" =
@@ -187,7 +187,7 @@ let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> x := alloc() << emp * x -/> >> *)
 let%test "precondition on x := alloc(), post-condition = << emp * y -/> >>" =
@@ -205,7 +205,7 @@ let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << y -> v * emp >> x := alloc() << y -> v * x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << y -> v * x -> v >>" =
@@ -231,7 +231,7 @@ let expected_disjoints =
   Formula.AndSeparately(Formula.EmptyHeap, Formula.Allocation("y", Variable("v"))) :: [] 
 in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << x -/> * emp >> x := alloc() << x -/> * x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << x -/> * x -> v >>" =
@@ -251,7 +251,7 @@ let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << emp * true >> x := alloc() << emp * true >> *)
 let%test "precondition on x := alloc(), post-condition = << emp * true >>" =
@@ -269,7 +269,7 @@ let expected_disjoints =
   Formula.AndSeparately(Formula.EmptyHeap, Formula.True) :: [] 
 in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << true * emp >> x := alloc() << true * x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << true * x -> v >>" =
@@ -290,7 +290,7 @@ let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = 
   Formula.AndSeparately(Formula.EmptyHeap, Formula.True) :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << true * false >> x := alloc() << true * y -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << true * y -> v >>" =
@@ -311,7 +311,7 @@ let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = 
   Formula.AndSeparately(Formula.True, Formula.Allocation("y", Variable("v"))) :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << v = 5 * emp * y -> v >> x := alloc() << v = 5 * x -> v * y -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << v = 5 * x -> v * y -> v >>" =
@@ -337,4 +337,4 @@ let expected_disjoints =
     )
   ) :: [] in
 test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints 
+test_expected_disjoints pre_condition expected_disjoints []

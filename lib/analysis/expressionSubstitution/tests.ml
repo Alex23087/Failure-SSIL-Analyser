@@ -32,8 +32,13 @@ let%test "substitute identifer only expression" =
         ArithmeticExpression.Variable("y")
     ) :: []
   in
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 0 &&
+  test_expected_disjoints normalized expected_disjoints []
 
+(* substitute '17 - z' to 'x' in the formula
+   << x -/> or 5 + x = y >>, which results into
+   << Exists a. (a -/> and a = 17 - z) or (5 + (17 - z) = y) >>
+*)
 let%test "substitute non identifier only expression" = 
   let formula = annot (PFormula.Or(
     annot (PFormula.NonAllocated("x")),
@@ -59,14 +64,14 @@ let%test "substitute non identifier only expression" =
   let renamed_equal_formula =
     Formula.Comparison(
       BinaryComparison.Equals,
-      ArithmeticExpression.Variable("0$x"),
+      ArithmeticExpression.Variable("a"),
       substituting_expression
     )
   in
   let normalized = substitute_expression_in_normalized_formula normalized substituting_expression substituted_id in
   let expected_disjoints =
     Formula.And(
-      Formula.NonAllocated("0$x"),
+      Formula.NonAllocated("a"),
       renamed_equal_formula
     ) ::
     Formula.Comparison(
@@ -79,4 +84,5 @@ let%test "substitute non identifier only expression" =
       ArithmeticExpression.Variable("y")
     ) :: []
   in
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 1 &&
+  test_expected_disjoints normalized expected_disjoints ["a"]
