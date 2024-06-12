@@ -22,6 +22,13 @@ This module provides functions to substitute identifiers with expressions in nor
 *)
 module ExpressionSubstitution = ExpressionSubstitution
 
+(** {1 Formula Simplification}
+
+This module provides a general method for simplifying formulas according to equality rules of the logic operators.
+Inner modules provide all the specific semplification functions.
+*)
+module FormulaSimplification = FormulaSimplification
+
 (** {1 Atomic Analysis}
 
 This module provides functions to analyze atomic commands, i.e. compute the pre-condition of an atomic command given a post-condition.
