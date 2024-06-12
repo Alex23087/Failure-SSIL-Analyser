@@ -10,7 +10,7 @@ let simplify_formula (formula: NormalForm.t) =
   let rec simplify formula =
     let simplified = List.fold_left (|>) formula simplification_functs in
     match equal_formulas simplified formula with
-    | true -> formula
-    | false -> simplify formula
+    | true  -> simplified
+    | false -> simplify simplified
   in
   simplify formula
