@@ -117,7 +117,13 @@ let equal_formulas (lformula: NormalForm.t) (rformula: NormalForm.t) =
   let equal_disjoints (ldisjoints: Formula.t list * IdentifierSet.t) (rdisjoints: Formula.t list * IdentifierSet.t) (mapping: varMap) =
     equal_lists equal_disjoint ldisjoints rdisjoints mapping
   in
-  fst (equal_disjoints (lformula.disjoints, lformula.variables) (rformula.disjoints, rformula.variables) VarMap.empty)
+  let equal, map = equal_disjoints (lformula.disjoints, lformula.variables) (rformula.disjoints, rformula.variables) VarMap.empty in 
+  if equal = false then false
+  else 
+    IdentifierSet.map 
+      (fun var -> (VarMap.find_opt var map |> Option.value) ~default:var) 
+      (lformula.variables) |> 
+      IdentifierSet.equal rformula.variables
 
 (** Computes the set of identifiers in an arithmetic expression. *)
 let rec get_normal_form_expr_identifiers (expr: ArithmeticExpression.t) =
