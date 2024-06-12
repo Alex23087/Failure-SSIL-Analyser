@@ -91,7 +91,7 @@ let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << false || false >> x := alloc() << emp || emp >> *)
+(* << false >> x := alloc() << emp || emp >> *)
 let%test "precondition on x := alloc(), post-condition = << emp || emp >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
 let post_condition = 
@@ -103,11 +103,11 @@ let post_condition =
   ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = Formula.False :: Formula.False :: [] in
+let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << false || emp >> x := alloc() << emp || x -> v >> *)
+(* << emp >> x := alloc() << emp || x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << emp || x -> v >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
 let post_condition = 
@@ -123,7 +123,7 @@ let post_condition =
   ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = Formula.EmptyHeap :: Formula.False :: [] in
+let expected_disjoints = Formula.EmptyHeap :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
@@ -149,7 +149,7 @@ test_expected_disjoints pre_condition expected_disjoints []
 
 (***************************** Frame Rule *********************************)
 
-(* << emp * emp >> x := alloc() << emp * x -> v >> *)
+(* << emp >> x := alloc() << emp * x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << emp * x -> v >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
 let post_condition = 
@@ -165,7 +165,7 @@ let post_condition =
   ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = Formula.AndSeparately( Formula.EmptyHeap, Formula.EmptyHeap ) :: [] in
+let expected_disjoints = Formula.EmptyHeap :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
@@ -190,7 +190,7 @@ test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> x := alloc() << emp * x -/> >> *)
-let%test "precondition on x := alloc(), post-condition = << emp * y -/> >>" =
+let%test "precondition on x := alloc(), post-condition = << emp * x -/> >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
 let post_condition = 
   annot ( 
@@ -207,7 +207,7 @@ let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << y -> v * emp >> x := alloc() << y -> v * x -> v >> *)
+(* << y -> v >> x := alloc() << y -> v * x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << y -> v * x -> v >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
 let post_condition = 
@@ -227,13 +227,11 @@ let post_condition =
   ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = 
-  Formula.AndSeparately(Formula.EmptyHeap, Formula.Allocation("y", Variable("v"))) :: [] 
-in
+let expected_disjoints = Formula.Allocation("y", Variable("v")) :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << x -/> * emp >> x := alloc() << x -/> * x -> v >> *)
+(* << false >> x := alloc() << x -/> * x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << x -/> * x -> v >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
 let post_condition = 
@@ -253,7 +251,7 @@ let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << emp * true >> x := alloc() << emp * true >> *)
+(* << true >> x := alloc() << emp * true >> *)
 let%test "precondition on x := alloc(), post-condition = << emp * true >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
 let post_condition = 
@@ -265,13 +263,11 @@ let post_condition =
   ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = 
-  Formula.AndSeparately(Formula.EmptyHeap, Formula.True) :: [] 
-in
+let expected_disjoints = Formula.True :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << true * emp >> x := alloc() << true * x -> v >> *)
+(* << true >> x := alloc() << true * x -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << true * x -> v >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
 let post_condition = 
@@ -287,8 +283,7 @@ let post_condition =
   ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = 
-  Formula.AndSeparately(Formula.EmptyHeap, Formula.True) :: [] in
+let expected_disjoints = Formula.True :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
@@ -313,7 +308,7 @@ let expected_disjoints =
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << v = 5 * emp * y -> v >> x := alloc() << v = 5 * x -> v * y -> v >> *)
+(* << v = 5 * y -> v >> x := alloc() << v = 5 * x -> v * y -> v >> *)
 let%test "precondition on x := alloc(), post-condition = << v = 5 * x -> v * y -> v >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
 let post_condition = 
@@ -330,11 +325,32 @@ let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = 
   Formula.AndSeparately(
-    Formula.EmptyHeap, 
-    Formula.AndSeparately(
-      Formula.Allocation("v", Literal(5)), 
-      Formula.Allocation("y", Variable("v"))
-    )
+    Formula.Allocation("v", Literal(5)), 
+    Formula.Allocation("y", Variable("v"))
+  ) :: [] in
+test_expected_bound_variables pre_condition 0 &&
+test_expected_disjoints pre_condition expected_disjoints []
+
+(* Test commutativity *)
+(* << v = 5 * y -> v >> x := alloc() << v = 5 * x -> v * y -> v >> *)
+let%test "precondition on x := alloc(), post-condition = << v = 5 * x -> v * y -> v >>" =
+let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
+let post_condition = 
+  annot ( 
+    PFormula.AndSeparately(
+      annot (PFormula.Allocation("v", (annot (PArithmeticExpression.Literal(5) ) ) ) ),
+      annot (PFormula.AndSeparately(
+        annot (PFormula.Allocation("x", annot (PArithmeticExpression.Variable("v") ) ) ),
+        annot (PFormula.Allocation("y", annot (PArithmeticExpression.Variable("v") ) ) ) 
+      )
+    ))
+  ) in
+let post_condition = existential_disjuntive_normal_form post_condition in
+let pre_condition = compute_precondition command post_condition in
+let expected_disjoints = 
+  Formula.AndSeparately(
+    Formula.Allocation("y", Variable("v")),
+    Formula.Allocation("v", Literal(5))
   ) :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
