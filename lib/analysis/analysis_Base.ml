@@ -21,7 +21,7 @@ let starting_states (cfg: Cfg.t) =
     start_indices
   in
   let starting_states (cfg: Cfg.t) (item: Cfg.item) =
-    let idx = Cfg.idx cfg item in
+    let idx = Cfg.get_id item in
     let block = Cfg.get_data cfg idx in
     let map_fun x = {cfg; last_block = idx; last_statement = x} in
     let start_postconditions = block_start_postconditions block in

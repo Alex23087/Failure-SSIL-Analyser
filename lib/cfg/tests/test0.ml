@@ -93,48 +93,50 @@ let%test "test ast to cfg NonDet" =
 (*                        Testing everything works                            *)
 
 let%test_unit "test ast to cfg Everything" =
-  let source = annotate (HeapRegularCommand.Sequence(
+  let source =
+    annotate (HeapRegularCommand.Sequence(
       annotate (HeapRegularCommand.Command(
         annotate (HeapAtomicCommand.Assignment("x",
-          annotate (ArithmeticExpression.Literal 1))))),
+          annotate (ArithmeticExpression.Literal 1)
+        ))
+      )),
       annotate (HeapRegularCommand.Sequence(
-      annotate (HeapRegularCommand.Star(
-        annotate (HeapRegularCommand.Sequence(
-          annotate (HeapRegularCommand.Command(
-            annotate (HeapAtomicCommand.Guard(
+        annotate (HeapRegularCommand.Star(
+          annotate (HeapRegularCommand.Sequence(
+            annotate (HeapRegularCommand.Command(
+              annotate (HeapAtomicCommand.Guard(
+                annotate (BooleanExpression.Comparison(
+                  BooleanComparison.LessThan,
+                  annotate (ArithmeticExpression.Variable "x"),
+                  annotate (ArithmeticExpression.Literal 10)
+                ))
+              ))
+            )),
+            annotate (HeapRegularCommand.Command(
+              annotate (HeapAtomicCommand.Assignment(
+                "x",
+                annotate (ArithmeticExpression.BinaryOperation(
+                  ArithmeticOperation.Plus,
+                  annotate (ArithmeticExpression.Variable "x"),
+                  annotate (ArithmeticExpression.Literal 1)
+                ))
+              ))
+            ))
+          ))
+        )),
+        annotate (HeapRegularCommand.Command(
+          annotate (HeapAtomicCommand.Guard(
+            annotate (BooleanExpression.Not(
               annotate (BooleanExpression.Comparison(
                 BooleanComparison.LessThan,
                 annotate (ArithmeticExpression.Variable "x"),
                 annotate (ArithmeticExpression.Literal 10)
               ))
             ))
-          )),
-          annotate (HeapRegularCommand.Command(
-            annotate (HeapAtomicCommand.Assignment(
-              "x",
-              annotate (ArithmeticExpression.BinaryOperation(
-                ArithmeticOperation.Plus,
-                annotate (ArithmeticExpression.Variable "x"),
-                annotate (ArithmeticExpression.Literal 1)
-              ))
-            ))
-          ))
-        ))
-      )),
-
-      annotate (HeapRegularCommand.Command(
-        annotate (HeapAtomicCommand.Guard(
-          annotate (BooleanExpression.Not(
-            annotate (BooleanExpression.Comparison(
-              BooleanComparison.LessThan,
-              annotate (ArithmeticExpression.Variable "x"),
-              annotate (ArithmeticExpression.Literal 10)
-            ))
           ))
         ))
       ))
     ))
-  ))
   in
   let _ = Converter.convert source in
   ()

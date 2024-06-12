@@ -73,13 +73,23 @@ module Node = struct
     in
     helper node1 node2
 
-  let rec length (node : 'a t) : int = match node.succ with
-    | [] -> 1
-    | [x] -> (length x)+1
-    | ls -> (
-      List.map (fun x -> length x) ls |>
-        List.fold_left (+) 1
-    )
+  let length (node : 'a t) : int =
+    let alreadyvisited = ref [] in
+    let rec helper_length (node : 'a t) : int =
+      if List.mem node.id !alreadyvisited then
+        0
+      else (
+        alreadyvisited := node.id :: !alreadyvisited;
+        match node.succ with
+        | [] -> 1
+        | [x] -> (helper_length x)+1
+        | ls -> (
+          List.map (fun x -> helper_length x) ls |>
+            List.fold_left (+) 1
+        )
+      )
+    in
+    helper_length node
 
   let make (exp: 'a) (succ: 'a t list) (pred: int list) : 'a t =
     {id = next_id(); exp = exp; succ = succ; pred = pred}
@@ -124,8 +134,7 @@ module Node = struct
     helper node
 
   let compute_pred (node : 'a t) : unit =
-    let rec helper = function
-      | { id; exp=_; succ; _ } ->
-         List.iter (fun x -> (add_pred x id); helper x) succ;
-    in helper node
+    let rec helper_compute_pred (node : 'a t) : unit =
+      List.iter (fun x -> (add_pred x node.id); helper_compute_pred x) node.succ;
+    in helper_compute_pred node
 end

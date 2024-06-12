@@ -14,8 +14,8 @@ module CFG : sig
   (** returns the root item of the CFG *)
   val root : 'a t -> 'a item
 
-  (** returns the index of a given item in the CFG *)
-  val idx : 'a t -> 'a item -> int
+  (** returns the id of a given item in the CFG *)
+  val get_id : 'a item -> int
 
   (** recursively fold on all the items in the CFG *)
   val fold : 'a t -> ('a t -> 'a item -> 'b -> 'b) -> 'b -> 'b
