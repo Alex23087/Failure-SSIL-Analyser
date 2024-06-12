@@ -66,6 +66,14 @@ module CFG = struct
     let compare = compare
   end)
 
+  let map (cfg : 'a t) (fn: 'a -> 'b) : 'b t =
+    let convert_item (item: 'a item) =
+      make_item item.id (fn item.exp) item.pred item.succ
+    in
+    let f key value acc = Hashtbl.add acc key (convert_item value); acc in
+    let new_cfg = Hashtbl.fold f cfg.cfg (Hashtbl.create (Hashtbl.length cfg.cfg)) in
+    {cfg = new_cfg; root_id = cfg.root_id}
+
   let fold (cfg : 'a t) (fn: 'a t -> 'a item -> 'b -> 'b) (acc: 'b) : 'b =
     (* performs a depth first visit of the graph *)
     let visited = IntSet.empty in
