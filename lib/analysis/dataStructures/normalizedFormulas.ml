@@ -1,4 +1,6 @@
 open Analysis_DataStructures_Base
+open Sexplib.Std
+open Base
 
 (** Normalized Logic Formulas
 
@@ -15,7 +17,7 @@ module NormalForm = struct
       | Literal of int
       | Variable of identifier
       | Operation of BinaryOperator.t * t * t
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
   end
 
   module BinaryComparison = struct include Ast.AnnotationLogic.BinaryComparison end
@@ -30,7 +32,7 @@ module NormalForm = struct
       | NonAllocated of identifier
       | Allocation of identifier * ArithmeticExpression.t
       | AndSeparately of t * t
-    [@@deriving show]
+    [@@deriving show, sexp, compare]
   end
 
   (** The id_generator data structure is used to keep track of variable renamings.
