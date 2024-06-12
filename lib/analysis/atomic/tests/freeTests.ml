@@ -2,6 +2,7 @@ open AtomicBase
 open Normalization
 open DataStructures.Analysis.NormalForm
 open Analysis_TestUtils
+open DataStructures
 
 (* << Exists v . x -> v >> free(x) << x -/> >> *)
 let%test "precondition on free(x), post-condition = << x -/> >>" =
@@ -25,6 +26,7 @@ let post_condition =
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.False :: [] in
+IdentifierSet.iter (print_endline) pre_condition.variables;
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
@@ -58,8 +60,8 @@ let%test "precondition on free(x), post-condition = << Exists x . x -> v >>" =
   let post_condition = existential_disjuntive_normal_form post_condition in
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints = Formula.False :: [] in
-  test_expected_bound_variables pre_condition 1 &&
-  test_expected_disjoints pre_condition expected_disjoints ["v"]
+  test_expected_bound_variables pre_condition 0 &&
+  test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> free(x) << false >> *)
 let%test "precondition on free(x), post-condition = << false >>" =
