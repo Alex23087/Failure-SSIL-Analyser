@@ -22,16 +22,15 @@ let compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: Norm
   | Allocation(id) -> (* solve each disjunction indipendentely (disj rule) *)
     let disjoints = List.map (apply_alloc (post_condition.variables) id) (post_condition.disjoints) in
     make (post_condition.variables) disjoints (post_condition.id_generator)
-  | Free(id) -> (* generate a fresh variable and compute precondition 
-                    if the fresh variable is not used, returns old set *)
-    let fresh_var, fresh_post_condition = generate_fresh_existentialized_variable post_condition in 
-    let disjoints = List.map (apply_free (fresh_post_condition.variables) id fresh_var) (fresh_post_condition.disjoints) in
-    let identifiers = List.map get_normal_form_disjoint_identifiers disjoints in 
-    let check_fresh vars = IdentifierSet.find_opt fresh_var vars |> Option.is_some in 
-    ( match (List.filter check_fresh identifiers) with
-      | [] -> make (post_condition.variables) disjoints (post_condition.id_generator)
-      | _  -> make (fresh_post_condition.variables) disjoints (fresh_post_condition.id_generator)
-    )
+  | Free(id) -> 
+    let f (list, pc) dj = 
+      let name, pc = generate_fresh_existentialized_variable pc in
+      ((name, dj)::list, pc) in
+    let (l, fresh_post_condition) = 
+      List.fold_left f ([], post_condition) post_condition.disjoints in
+    let disjoints = 
+      List.map (fun (x,y) -> apply_free (fresh_post_condition.variables) id x y) l in
+    make (fresh_post_condition.variables) disjoints (fresh_post_condition.id_generator)
   | ReadHeap(mem_id, id) ->
     raise (Failure "not implemented")
   | WriteHeap(mem_id, expr) ->

@@ -37,6 +37,9 @@ let test_expected_disjoints (normalized: NormalForm.t) (expected: NormalForm.For
   let expected = NormalForm.make bound_names expected {first_id = 0; last_id = 0} in
   equal_formulas normalized expected
 
+let rec foldi i f acc =
+  if i <= 0 then acc else foldi (pred i) f (f acc)
+
 (* Alias for better readability *)
 module Commands = Ast.HeapRegularCommands
 module PFormula = DataStructures.Parser.LogicFormulas.Formula
