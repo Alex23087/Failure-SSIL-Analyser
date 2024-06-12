@@ -20,3 +20,13 @@ and compress_andSeparately (formula : Formula.t list) : Formula.t =
   | []  -> EmptyHeap
   | [x] -> x
   | x::xs -> List.fold_left (fun x y -> Formula.AndSeparately(x, y)) x xs
+
+(* given a heap partition t, this function checks mod(r) intersect fv(t) = empty 
+   the function takes two possible results to return (one per branch)
+ *)
+let check_frame_rule_side_condition t vars mod_r res_then res_else =
+  let id_t = get_normal_form_disjoint_identifiers t in  (* identifiers in non-matching list (t) *)
+  let fv_t = IdentifierSet.diff id_t vars in (* remove bound identifiers from id_t *)
+  if (IdentifierSet.find_opt mod_r fv_t |> Option.is_none) 
+    then res_then
+  else res_else

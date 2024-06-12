@@ -6,33 +6,34 @@ open Formula
 let alloc_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (id : identifier) (f : Formula.t -> bool) : Formula.t =  
   let and_list = expand_andSeparately formula in 
   let (matching_list, non_matching_list) = List.partition f and_list in 
+  let t = compress_andSeparately non_matching_list in 
   match matching_list with 
-  | [] -> if ( 
+  | [] -> 
+    if ( 
       List.find_opt (function | True -> true | _ -> false ) non_matching_list |> 
       Option.is_some
     ) then formula else False
   | [_] -> 
-    let t = compress_andSeparately non_matching_list in 
-    let id_t = get_normal_form_disjoint_identifiers t in  (* identifiers in non-matching list (t) *)
-    let fv_t = IdentifierSet.diff id_t vars in (* remove bound identifiers from id_t *)
-    (* check wether the non-matching list contains modified vars (in this case only id) *)
-    if (IdentifierSet.find_opt id fv_t |> Option.is_none) 
-      then AndSeparately(EmptyHeap, t)
-      else False
+    let res_then = AndSeparately(EmptyHeap, t) in 
+    check_frame_rule_side_condition t vars id res_then False
   | _ -> False
 
 let free_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (id : identifier) (f : Formula.t -> bool) (fresh_var : identifier) : Formula.t =  
   let and_list = expand_andSeparately formula in 
   let (matching_list, non_matching_list) = List.partition f and_list in 
+  let t = compress_andSeparately non_matching_list in 
   match matching_list with 
-  | [] -> formula 
+  | [] -> 
+    if ( 
+      List.find_opt (function | True -> true | _ -> false ) non_matching_list |> 
+      Option.is_some
+    ) then 
+      let res_then = AndSeparately(Allocation(id, (Variable(fresh_var))), t) in 
+      check_frame_rule_side_condition t vars id res_then False
+    else check_frame_rule_side_condition t vars id formula False
   | _ -> 
-    let t = compress_andSeparately non_matching_list in 
-    let id_t = get_normal_form_disjoint_identifiers t in  (* identifiers in non-matching list (t) *)
-    let fv_t = IdentifierSet.diff id_t vars in (* remove bound identifiers from id_t *)
-    if (IdentifierSet.find_opt id fv_t |> Option.is_none) 
-      then AndSeparately(Allocation(id, (Variable(fresh_var))), t)
-      else False
+    let res_then = AndSeparately(Allocation(id, (Variable(fresh_var))), t) in 
+    check_frame_rule_side_condition t vars id res_then False
 
 (* apply alloc semantics to single formula *)
 let apply_alloc (vars : IdentifierSet.t) (id : identifier) (post : Formula.t) : Formula.t = 
@@ -56,6 +57,9 @@ let apply_free (vars : IdentifierSet.t) (id : identifier) (fresh_var : identifie
     if (IdentifierSet.find_opt x vars |> Option.is_some) then False 
     else Allocation(x, (Variable(fresh_var)))
   | AndSeparately(_, _) as formula -> 
-    let f = function | NonAllocated(x) when x=id -> true | _ -> false in 
+    let f = function 
+    | NonAllocated(x) when x=id -> true
+    | EmptyHeap -> true
+    | _ -> false in 
     free_heap_partition formula vars id f fresh_var
   | _ -> False
