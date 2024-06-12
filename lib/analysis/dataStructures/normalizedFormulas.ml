@@ -1,5 +1,4 @@
 open Analysis_DataStructures_Base
-open Sexplib.Std
 open Base
 
 (** Normalized Logic Formulas
@@ -40,14 +39,14 @@ module NormalForm = struct
   type id_generator = {
     first_id: int;
     last_id: int;
-  }
+  } [@@deriving show, sexp]
 
   type t = {
-    variables: IdentifierSet.t; [@opaque]
+    variables: (IdentifierSet.t [@sexp.opaque] [@opaque]);
     disjoints: Formula.t list;
     id_generator: id_generator; [@opaque]
   }
-  [@@deriving show]
+  [@@deriving show, sexp]
 
   let make variables disjoints id_generator =
     {variables; disjoints; id_generator}
