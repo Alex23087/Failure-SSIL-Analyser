@@ -15,8 +15,8 @@
     let b_neg_guard = HeapAtomicCommand.Guard(annotateEmptyCommand (BooleanExpression.Not(_guard)) _guard_pos) in
     let b_neg_guard_atom = annotateEmptyCommand b_neg_guard _guard_pos in
     let b_neg_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_neg_guard_atom)) _guard_pos in
-    let then_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_neg_guard_command, _then)) _then_pos in
-    let else_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _else)) _else_pos in
+    let then_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _then)) _then_pos in
+    let else_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_neg_guard_command, _else)) _else_pos in
     annotateCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) overall_pos formula
 
   (* (b?; body)*; ¬b? *)
