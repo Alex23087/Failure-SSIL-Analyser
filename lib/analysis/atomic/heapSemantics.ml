@@ -27,13 +27,9 @@ let free_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (id : ide
     if ( 
       List.find_opt (function | True -> true | _ -> false ) non_matching_list |> 
       Option.is_some
-    ) then 
-      let res_then = AndSeparately(Allocation(id, (Variable(fresh_var))), t) in 
-      check_frame_rule_side_condition t vars id res_then False
-    else check_frame_rule_side_condition t vars id formula False
-  | _ -> 
-    let res_then = AndSeparately(Allocation(id, (Variable(fresh_var))), t) in 
-    check_frame_rule_side_condition t vars id res_then False
+    ) then AndSeparately(Allocation(id, (Variable(fresh_var))), t)
+    else formula
+  | _ -> AndSeparately(Allocation(id, (Variable(fresh_var))), t)
 
 (* apply alloc semantics to single formula *)
 let apply_alloc (vars : IdentifierSet.t) (id : identifier) (post : Formula.t) : Formula.t = 

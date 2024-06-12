@@ -328,7 +328,7 @@ let expected_disjoints =
 test_expected_bound_variables pre_condition 1 &&
 test_expected_disjoints pre_condition expected_disjoints ["w"]
 
-(* << false >> free(x) << v = 5 * x -> v * y -> v >> *)
+(* << v = 5 * x -> v * y -> v >> free(x) << v = 5 * x -> v * y -> v >> *)
 let%test "precondition on free(x), post-condition = << v = 5 * x -> v * y -> v >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Free("x")) in
 let post_condition = 
@@ -344,6 +344,13 @@ let post_condition =
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = 
-  Formula.False :: [] in
+  Formula.AndSeparately(
+    Formula.Allocation("v", Literal(5)),
+    Formula.AndSeparately(
+      Formula.Allocation("x", Variable("v")),
+      Formula.Allocation("y", Variable("v"))
+    )
+  )
+  :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
