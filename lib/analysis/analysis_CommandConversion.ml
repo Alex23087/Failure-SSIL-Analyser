@@ -9,7 +9,7 @@ open Ast.HeapRegularCommands.ArithmeticExpression
 let convert_command_cfg_annotation (command: Parser.Commands.atomic_t) =
   let make = AnnotatedNode.make in
   let convert_logic_formula (formula: Parser.LogicFormulas.t option) =
-    Option.map existential_disjuntive_normal_form formula
+    Option.map (fun x -> x |> existential_disjuntive_normal_form |> FormulaSimplification.simplify_formula) formula
   in
   let convert_annotation (annotation: Parser.Commands.annotation): Commands.annotation =
     let formula = convert_logic_formula annotation.logic_formula in

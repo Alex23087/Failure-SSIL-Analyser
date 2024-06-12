@@ -79,6 +79,7 @@ let () =
     (NormalForm.make_from_formula (NormalForm.Formula.False))
     final_states
   in
+  let final_formula = Prelude.simplify_formula final_formula in
   print_endline (NormalForm.show final_formula);
 
   if not (String.equal !output_file "") then (
