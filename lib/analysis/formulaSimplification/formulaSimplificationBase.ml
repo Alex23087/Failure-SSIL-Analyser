@@ -8,6 +8,7 @@ let simplify_formula (formula: NormalForm.t) =
     BoundVariableCleanup.f;
     UnitAnd.f;
     UnitOr.f;
+    UnitAndSep.f;
   ] in
   let rec simplify formula =
     let simplified = List.fold_left (|>) formula simplification_functs in
