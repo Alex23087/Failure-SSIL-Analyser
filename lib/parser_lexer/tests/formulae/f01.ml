@@ -7,12 +7,11 @@ open Prelude.Ast.LogicFormulas.BinaryOperator
 open F_utils
 open Utils
 
-let source = {|<< (y -> v) * (v = x) >>|}
+let source = {|<< Exists "x" . True >>|}
 
-let expected: Formula.t = 
-  test_node (AndSeparately (
-    test_node (Allocation ("y", test_node (Variable "v"))),
-    test_node (Comparison (Equals, test_node (Variable "v"), test_node(Variable "x")))
+let expected: Formula.t =
+  test_node (Exists(
+    "x", test_node (True)
   ))
 ;;
 

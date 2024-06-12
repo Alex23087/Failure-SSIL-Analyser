@@ -35,7 +35,7 @@ let expected: HeapRegularCommand.t = {
               "z",
               {
                 node = (BinaryOperation (
-                  ArithmeticOperation.Multiplication,
+                  ArithmeticOperation.Times,
                   {
                     node = (Literal 5);
                     annotation = {

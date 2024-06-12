@@ -55,7 +55,7 @@ let expected: HeapRegularCommand.t = {
     {
       node = (HeapRegularCommand.Sequence (
         {
-          node = (HeapRegularCommand.Conditional (
+          node = (HeapRegularCommand.Condition (
             {
               node = (BinaryOperation (
                 ArithmeticOperation.Or,
