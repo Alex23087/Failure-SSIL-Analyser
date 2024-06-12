@@ -13,7 +13,7 @@ let rec get_heap_identifiers (formula: Formula.t) =
     IdentifierSet.union (get_heap_identifiers lformula) (get_heap_identifiers rformula)
 
 (** x -> w * x -> z = false *)
-let unit_and_sep (formula: NormalForm.t) =
+let no_shared_ids (formula: NormalForm.t) =
   let rec are_separated formula = match formula with
     | Formula.AndSeparately (f1, f2) ->
       (* poor man's short circuiting *)
@@ -30,4 +30,4 @@ let unit_and_sep (formula: NormalForm.t) =
   let new_disjoints = List.map (fun disjoint -> if are_separated disjoint then disjoint else Formula.False) formula.disjoints in
   NormalForm.make formula.variables new_disjoints formula.id_generator
 
-let f = unit_and_sep
+let f = no_shared_ids
