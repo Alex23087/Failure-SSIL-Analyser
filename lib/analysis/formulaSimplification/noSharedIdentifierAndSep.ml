@@ -26,6 +26,8 @@ let unit_and_sep (formula: NormalForm.t) =
       else false
     | Formula.And (f1, f2) -> are_separated f1 && are_separated f2
     | _ -> true in
-  NormalForm.make formula.variables (List.map (fun disjoint -> if are_separated disjoint then disjoint else Formula.False) formula.disjoints) formula.id_generator
+  (* because there are only and\and separately, falseness propagates to the top *)
+  let new_disjoints = List.map (fun disjoint -> if are_separated disjoint then disjoint else Formula.False) formula.disjoints in
+  NormalForm.make formula.variables new_disjoints formula.id_generator
 
 let f = unit_and_sep
