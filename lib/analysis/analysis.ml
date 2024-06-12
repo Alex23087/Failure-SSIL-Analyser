@@ -7,6 +7,8 @@ data structures used in those specific points of the software.
 *)
 module DataStructures = DataStructures
 
+module CfgAnalysis = CfgAnalysis
+
 (** {1 Formula Normalization}
 
 This module implements functions to transform generic formulas into Existential Disjunctive Normal Form,

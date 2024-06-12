@@ -1,6 +1,8 @@
 open In_channel
+open Lisproject.Cfg
 open Lisproject.Parserlexer
-open Lisproject.Prelude.Analysis.Parser
+open Lisproject.Analysis
+open Lisproject.Analysis.DataStructures.Analysis
 
 (* Command Line Arguments *)
 let usage_message = "Usage: " ^ Sys.argv.(0) ^ " [-v|--verbose] <input file> [-o <output file>]"
@@ -54,19 +56,33 @@ let () =
     exit(0)
   );
 
-  if String.equal !output_file "" then (
-    output_file := !input_file ^ ".out"
-  );
-
   if_verbose (print_endline ("[0] Reading input file: " ^ !input_file));
   let input = input_all (open_gen [Open_rdonly] 0 !input_file) in
   if String.equal input "" then
     fail ("Error: empty input file\n" ^ usage_message);
   
   if_verbose (print_endline ("[1] Parsing input..."));
-  let _ast = parse_input input in
+  let ast = parse_input input in
   
   if_verbose (print_endline ("[2] Constructing Control Flow Graph..."));
+  let nodes = Converter.convert ast in
+  let cfg = CFG.make nodes in
+  let cfg = CFG.map cfg Prelude.from_ast_commands in
+
   if_verbose (print_endline ("[3] Analysis..."));
-  if_verbose (print_endline ("[4] Writing output to file: " ^ !output_file));
+  let final_states = CfgAnalysis.analyze_program cfg in
+  let final_formula = List.fold_left
+    (fun acc x ->
+      let formula = Prelude.get_last_block_precondition x in
+      Option.fold ~none:acc ~some:(Prelude.disjunction_of_normalized_formulas acc) formula
+    )
+    (NormalForm.make_from_formula (NormalForm.Formula.False))
+    final_states
+  in
+  print_endline (NormalForm.show final_formula);
+
+  if not (String.equal !output_file "") then (
+    if_verbose (print_endline ("[4] Writing output to file: " ^ !output_file));
+  );
+
   ()

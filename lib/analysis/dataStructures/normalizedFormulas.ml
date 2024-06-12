@@ -49,4 +49,7 @@ module NormalForm = struct
 
   let make variables disjoints id_generator =
     {variables; disjoints; id_generator}
+
+  let make_from_formula formula =
+    {variables = IdentifierSet.empty; disjoints = [formula]; id_generator = {first_id = 0; last_id = 0}}
 end

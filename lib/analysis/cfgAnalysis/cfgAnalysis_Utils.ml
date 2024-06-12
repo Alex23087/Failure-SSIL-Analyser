@@ -1,6 +1,5 @@
 open DataStructures.Analysis
 open Utils
-
 let get_postcondition = Commands.get_postcondition
 let update_postcondition = Commands.update_postcondition
 
@@ -68,15 +67,3 @@ let analysis_step (state: analysis_state) : analysis_state list * analysis_state
   else
     let block = block_analysis_step current_block state.last_statement in
     [ block_to_starting_state cfg state.last_block block ], []
-
-let analyze_program (cfg: Cfg.t) =
-  let states = starting_states cfg in
-  let rec analyze (next_states: analysis_state list) (end_states: analysis_state list) =
-    match next_states with
-    | [] ->
-      end_states
-    | hd::tl ->
-      let next_states, new_end_states = analysis_step hd in
-      analyze (next_states @ tl) (new_end_states @ end_states)
-  in
-  analyze states []
