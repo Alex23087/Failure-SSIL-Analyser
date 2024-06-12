@@ -1,15 +1,24 @@
+open Cfg_Node
+
+(** The module CFG provides the abstraction of a Control Flow Graph. *)
 module CFG : sig
   (** The Control Flow Graph data structure *)
   type 'a t [@@deriving show]
 
   (** The Control Flow Graph's internal item *)
   type 'a item [@@deriving show]
+
+  (** Given a tree composed of nodes, constructs an actual Control Flow Graph. *)
+  val make : 'a Node.t -> 'a t
   
   (** returns the root item of the CFG *)
   val root : 'a t -> 'a item
 
-  (** returns the index of a given item in the CFG *)
-  val idx : 'a t -> 'a item -> int
+  (** returns the id of a given item in the CFG *)
+  val get_id : 'a item -> int
+  
+  (** apply a mapping function to all the data items in the CFG, and returns the updated CFG *)
+  val map : 'a t -> ('a -> 'b) -> 'b t
 
   (** recursively fold on all the items in the CFG *)
   val fold : 'a t -> ('a t -> 'a item -> 'b -> 'b) -> 'b -> 'b
