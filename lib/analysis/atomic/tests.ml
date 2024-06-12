@@ -90,11 +90,7 @@ let%test "weakest precondition on guard" =
         ArithmeticExpression.Literal(17)
       ),
       Formula.NonAllocated("y")
-    ) :: 
-    Formula.And(
-      Formula.False,
-      Formula.NonAllocated("y")
-    ) :: []
+    ) :: [Formula.False]
   in
   test_expected_bound_variables pre_condition 0 &&
   test_expected_disjoints pre_condition expected_disjoints []
