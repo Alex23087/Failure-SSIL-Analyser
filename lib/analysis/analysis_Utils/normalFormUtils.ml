@@ -144,8 +144,8 @@ let rec get_normal_form_disjoint_identifiers (formula: Formula.t) =
   | NonAllocated(id) -> IdentifierSet.singleton id
   | Comparison(_, lexpr, rexpr) ->
     IdentifierSet.union (get_normal_form_expr_identifiers lexpr) (get_normal_form_expr_identifiers rexpr)
-    | And(lformula, rformula) | AndSeparately(lformula, rformula) ->
-      IdentifierSet.union (get_normal_form_disjoint_identifiers lformula) (get_normal_form_disjoint_identifiers rformula)
+  | And(lformula, rformula) | AndSeparately(lformula, rformula) ->
+    IdentifierSet.union (get_normal_form_disjoint_identifiers lformula) (get_normal_form_disjoint_identifiers rformula)
 
 (** Computes the set of free variables in a normalized formula.
 
