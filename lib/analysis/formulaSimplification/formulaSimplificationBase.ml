@@ -11,6 +11,7 @@ let simplify_formula (formula: NormalForm.t) =
     NoSharedIdentifierAndSep.f;
     ZeroAnd.f;
     ExpressionSimplification.f;
+    RemoveIdentityComparisons.f;
     RemoveBoundNonAllocations.f;
     BoundVariableCleanup.f;
   ] in
