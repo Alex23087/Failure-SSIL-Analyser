@@ -1,1 +1,1 @@
-module SymAlg = SymAlg
+module SymAlg = Symalg
