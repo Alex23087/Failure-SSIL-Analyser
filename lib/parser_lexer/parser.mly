@@ -30,6 +30,20 @@
     let guard_body = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _body)) _body_pos in
     let guard_body_star = annotateEmptyCommand (HeapRegularCommand.Star(guard_body)) _body_pos in
     annotateCommand (HeapRegularCommand.Sequence(guard_body_star, b_neg_guard_command)) overall_pos formula
+
+  let negate_formula_arithmetic_expression e =
+    let pos = (Prelude.Ast.LogicFormulas.AnnotatedNode.annotation e).position in
+    let zero = Prelude.Ast.LogicFormulas.annotate_parser (Prelude.Ast.LogicFormulas.ArithmeticExpression.Literal 0) pos.line pos.column in
+    let synthesized_neg = Prelude.Ast.LogicFormulas.ArithmeticExpression.Operation(Prelude.Ast.LogicFormulas.BinaryOperator.Minus, zero , e) in
+    synthesized_neg
+
+  let negate_command_arithmetic_expression e new_pos =
+    let pos = (Prelude.Ast.Commands.AnnotatedNode.annotation e).position in
+    let formula = (Prelude.Ast.Commands.AnnotatedNode.annotation e).logic_formula in
+    let new_e = Prelude.Ast.Commands.annotate_parser (Prelude.Ast.Commands.AnnotatedNode.node e) pos.line pos.column None in
+    let zero = Prelude.Ast.Commands.annotate_parser (Prelude.Ast.Commands.ArithmeticExpression.Literal 0) pos.line pos.column None in
+    let synthesized_neg = Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation(Prelude.Ast.Commands.ArithmeticOperation.Minus, zero, new_e) in
+    annotateCommand synthesized_neg new_pos formula
 %}
 
 %token EqualEqual
@@ -158,6 +172,8 @@ arithmetic_expression:
     { annotateEmptyCommand (ArithmeticExpression.BinaryOperation(o, a1, a2)) $startpos }
   | LParen a = arithmetic_expression RParen
     { a }
+  | Minus arithmetic_expression
+    { negate_command_arithmetic_expression $2 $startpos }
 ;
 
 %inline arithmetic_operator:
@@ -264,6 +280,8 @@ arithmetic_expression_of_formula:
       { annotateFormula (Prelude.Ast.LogicFormulas.ArithmeticExpression.Operation($2, $1, $3)) $startpos }
     | LParen arithmetic_expression_of_formula RParen
       { $2 }
+    | Minus arithmetic_expression_of_formula
+      { annotateFormula (negate_formula_arithmetic_expression $2) $startpos }
 
 %inline binary_comparison_of_formula:
   | LessThan { Prelude.Ast.LogicFormulas.BinaryComparison.LessThan }

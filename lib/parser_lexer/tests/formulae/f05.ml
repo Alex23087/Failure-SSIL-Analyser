@@ -67,3 +67,16 @@ let expected: Formula.t =
 
 let%test_unit "test formulae n. 05 - 5" =
   [%test_eq: Formula.t] (parse_formula source) expected
+
+
+let source = {|<< x -> -1 >>|}
+
+let expected: Formula.t =
+  test_node (Allocation(
+    "x",
+    test_node (Operation (Minus, test_node (Literal 0), test_node (Literal 1)))
+  ))
+;;
+
+let%test_unit "test formulae n. 05 - 6" =
+  [%test_eq: Formula.t] (parse_formula source) expected
