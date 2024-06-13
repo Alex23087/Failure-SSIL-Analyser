@@ -52,3 +52,8 @@ let from_ast_commands (commands: Parser.Commands.atomic_t list): CfgBlock.t =
     precondition = None;
     statements = List.map convert_command_cfg_annotation commands;
   }
+
+let equal_command_expression (cmd_expr: 'a Ast.HeapRegularCommands.ArithmeticExpression.t) (logic_expr: NormalForm.ArithmeticExpression.t) =
+  let cmd_expr = Analysis_Utils.command_expression_to_logic_expression cmd_expr (fun _ -> ()) in
+  let cmd_expr = Normalization.existential_disjuntive_normal_expr cmd_expr in
+  cmd_expr = logic_expr
