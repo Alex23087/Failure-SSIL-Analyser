@@ -32,10 +32,15 @@
     annotateCommand (HeapRegularCommand.Sequence(guard_body_star, b_neg_guard_command)) overall_pos formula
 
   let negate_formula_arithmetic_expression e =
-    let pos = (Prelude.Ast.LogicFormulas.AnnotatedNode.annotation e).position in
-    let zero = Prelude.Ast.LogicFormulas.annotate_parser (Prelude.Ast.LogicFormulas.ArithmeticExpression.Literal 0) pos.line pos.column in
-    let synthesized_neg = Prelude.Ast.LogicFormulas.ArithmeticExpression.Operation(Prelude.Ast.LogicFormulas.BinaryOperator.Minus, zero , e) in
-    synthesized_neg
+    match Prelude.Ast.LogicFormulas.AnnotatedNode.node e with
+    | Prelude.Ast.LogicFormulas.ArithmeticExpression.Literal i ->
+      let synthesized_neg = Prelude.Ast.LogicFormulas.ArithmeticExpression.Literal (-i) in
+      synthesized_neg
+    | _ ->
+      let pos = (Prelude.Ast.LogicFormulas.AnnotatedNode.annotation e).position in
+      let zero = Prelude.Ast.LogicFormulas.annotate_parser (Prelude.Ast.LogicFormulas.ArithmeticExpression.Literal 0) pos.line pos.column in
+      let synthesized_neg = Prelude.Ast.LogicFormulas.ArithmeticExpression.Operation(Prelude.Ast.LogicFormulas.BinaryOperator.Minus, zero , e) in
+      synthesized_neg
 
   let negate_command_arithmetic_expression e new_pos =
     let pos = (Prelude.Ast.Commands.AnnotatedNode.annotation e).position in
