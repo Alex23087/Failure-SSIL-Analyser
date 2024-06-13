@@ -112,25 +112,7 @@ let expected: HeapRegularCommand.t = { node =
                                   logic_formula = None }
                                 },
                               { node =
-                                (Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation (
-                                   ArithmeticOperation.Minus,
-                                   { node =
-                                     (Prelude.Ast.Commands.ArithmeticExpression.Literal
-                                        0);
-                                     annotation =
-                                     { position =
-                                       dummy_position;
-                                       logic_formula = None }
-                                     },
-                                   { node =
-                                     (Prelude.Ast.Commands.ArithmeticExpression.Literal
-                                        1);
-                                     annotation =
-                                     { position =
-                                       dummy_position;
-                                       logic_formula = None }
-                                     }
-                                   ));
+                                (Prelude.Ast.Commands.ArithmeticExpression.Literal (-1));
                                 annotation =
                                 { position =
                                   dummy_position;
@@ -387,24 +369,7 @@ let expected_2: HeapRegularCommand.t = { node =
                                 { Prelude.Ast.position =
                                   dummy_position;                                  logic_formula = None }
                                 },
-                              { node =
-                                (Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation (
-                                   ArithmeticOperation.Minus,
-                                   { node =
-                                     (Prelude.Ast.Commands.ArithmeticExpression.Literal
-                                        0);
-                                     annotation =
-                                     { Prelude.Ast.position =
-                                       dummy_position;                                       logic_formula = None }
-                                     },
-                                   { node =
-                                     (Prelude.Ast.Commands.ArithmeticExpression.Literal
-                                        1);
-                                     annotation =
-                                     { Prelude.Ast.position =
-                                       dummy_position;                                       logic_formula = None }
-                                     }
-                                   ));
+                              { node = (Prelude.Ast.Commands.ArithmeticExpression.Literal (-1));
                                 annotation =
                                 { Prelude.Ast.position =
                                   dummy_position;                                  logic_formula = None }

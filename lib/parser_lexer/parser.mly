@@ -43,12 +43,17 @@
       synthesized_neg
 
   let negate_command_arithmetic_expression e new_pos =
-    let pos = (Prelude.Ast.Commands.AnnotatedNode.annotation e).position in
-    let formula = (Prelude.Ast.Commands.AnnotatedNode.annotation e).logic_formula in
-    let new_e = Prelude.Ast.Commands.annotate_parser (Prelude.Ast.Commands.AnnotatedNode.node e) pos.line pos.column None in
-    let zero = Prelude.Ast.Commands.annotate_parser (Prelude.Ast.Commands.ArithmeticExpression.Literal 0) pos.line pos.column None in
-    let synthesized_neg = Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation(Prelude.Ast.Commands.ArithmeticOperation.Minus, zero, new_e) in
-    annotateCommand synthesized_neg new_pos formula
+    match Prelude.Ast.Commands.AnnotatedNode.node e with
+    | Prelude.Ast.Commands.ArithmeticExpression.Literal i ->
+      let synthesized_neg = Prelude.Ast.Commands.ArithmeticExpression.Literal (-i) in
+      annotateEmptyCommand synthesized_neg new_pos
+    | _ ->
+      let pos = (Prelude.Ast.Commands.AnnotatedNode.annotation e).position in
+      let formula = (Prelude.Ast.Commands.AnnotatedNode.annotation e).logic_formula in
+      let new_e = Prelude.Ast.Commands.annotate_parser (Prelude.Ast.Commands.AnnotatedNode.node e) pos.line pos.column None in
+      let zero = Prelude.Ast.Commands.annotate_parser (Prelude.Ast.Commands.ArithmeticExpression.Literal 0) pos.line pos.column None in
+      let synthesized_neg = Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation(Prelude.Ast.Commands.ArithmeticOperation.Minus, zero, new_e) in
+      annotateCommand synthesized_neg new_pos formula
 %}
 
 %token EqualEqual
