@@ -1,15 +1,7 @@
 open AtomicBase
 open Normalization
 open DataStructures.Analysis.NormalForm
-
-open Analysis_TestCommon
-
-(* Alias for better readability *)
-module Commands = Ast.HeapRegularCommands
-module PFormula = DataStructures.Parser.LogicFormulas.Formula
-module PBinaryComparison = DataStructures.Parser.LogicFormulas.BinaryComparison
-module PArithmeticExpression = DataStructures.Parser.LogicFormulas.ArithmeticExpression
-module PBinaryOperator = DataStructures.Parser.LogicFormulas.BinaryOperator
+open Analysis_TestUtils
 
 let%test "weakest precondition on skip" =
   let command = annot_cmd Commands.HeapAtomicCommand.Skip in

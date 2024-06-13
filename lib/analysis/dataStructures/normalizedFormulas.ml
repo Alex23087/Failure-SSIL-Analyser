@@ -16,7 +16,7 @@ module NormalForm = struct
       | Literal of int
       | Variable of identifier
       | Operation of BinaryOperator.t * t * t
-    [@@deriving show, sexp, compare]
+    [@@deriving show, sexp, compare, eq]
   end
 
   module BinaryComparison = struct include Ast.AnnotationLogic.BinaryComparison end
