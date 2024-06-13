@@ -1,12 +1,11 @@
-open Prelude.Ast.Commands
-open Prelude.Ast.Commands.AnnotatedNode
+open Analysis.DataStructures.Parser
 open Utils
 
 let source = {|skip|}
 
-let expected: HeapRegularCommand.t = {
-  node = HeapRegularCommand.Command {
-    node = HeapAtomicCommand.Skip;
+let expected: Commands.t = {
+  node = Commands.HeapRegularCommand.Command {
+    node = Commands.HeapAtomicCommand.Skip;
     annotation = {position = dummy_position; logic_formula = None}
   };
   annotation = {position = dummy_position; logic_formula = None}
@@ -14,4 +13,4 @@ let expected: HeapRegularCommand.t = {
 ;;
 
 let%test_unit "test commands n. 00" =
-  [%test_eq: HeapRegularCommand.t] (parse_command source) expected
+  [%test_eq: Commands.t] (parse_command source) expected
