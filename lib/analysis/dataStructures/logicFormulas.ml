@@ -17,3 +17,5 @@ type arithmetic_t = annotation Ast.AnnotationLogic.ArithmeticExpression.t
 
 let make_annotation line column : annotation =
   let position = make_position line column in {position}
+
+let make_annotation_position position = { position}
