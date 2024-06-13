@@ -1,6 +1,5 @@
 open Analysis_Prelude
 open NormalForm
-open HeapSemantics
 open Ast.HeapRegularCommands
 open Analysis_TestUtils
 
@@ -29,4 +28,4 @@ let compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: Norm
     | WriteHeap(mem_id, expr) ->
       raise (Failure "not implemented")
   in
-  simplify_formula precondition  in simplify_formula precondition
+  simplify_formula precondition
