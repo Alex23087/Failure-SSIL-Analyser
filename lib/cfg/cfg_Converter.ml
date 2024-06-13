@@ -12,6 +12,7 @@ module Converter = struct
               'a HeapAtomicCommand.t list Node.t ref =
     match root.node with
     | Command(atom) ->
+       let atom = Ast.AnnotatedNode.update_annotation atom root.annotation in
        let newcommand = Node.make [atom] [] [] in
        (newcommand, ref newcommand)
     | Sequence(comm1, comm2) ->
