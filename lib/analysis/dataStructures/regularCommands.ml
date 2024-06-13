@@ -27,3 +27,6 @@ type boolean_t = annotation Ast.HeapRegularCommands.BooleanExpression.t
 let make_annotation line column (formula : LogicFormulas.t option) : annotation =
   let position = make_position line column in
   {position; logic_formula = formula}
+
+let make_annotation_position position (formula : LogicFormulas.t option) : annotation =
+  {position; logic_formula = formula}
