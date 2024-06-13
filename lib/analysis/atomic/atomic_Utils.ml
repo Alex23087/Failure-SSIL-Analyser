@@ -30,3 +30,10 @@ let check_frame_rule_side_condition t vars mod_r res_then res_else =
   if (IdentifierSet.find_opt mod_r fv_t |> Option.is_none) 
     then res_then
   else res_else
+
+(* Check if x is not bound i.e. x is not in vars 
+   if x is free, return res, otherwise return False 
+ *)
+let is_identifier_free (x : identifier) (vars : IdentifierSet.t) : bool =
+  if (IdentifierSet.find_opt x vars |> Option.is_some) then false
+  else true
