@@ -1,7 +1,5 @@
-open DataStructures
 open DataStructures.Analysis
 open NormalForm
-open Analysis_Utils
 
 (** p && false = false *)
 let zero_and (formula: NormalForm.t) =
