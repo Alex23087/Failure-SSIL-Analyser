@@ -13,9 +13,9 @@ let%test "weakest precondition on skip" =
   in
   let post_condition = existential_disjuntive_normal_form post_condition in
   let pre_condition = compute_precondition command post_condition in
-  let expected_disjoints = Formula.NonAllocated("x") :: [] in
-  test_expected_bound_variables pre_condition 1 &&
-  test_expected_disjoints pre_condition expected_disjoints ["x"]
+  let expected_disjoints = Formula.EmptyHeap :: [] in
+  test_expected_bound_variables pre_condition 0 &&
+  test_expected_disjoints pre_condition expected_disjoints []
 
 let%test "weakest precondition on assignment" =
   let command =
@@ -38,7 +38,7 @@ let%test "weakest precondition on assignment" =
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints =
     Formula.And(
-      Formula.NonAllocated("a"),
+      Formula.EmptyHeap,
       Formula.Comparison(
         BinaryComparison.Equals,
         ArithmeticExpression.Variable("a"),
@@ -48,6 +48,54 @@ let%test "weakest precondition on assignment" =
     Formula.Comparison(
       BinaryComparison.Equals,
       ArithmeticExpression.Literal(5),
+      ArithmeticExpression.Variable("y")
+    ) :: []
+  in
+  test_expected_bound_variables pre_condition 1 &&
+  test_expected_disjoints pre_condition expected_disjoints ["a"]
+  
+let%test "weakest precondition on assignment 2" =
+  let command =
+    annot_cmd (Commands.HeapAtomicCommand.Assignment(
+      "x",
+      annot_cmd (Commands.ArithmeticExpression.BinaryOperation(
+        Commands.ArithmeticOperation.Plus,
+        annot_cmd (Commands.ArithmeticExpression.Variable("w")),
+        annot_cmd (Commands.ArithmeticExpression.Literal(5))
+      ))
+    ))
+  in
+  let post_condition = 
+    annot (PFormula.Or(
+      annot (PFormula.Comparison(
+        PBinaryComparison.Equals,
+        annot (PArithmeticExpression.Variable("x")),
+        annot (PArithmeticExpression.Variable("y"))
+      )),
+      annot (PFormula.NonAllocated("x"))
+    ))
+  in
+  let substituting_expression =
+    ArithmeticExpression.Operation(
+      BinaryOperator.Plus,
+      ArithmeticExpression.Variable("w"),
+      ArithmeticExpression.Literal(5)
+    )
+  in
+  let post_condition = existential_disjuntive_normal_form post_condition in
+  let pre_condition = compute_precondition command post_condition in
+  let expected_disjoints =
+    Formula.And(
+      Formula.NonAllocated("a"),
+      Formula.Comparison(
+        BinaryComparison.Equals,
+        ArithmeticExpression.Variable("a"),
+        substituting_expression
+      )
+    ) ::
+    Formula.Comparison(
+      BinaryComparison.Equals,
+      substituting_expression,
       ArithmeticExpression.Variable("y")
     ) :: []
   in
@@ -81,10 +129,6 @@ let%test "weakest precondition on guard" =
         ArithmeticExpression.Variable("x"),
         ArithmeticExpression.Literal(17)
       ),
-      Formula.NonAllocated("y")
-    ) :: 
-    Formula.And(
-      Formula.False,
       Formula.NonAllocated("y")
     ) :: []
   in

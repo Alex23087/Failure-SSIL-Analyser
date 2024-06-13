@@ -1,7 +1,5 @@
-open DataStructures
 open DataStructures.Analysis
 open NormalForm
-open Analysis_Utils
 
 (** p * emp = p *)
 let unit_and_sep (formula: NormalForm.t) =
