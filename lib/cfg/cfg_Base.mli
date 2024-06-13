@@ -37,4 +37,6 @@ module CFG : sig
 
   (** updates the data structure bound with id in the CFG, or raises Not_found if no such id exists *)
   val set_data : 'a t -> int -> 'a -> 'a t
+
+  val to_string : 'a t -> ('a -> string) -> string
 end

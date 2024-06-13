@@ -89,4 +89,16 @@ module CFG = struct
       )
     in
     helper_fold to_visit visited acc
+
+  let to_string (cfg: 'a t) (pp: 'a -> string) =
+    let int_list_pp list =
+      "[ " ^ List.fold_left (fun acc x -> (string_of_int x) ^ " " ^ acc) "" list ^ "]"
+    in
+    let item_pp key value =
+      string_of_int key ^ ": {\n" ^
+        "succ: " ^ int_list_pp value.succ ^ "\n" ^
+        "pred: " ^ int_list_pp value.pred ^ "\n" ^
+        "data: " ^ pp value.exp ^ "}"
+    in
+    Hashtbl.fold (fun key value acc -> acc ^ "\n" ^ item_pp key value) cfg.cfg ""
 end
