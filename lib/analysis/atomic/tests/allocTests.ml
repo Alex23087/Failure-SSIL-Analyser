@@ -18,7 +18,7 @@ let%test "precondition on x := alloc(), post-condition = << x -> v >>" =
   test_expected_bound_variables pre_condition 0 &&
   test_expected_disjoints pre_condition expected_disjoints []
 
-(* << false >> x := alloc() << x -/> v >> *)
+(* << false >> x := alloc() << x -/> >> *)
 let%test "precondition on x := alloc(), post-condition = << x -/> >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
 let post_condition = annot ( PFormula.NonAllocated("x") ) in
