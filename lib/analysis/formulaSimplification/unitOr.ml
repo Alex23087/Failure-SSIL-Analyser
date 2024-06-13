@@ -1,7 +1,5 @@
-open DataStructures
 open DataStructures.Analysis
 open NormalForm
-open Analysis_Utils
 
 (** p || false = p *)
 let unit_or (formula: NormalForm.t) =

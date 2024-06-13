@@ -70,7 +70,7 @@ let simplify_arithmetic_expressions (formula: Formula.t) =
       mult_literal
     else if mult = 1 then
       from_symalg_power_list power_list
-    else if List.is_empty power_list then
+    else if List.length power_list = 0 then
       mult_literal
     else
       ArithmeticExpression.Operation(
