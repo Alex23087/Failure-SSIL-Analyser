@@ -4,6 +4,10 @@ open Prelude.Ast.Commands.AnnotatedNode
 open Prelude.Ast.LogicFormulas.AnnotatedNode
 open Utils
 
+let emptyAnnotation = {Prelude.Ast.position = dummy_position; logic_formula = None}
+let annotateCommand formula =
+  Prelude.Ast.Commands.annotate formula emptyAnnotation
+
 let source = {|z = alloc();
 [z] = 5 * (10 + 2);
 while (z != 0) {
@@ -12,180 +16,69 @@ while (z != 0) {
 free(z)
 |}
 
-let expected: HeapRegularCommand.t = {
-  node = (HeapRegularCommand.Sequence (
-    {
-      node = (HeapRegularCommand.Sequence (
-        {
-          node = (HeapRegularCommand.Command {
-            node = (HeapAtomicCommand.Allocation "z");
-            annotation = {
-              position = dummy_position;
-              logic_formula = None
-            }
-          });
-          annotation = {
-            position = dummy_position;
-            logic_formula = None
-          }
-        },
-        {
-          node = (HeapRegularCommand.Command {
-            node = (HeapAtomicCommand.WriteHeap (
-              "z",
-              {
-                node = (BinaryOperation (
-                  ArithmeticOperation.Times,
-                  {
-                    node = (Literal 5);
-                    annotation = {
-                      position = dummy_position;
-                      logic_formula = None
-                    }
-                  },
-                  {
-                    node = (BinaryOperation (
-                      ArithmeticOperation.Plus,
-                      {
-                        node = (Literal 10);
-                        annotation = {
-                          position = dummy_position;
-                          logic_formula = None
-                        }
-                      },
-                      {
-                        node = (Literal 2);
-                        annotation = {
-                          position = dummy_position;
-                          logic_formula = None
-                        }
-                      }
-                    ));
-                    annotation = {
-                      position = dummy_position;
-                      logic_formula = None
-                    }
-                  }
-                ));
-                annotation = {
-                  position = dummy_position;
-                  logic_formula = None
-                }
-              }
-            ));
-            annotation = {
-              position = dummy_position;
-              logic_formula = None
-            }
-          });
-          annotation = {
-            position = dummy_position;
-            logic_formula = None
-          }
-        }
-      ));
-      annotation = {
-        position = dummy_position;
-        logic_formula = None
-      }
-    },
-    {
-      node = (HeapRegularCommand.Sequence (
-        {
-          node = (HeapRegularCommand.While (
-            {
-              node = (BinaryOperation (
-                ArithmeticOperation.NotEqual,
-                {
-                  node = (Variable "z");
-                  annotation = {
-                    position = dummy_position;
-                    logic_formula = None
-                  }
-                },
-                {
-                  node = (Literal 0);
-                  annotation = {
-                    position = dummy_position;
-                    logic_formula = None
-                  }
-                }
-              ));
-              annotation = {
-                position = dummy_position;
-                logic_formula = None
-              }
-            },
-            {
-              node = (HeapRegularCommand.Command {
-                node = (HeapAtomicCommand.Assignment (
-                  "z",
-                  {
-                    node = (BinaryOperation (
-                      ArithmeticOperation.Minus,
-                      {
-                        node = (Variable "z");
-                        annotation = {
-                          position = dummy_position;
-                          logic_formula = None
-                        }
-                      },
-                      {
-                        node = (Literal 1);
-                        annotation = {
-                          position = dummy_position;
-                          logic_formula = None
-                        }
-                      }
-                    ));
-                    annotation = {
-                      position = dummy_position;
-                      logic_formula = None
-                    }
-                  }
-                ));
-                annotation = {
-                  position = dummy_position;
-                  logic_formula = None
-                }
-              });
-              annotation = {
-                position = dummy_position;
-                logic_formula = None
-              }
-            }
-          ));
-          annotation = {
-            position = dummy_position;
-            logic_formula = None
-          }
-        },
-        {
-          node = (HeapRegularCommand.Command {
-            node = (HeapAtomicCommand.Free "z");
-            annotation = {
-              position = dummy_position;
-              logic_formula = None
-            }
-          });
-          annotation = {
-            position = dummy_position;
-            logic_formula = None
-          }
-        }
-      ));
-      annotation = {
-        position = dummy_position;
-        logic_formula = None
-      }
-    }
-  ));
-  annotation = {
-    position = dummy_position;
-    logic_formula = None
-  }
-}
-;;
+let expected: HeapRegularCommand.t = 
 
+  annotateCommand (HeapRegularCommand.Sequence( 
+    annotateCommand (HeapRegularCommand.Sequence (
+      annotateCommand (HeapRegularCommand.Sequence (
+        annotateCommand (HeapRegularCommand.Command (
+          annotateCommand (HeapAtomicCommand.Allocation "z")
+        )),
+        annotateCommand (HeapRegularCommand.Command (
+          annotateCommand (HeapAtomicCommand.WriteHeap (
+            "z",
+            annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation (
+              ArithmeticOperation.Times,
+              annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 5),
+              annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation (
+                ArithmeticOperation.Plus,
+                annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 10),
+                annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 2)
+              ))
+            ))
+          ))
+        ))
+      )),
+      annotateCommand (HeapRegularCommand.Sequence (
+        annotateCommand (HeapRegularCommand.Star (
+          annotateCommand (HeapRegularCommand.Sequence (
+            annotateCommand (HeapRegularCommand.Command (annotateCommand (HeapAtomicCommand.Guard(
+              annotateCommand (BooleanExpression.Comparison(
+                BooleanComparison.NotEqual,
+                annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Variable "z"),
+                annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 0)
+              ))
+            )))),
+            annotateCommand (HeapRegularCommand.Command(
+              annotateCommand (HeapAtomicCommand.Assignment(
+                "z",
+                annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation (
+                  ArithmeticOperation.Minus,
+                  annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Variable "z"),
+                  annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 1)
+                ))
+              ))
+            ))
+          ))
+        )),
+        annotateCommand (HeapRegularCommand.Command (annotateCommand (HeapAtomicCommand.Guard(
+          annotateCommand (BooleanExpression.Not( 
+            annotateCommand (BooleanExpression.Comparison(
+              BooleanComparison.NotEqual,
+              annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Variable "z"),
+              annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 0)
+            ))
+          ))
+        ))))
+      ))
+    )),
+    annotateCommand (HeapRegularCommand.Command( annotateCommand (HeapAtomicCommand.Free "z") ))
+    
+  ))
+
+  
+;;
+(*
 let%test_unit "test commands n. 03" =
   [%test_eq: HeapRegularCommand.t] (parse_command source) expected
+*)

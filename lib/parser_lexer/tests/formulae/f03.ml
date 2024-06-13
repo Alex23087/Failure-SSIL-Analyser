@@ -7,10 +7,10 @@ open Prelude.Ast.LogicFormulas.BinaryOperator
 open F_utils
 open Utils
 
-let source = {|<< True || False >>|}
+let source = {|<< true || false >>|}
 
 let expected: Formula.t =
-  test_node (And( test_node (True), test_node (False)))
+  test_node (Or( test_node (True), test_node (False)))
 ;;
 
 let%test_unit "test formulae n. 03" =

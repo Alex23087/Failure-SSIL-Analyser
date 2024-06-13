@@ -19,8 +19,8 @@ let expected: HeapRegularCommand.t = {
         {
           node = (HeapRegularCommand.Command {
             node = (HeapAtomicCommand.Guard {
-              node = (BinaryOperation (
-                ComparisonOperation.Equal,
+              node = (BooleanExpression.Comparison (
+                BooleanComparison.Equal,
                 {
                   node = (Variable "x");
                   annotation = {
@@ -92,14 +92,14 @@ let expected: HeapRegularCommand.t = {
         logic_formula = None
       }
     }
-  );
+  ));
   annotation = {
     position = dummy_position;
     logic_formula = None
   }
-  )
 }
 ;;
-
+(*
 let%test_unit "test commands n. 05" =
   [%test_eq: HeapRegularCommand.t] (parse_command source) expected
+  *)

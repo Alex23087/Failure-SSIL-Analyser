@@ -7,7 +7,7 @@ open Prelude.Ast.LogicFormulas.BinaryOperator
 open F_utils
 open Utils
 
-let source = {|<< Exists "x" . True >>|}
+let source = {|<< exists x . true >>|}
 
 let expected: Formula.t =
   test_node (Exists(

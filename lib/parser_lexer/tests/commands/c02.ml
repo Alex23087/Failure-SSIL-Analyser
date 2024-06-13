@@ -4,9 +4,13 @@ open Prelude.Ast.Commands.AnnotatedNode
 open Prelude.Ast.LogicFormulas.AnnotatedNode
 open Utils
 
+let emptyAnnotation = {Prelude.Ast.position = dummy_position; logic_formula = None}
+let annotateCommand formula =
+  Prelude.Ast.Commands.annotate formula emptyAnnotation
+
 let source = {|y = alloc();
 [y] = 2 * 300;
-if (y == 600) {
+if (y == 600) then {
   y = nondet()
 } else {
   skip
@@ -14,160 +18,60 @@ if (y == 600) {
 free(y)
 |}
 
-let expected: HeapRegularCommand.t = {
-  node = (HeapRegularCommand.Sequence (
-    {
-      node = (HeapRegularCommand.Sequence (
-        {
-          node = (HeapRegularCommand.Command {
-            node = (HeapAtomicCommand.Allocation "y");
-            annotation = {
-              position = dummy_position;
-              logic_formula = None
-            }
-          });
-          annotation = {
-            position = dummy_position;
-            logic_formula = None
-          }
-        },
-        {
-          node = (HeapRegularCommand.Command {
-            node = (HeapAtomicCommand.WriteHeap (
-              "y",
-              {
-                node = (BinaryOperation (
-                  ArithmeticOperation.Times,
-                  {
-                    node = (Literal 2);
-                    annotation = {
-                      position = dummy_position;
-                      logic_formula = None
-                    }
-                  },
-                  {
-                    node = (Literal 300);
-                    annotation = {
-                      position = dummy_position;
-                      logic_formula = None
-                    }
-                  }
-                ));
-                annotation = {
-                  position = dummy_position;
-                  logic_formula = None
-                }
-              }
-            ));
-            annotation = {
-              position = dummy_position;
-              logic_formula = None
-            }
-          });
-          annotation = {
-            position = dummy_position;
-            logic_formula = None
-          }
-        }
-      ));
-      annotation = {
-        position = dummy_position;
-        logic_formula = None
-      }
-    },
-    {
-      node = (HeapRegularCommand.Sequence (
-        {
-          node = (HeapRegularCommand.Conditional (
-            {
-              node = (BinaryOperation (
-                ArithmeticOperation.Equal,
-                {
-                  node = (Variable "y");
-                  annotation = {
-                    position = dummy_position;
-                    logic_formula = None
-                  }
-                },
-                {
-                  node = (Literal 600);
-                  annotation = {
-                    position = dummy_position;
-                    logic_formula = None
-                  }
-                }
-              ));
-              annotation = {
-                position = dummy_position;
-                logic_formula = None
-              }
-            },
-            {
-              node = (HeapRegularCommand.Command {
-                node = (HeapAtomicCommand.Assignment (
-                  "y",
-                  {
-                    node = HeapAtomicCommand.NonDet;
-                    annotation = {
-                      position = dummy_position;
-                      logic_formula = None
-                    }
-                  }
-                ));
-                annotation = {
-                  position = dummy_position;
-                  logic_formula = None
-                }
-              });
-              annotation = {
-                position = dummy_position;
-                logic_formula = None
-              }
-            },
-            {
-              node = (HeapRegularCommand.Command {
-                node = HeapAtomicCommand.Skip;
-                annotation = {
-                  position = dummy_position;
-                  logic_formula = None
-                }
-              });
-              annotation = {
-                position = dummy_position;
-                logic_formula = None
-              }
-            }
-          ));
-          annotation = {
-            position = dummy_position;
-            logic_formula = None
-          }
-        },
-        {
-          node = (HeapRegularCommand.Command {
-            node = (HeapAtomicCommand.Free "y");
-            annotation = {
-              position = dummy_position;
-              logic_formula = None
-            }
-          });
-          annotation = {
-            position = dummy_position;
-            logic_formula = None
-          }
-        }
-      ));
-      annotation = {
-        position = dummy_position;
-        logic_formula = None
-      }
-    }
-  ));
-  annotation = {
-    position = dummy_position;
-    logic_formula = None
-  }
-}
+let expected: HeapRegularCommand.t =
+  annotateCommand (HeapRegularCommand.Sequence (
+    annotateCommand (HeapRegularCommand.Sequence ( (* y=alloc();[y]=2*300*)
+      annotateCommand (HeapRegularCommand.Command (
+        annotateCommand (HeapAtomicCommand.Allocation "y")
+      )),
+      annotateCommand (HeapRegularCommand.Command (
+        annotateCommand (HeapAtomicCommand.WriteHeap (
+          "y",
+          annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation (
+            ArithmeticOperation.Times,
+            annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 2),
+            annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 300)
+          ))
+        ))
+      ))
+    )),
+    annotateCommand (HeapRegularCommand.Sequence ( (*if..then..else;free*)
+      annotateCommand (HeapRegularCommand.NondeterministicChoice (
+        annotateCommand (HeapRegularCommand.Sequence (
+          annotateCommand (HeapRegularCommand.Command (
+            annotateCommand (HeapAtomicCommand.Guard(
+              annotateCommand (BooleanExpression.Comparison(
+                BooleanComparison.Equal,
+                annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Variable "y"),
+                annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 600)
+              ))
+            )) 
+          )),
+          annotateCommand (HeapRegularCommand.Command(
+            annotateCommand (HeapAtomicCommand.NonDet "y")
+          ))
+        )),
+        annotateCommand (HeapRegularCommand.Sequence(
+          annotateCommand (HeapRegularCommand.Command (
+            annotateCommand (HeapAtomicCommand.Guard(
+              annotateCommand (BooleanExpression.Not(
+                annotateCommand (BooleanExpression.Comparison(
+                  BooleanComparison.Equal,
+                  annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Variable "y"),
+                  annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 600)
+                ))
+              ))
+            )) 
+          )),
+          annotateCommand (HeapRegularCommand.Command (
+            annotateCommand (HeapAtomicCommand.Skip)))
+        ))
+      )),
+      annotateCommand (HeapRegularCommand.Command (
+        annotateCommand (HeapAtomicCommand.Free "y")
+      ))
+    ))
+  ))
 ;;
 
 let%test_unit "test commands n. 02" =

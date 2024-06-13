@@ -10,7 +10,7 @@ open Utils
 let source = {|<< x = 1 >>|}
 
 let expected: Formula.t =
-  test_node (Comparison(Equals, test_node (Variable "x"), test_node (Literal 0)))
+  test_node (Comparison(Equals, test_node (Variable "x"), test_node (Literal 1)))
 ;;
 
 let%test_unit "test formulae n. 04 - 1" =
@@ -50,7 +50,7 @@ let%test_unit "test formulae n. 04 - 4" =
 let source = {|<< x >= 1 >>|}
 
 let expected: Formula.t =
-  test_node (Comparison(GreaterThan, test_node (Variable "x"), test_node (Literal 0)))
+  test_node (Comparison(GreaterOrEqual, test_node (Variable "x"), test_node (Literal 1)))
 ;;
 
 let%test_unit "test formulae n. 04 - 5" =
@@ -60,7 +60,7 @@ let%test_unit "test formulae n. 04 - 5" =
 let source = {|<< x != 1 >>|}
 
 let expected: Formula.t =
-  test_node (Comparison(NotEquals, test_node (Variable "x"), test_node (Literal 0)))
+  test_node (Comparison(NotEquals, test_node (Variable "x"), test_node (Literal 1)))
 ;;
 
 let%test_unit "test formulae n. 04 - 6" =
