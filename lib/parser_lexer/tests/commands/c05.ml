@@ -4,102 +4,57 @@ open Prelude.Ast.Commands.AnnotatedNode
 open Prelude.Ast.LogicFormulas.AnnotatedNode
 open Utils
 
+let emptyAnnotation = {Prelude.Ast.position = dummy_position; logic_formula = None}
+let annotateCommand formula =
+  Prelude.Ast.Commands.annotate formula emptyAnnotation
+
 let source = {|
-  if (x == 0) {
-    x = 1;
+  if (x == 0) then {
+    x = 1
   } else {
-    skip;
+    skip
   }
 |}
 
-let expected: HeapRegularCommand.t = {
-  node = (HeapRegularCommand.NondeterministicChoice (
-    {
-      node = (HeapRegularCommand.Sequence (
-        {
-          node = (HeapRegularCommand.Command {
-            node = (HeapAtomicCommand.Guard {
-              node = (BooleanExpression.Comparison (
-                BooleanComparison.Equal,
-                {
-                  node = (Variable "x");
-                  annotation = {
-                    position = dummy_position;
-                    logic_formula = None
-                  }
-                },
-                {
-                  node = (Literal 0);
-                  annotation = {
-                    position = dummy_position;
-                    logic_formula = None
-                  }
-                }
-              ));
-              annotation = {
-                position = dummy_position;
-                logic_formula = None
-              }
-            });
-            annotation = {
-              position = dummy_position;
-              logic_formula = None
-            }
-          });
-          annotation = {
-            position = dummy_position;
-            logic_formula = None
-          }
-        },
-        {
-          node = (HeapRegularCommand.Command {
-            node = (HeapAtomicCommand.WriteHeap (
-              "x",
-              {
-                node = (Literal 1);
-                annotation = {
-                  position = dummy_position;
-                  logic_formula = None
-                }
-              }
-            ));
-            annotation = {
-              position = dummy_position;
-              logic_formula = None
-            }
-          });
-          annotation = {
-            position = dummy_position;
-            logic_formula = None
-          }
-        }
-      ));
-      annotation = {
-        position = dummy_position;
-        logic_formula = None
-      }
-    },
-    {
-      node = (HeapRegularCommand.Command {
-        node = (HeapAtomicCommand.Skip);
-        annotation = {
-          position = dummy_position;
-          logic_formula = None
-        }
-      });
-      annotation = {
-        position = dummy_position;
-        logic_formula = None
-      }
-    }
-  ));
-  annotation = {
-    position = dummy_position;
-    logic_formula = None
-  }
-}
+let expected: HeapRegularCommand.t = 
+  annotateCommand (HeapRegularCommand.NondeterministicChoice (
+    annotateCommand (HeapRegularCommand.Sequence (
+      annotateCommand (HeapRegularCommand.Command (
+        annotateCommand (HeapAtomicCommand.Guard (
+          annotateCommand (BooleanExpression.Comparison (
+            BooleanComparison.Equal,
+            annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Variable "x"),
+            annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 0)
+          ))
+        ))
+      )),
+      annotateCommand (HeapRegularCommand.Command (
+        annotateCommand (HeapAtomicCommand.Assignment (
+          "x",
+          annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 1)
+        ))
+      ))
+    )),
+    annotateCommand (HeapRegularCommand.Sequence (
+      annotateCommand (HeapRegularCommand.Command (
+        annotateCommand (HeapAtomicCommand.Guard (
+          annotateCommand (BooleanExpression.Not(
+            annotateCommand (BooleanExpression.Comparison (
+              BooleanComparison.Equal,
+              annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Variable "x"),
+              annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 0)
+            ))
+          ))
+          
+        ))
+      )),
+      annotateCommand (HeapRegularCommand.Command (
+        annotateCommand (HeapAtomicCommand.Skip)
+      ))
+    ))
+  ))
+
 ;;
-(*
+
 let%test_unit "test commands n. 05" =
   [%test_eq: HeapRegularCommand.t] (parse_command source) expected
-  *)

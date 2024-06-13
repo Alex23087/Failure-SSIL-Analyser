@@ -48,7 +48,7 @@ let expected: HeapRegularCommand.t =
         annotateCommand (HeapAtomicCommand.Guard (
           annotateCommand (BooleanExpression.Not (
             annotateCommand (BooleanExpression.Comparison (
-              BooleanComparison.GreaterOrEqual,
+              BooleanComparison.LessThan,
               annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Variable "x"),
               annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 10)
             ))
@@ -58,7 +58,6 @@ let expected: HeapRegularCommand.t =
     ))
   ))
 ;;
-(*
+
 let%test_unit "test commands n. 06" =
   [%test_eq: HeapRegularCommand.t] (parse_command source) expected
-*)

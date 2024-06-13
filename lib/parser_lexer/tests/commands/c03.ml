@@ -78,7 +78,6 @@ let expected: HeapRegularCommand.t =
 
   
 ;;
-(*
+
 let%test_unit "test commands n. 03" =
   [%test_eq: HeapRegularCommand.t] (parse_command source) expected
-*)

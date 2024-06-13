@@ -29,7 +29,7 @@ and remove_position_from_annotations_atomic (atomic_command: HeapAtomicCommand.t
   | HeapAtomicCommand.Allocation id -> Prelude.Ast.Commands.annotate (HeapAtomicCommand.Allocation id) newAnnot
   | HeapAtomicCommand.Free id -> Prelude.Ast.Commands.annotate (HeapAtomicCommand.Free id) newAnnot
   | HeapAtomicCommand.Assignment (id, ae) -> Prelude.Ast.Commands.annotate (HeapAtomicCommand.Assignment (id, remove_position_from_annotations_aexp ae)) newAnnot
-  | HeapAtomicCommand.Guard be -> Prelude.Ast.Commands.annotate (HeapAtomicCommand.Guard be) newAnnot
+  | HeapAtomicCommand.Guard be -> Prelude.Ast.Commands.annotate (HeapAtomicCommand.Guard (remove_position_from_annotations_bexp be)) newAnnot
   | HeapAtomicCommand.NonDet id -> Prelude.Ast.Commands.annotate (HeapAtomicCommand.NonDet id) newAnnot
   | HeapAtomicCommand.ReadHeap (id1,id2) -> Prelude.Ast.Commands.annotate (HeapAtomicCommand.ReadHeap (id1,id2)) newAnnot
   | HeapAtomicCommand.WriteHeap (id1, ae) -> Prelude.Ast.Commands.annotate (HeapAtomicCommand.WriteHeap (id1, remove_position_from_annotations_aexp ae)) newAnnot

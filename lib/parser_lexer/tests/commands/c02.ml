@@ -19,25 +19,25 @@ free(y)
 |}
 
 let expected: HeapRegularCommand.t =
-  annotateCommand (HeapRegularCommand.Sequence (
-    annotateCommand (HeapRegularCommand.Sequence ( (* y=alloc();[y]=2*300*)
-      annotateCommand (HeapRegularCommand.Command (
-        annotateCommand (HeapAtomicCommand.Allocation "y")
-      )),
-      annotateCommand (HeapRegularCommand.Command (
-        annotateCommand (HeapAtomicCommand.WriteHeap (
-          "y",
-          annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation (
-            ArithmeticOperation.Times,
-            annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 2),
-            annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 300)
+  annotateCommand (HeapRegularCommand.Sequence ( (*y;[y];if; , free;*)
+    annotateCommand (HeapRegularCommand.Sequence ( (*y;[y]; , if*)
+      annotateCommand (HeapRegularCommand.Sequence( (*y;[y]*)
+        annotateCommand (HeapRegularCommand.Command (
+          annotateCommand (HeapAtomicCommand.Allocation "y")
+        )),
+        annotateCommand (HeapRegularCommand.Command (
+          annotateCommand (HeapAtomicCommand.WriteHeap (
+            "y",
+            annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.BinaryOperation (
+              ArithmeticOperation.Times,
+              annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 2),
+              annotateCommand (Prelude.Ast.Commands.ArithmeticExpression.Literal 300)
+            ))
           ))
         ))
-      ))
-    )),
-    annotateCommand (HeapRegularCommand.Sequence ( (*if..then..else;free*)
+      )), (*if..then..else;*)
       annotateCommand (HeapRegularCommand.NondeterministicChoice (
-        annotateCommand (HeapRegularCommand.Sequence (
+        annotateCommand (HeapRegularCommand.Sequence (  (*b;then*)
           annotateCommand (HeapRegularCommand.Command (
             annotateCommand (HeapAtomicCommand.Guard(
               annotateCommand (BooleanExpression.Comparison(
@@ -51,7 +51,7 @@ let expected: HeapRegularCommand.t =
             annotateCommand (HeapAtomicCommand.NonDet "y")
           ))
         )),
-        annotateCommand (HeapRegularCommand.Sequence(
+        annotateCommand (HeapRegularCommand.Sequence( (*not b;else*)
           annotateCommand (HeapRegularCommand.Command (
             annotateCommand (HeapAtomicCommand.Guard(
               annotateCommand (BooleanExpression.Not(
@@ -64,12 +64,13 @@ let expected: HeapRegularCommand.t =
             )) 
           )),
           annotateCommand (HeapRegularCommand.Command (
-            annotateCommand (HeapAtomicCommand.Skip)))
+            annotateCommand (HeapAtomicCommand.Skip)
+          ))
         ))
-      )),
-      annotateCommand (HeapRegularCommand.Command (
-        annotateCommand (HeapAtomicCommand.Free "y")
       ))
+    )),
+    annotateCommand (HeapRegularCommand.Command (
+        annotateCommand (HeapAtomicCommand.Free "y")
     ))
   ))
 ;;

@@ -10,7 +10,7 @@ let annotateCommand formula =
 
 let source = {|x = alloc();
 y = alloc();
-if (x == y || x != y && true) {
+if (x == y || x != y && true) then {
   [x] = 42;
   free(x)
 } else {
@@ -23,14 +23,14 @@ skip
 let expected: HeapRegularCommand.t = 
   annotateCommand (HeapRegularCommand.Sequence (
     annotateCommand (HeapRegularCommand.Sequence (
-      annotateCommand (HeapRegularCommand.Command (
-        annotateCommand (HeapAtomicCommand.Allocation "x")
+      annotateCommand (HeapRegularCommand.Sequence (
+        annotateCommand (HeapRegularCommand.Command (
+          annotateCommand (HeapAtomicCommand.Allocation "x")
+        )),
+        annotateCommand (HeapRegularCommand.Command (
+          annotateCommand (HeapAtomicCommand.Allocation "y")
+        ))
       )),
-      annotateCommand (HeapRegularCommand.Command (
-        annotateCommand (HeapAtomicCommand.Allocation "y")
-      ))
-    )),
-    annotateCommand (HeapRegularCommand.Sequence (
       annotateCommand (HeapRegularCommand.NondeterministicChoice(
         annotateCommand (HeapRegularCommand.Sequence(
           annotateCommand (HeapRegularCommand.Command ( annotateCommand (HeapAtomicCommand.Guard(
@@ -94,14 +94,13 @@ let expected: HeapRegularCommand.t =
             ))
           ))
         ))
-      )),
-      annotateCommand (HeapRegularCommand.Command (
-          annotateCommand HeapAtomicCommand.Skip
       ))
+    )),
+    annotateCommand (HeapRegularCommand.Command (
+        annotateCommand HeapAtomicCommand.Skip
     ))
   ))
 ;;
-(*
+
 let%test_unit "test commands n. 04" =
   [%test_eq: HeapRegularCommand.t] (parse_command source) expected
-  *)
