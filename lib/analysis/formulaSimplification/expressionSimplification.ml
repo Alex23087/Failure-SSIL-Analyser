@@ -2,7 +2,7 @@ open DataStructures.Analysis
 open NormalForm
 open Submodules
 
-let simplify_arithmetic_expressions (formula: Formula.t) =
+let simplify_arithmetic_expressions (formula: NormalForm.t) =
   let to_symalg_operator (op: BinaryOperator.t) =
     match op with
     | Plus -> SymAlg.Plus
@@ -90,14 +90,14 @@ let simplify_arithmetic_expressions (formula: Formula.t) =
         from_symalg_poly xs
       )
   in
-  let rec from_symalg_frac ((numerator, denominator): SymAlg.frac) =
+  let from_symalg_frac ((numerator, denominator): SymAlg.frac) =
     ArithmeticExpression.Operation(
       BinaryOperator.Division,
       from_symalg_poly numerator,
       from_symalg_poly denominator
     )
   in
-  let rec from_symalg_term (term: SymAlg.term) =
+  let from_symalg_term (term: SymAlg.term) =
     match term with
     | Poly(poly) -> from_symalg_poly poly
     | Frac(frac) -> from_symalg_frac frac
@@ -142,6 +142,7 @@ let simplify_arithmetic_expressions (formula: Formula.t) =
     | _ -> conjunct
   in
 
-  simplify_formula formula
+  let disjoints = List.map simplify_formula formula.disjoints in
+  NormalForm.make formula.variables disjoints formula.id_generator
 
 let f = simplify_arithmetic_expressions
