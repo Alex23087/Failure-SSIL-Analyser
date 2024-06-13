@@ -79,21 +79,33 @@ let () =
   (* Parsing *)
   if_verbose (fun _ -> print_endline ("[1] Parsing input..."));
   let ast = parse_input input in
-      if_debug (fun _ -> DataStructures.Parser.Commands.show ast |> print_endline);
+      if_debug (fun _ ->
+        print_endline "[*] Debug AST: ";
+        DataStructures.Parser.Commands.show ast |> print_endline
+      );
 
   (* Cfg building *)
   if_verbose (fun _ -> print_endline ("[2] Constructing Control Flow Graph..."));
   let nodes = Converter.convert ast in
-      if_debug (fun _ -> Node.to_string nodes Prelude.Print.Parser.show_atomic_list |> print_endline);
+      if_debug (fun _ ->
+        print_endline "[*] Debug Nodes structure: ";
+        Node.to_string nodes Prelude.Print.Parser.show_atomic_list |> print_endline
+      );
 
   let cfg = Cfg.make nodes in
   let cfg = Cfg.map cfg Prelude.from_ast_commands in
-      if_debug (fun _ -> Cfg.to_string cfg CfgBlock.show |> print_endline);
+      if_debug (fun _ ->
+        print_endline "[*] Debug CFG: ";
+        Cfg.to_string cfg CfgBlock.show |> print_endline
+      );
 
   (* Analysis Step *)
   if_verbose (fun _ -> print_endline ("[3] Analysis..."));
   let final_states = CfgAnalysis.analyze_program cfg in
-      if_debug (fun _ -> List.iter (fun x -> x |> Prelude.show_analysis_state |> print_endline) final_states);
+      if_debug (fun _ ->
+        print_endline "[*] Debug analysis final states before reconciliation: ";
+        List.iter (fun x -> x |> Prelude.show_analysis_state |> print_endline) final_states
+      );
 
   let final_formula = final_states |> build_final_formula in
   print_endline (final_formula |> NormalForm.show);

@@ -60,6 +60,7 @@ let analysis_step (state: analysis_state) : analysis_state list * analysis_state
       let block = Cfg.get_data cfg idx in
       let iteration_limit_reached = visit_limit block in
       let block = CfgBlock.update_formula_at_last block current_block.precondition in
+      let block = CfgBlock.increase_visit_count block in
       let state = block_to_starting_state cfg idx block in
       if iteration_limit_reached then
         Either.Right(state)
