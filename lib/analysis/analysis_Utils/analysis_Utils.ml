@@ -1,0 +1,3 @@
+include RenameVariable
+include NormalFormUtils
+include CommandToLogicConversion
