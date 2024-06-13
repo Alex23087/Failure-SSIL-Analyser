@@ -10,6 +10,7 @@ let simplify_formula (formula: NormalForm.t) =
     UnitOr.f;
     UnitAndSep.f;
     NoSharedIdentifierAndSep.f;
+    ZeroAnd.f;
   ] in
   let rec simplify formula =
     let simplified = List.fold_left (|>) formula simplification_functs in
