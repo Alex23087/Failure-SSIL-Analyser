@@ -16,7 +16,7 @@ module NormalForm = struct
       | Literal of int
       | Variable of identifier
       | Operation of BinaryOperator.t * t * t
-    [@@deriving show, sexp, compare]
+    [@@deriving show, sexp, compare, eq]
   end
 
   module BinaryComparison = struct include Ast.AnnotationLogic.BinaryComparison end
@@ -39,12 +39,12 @@ module NormalForm = struct
   type id_generator = {
     first_id: int;
     last_id: int;
-  } [@@deriving show, sexp]
+  }
 
   type t = {
     variables: (IdentifierSet.t [@sexp.opaque] [@opaque]);
     disjoints: Formula.t list;
-    id_generator: id_generator; [@opaque]
+    id_generator: (id_generator [@sexp.opaque] [@opaque]);
   }
   [@@deriving show, sexp]
 

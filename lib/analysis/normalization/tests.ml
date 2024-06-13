@@ -1,7 +1,7 @@
 open NormalizationBase
 open DataStructures.Analysis.NormalForm
 
-open Analysis_TestCommon
+open Analysis_TestUtils
 
 (* Alias for better readability *)
 module PFormula = DataStructures.Parser.LogicFormulas.Formula

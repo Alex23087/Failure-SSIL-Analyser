@@ -4,3 +4,4 @@ include Normalization
 include ExpressionSubstitution
 include FormulaSimplification
 include Analysis_Utils
+include Analysis_CommandConversion

@@ -15,6 +15,9 @@ module Commands = struct
   type t = annotation Ast.HeapRegularCommands.HeapAtomicCommand.t
   [@@deriving show]
 
+  type arithmetic_t = annotation Ast.HeapRegularCommands.ArithmeticExpression.t
+  [@@deriving show]
+
   let get_postcondition (command: ('a, annotation) AnnotatedNode.t) =
     command.annotation.postcondition
 

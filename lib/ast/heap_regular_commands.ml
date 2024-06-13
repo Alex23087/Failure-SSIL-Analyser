@@ -111,5 +111,8 @@ module HeapRegularCommands = struct
   type 'a t = 'a HeapRegularCommand.t
   let pp = HeapRegularCommand.pp
   let show = HeapRegularCommand.show
+  let t_of_sexp = HeapRegularCommand.t_of_sexp
+  let sexp_of_t = HeapRegularCommand.sexp_of_t
+  let compare = HeapRegularCommand.compare
   let modifiedVariables = HeapRegularCommand.modifiedVariables
 end
