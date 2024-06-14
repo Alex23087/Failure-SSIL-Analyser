@@ -1,7 +1,6 @@
 open DataStructures
 open DataStructures.Analysis
 open NormalForm
-open Analysis_Utils
 
 let rec get_heap_identifiers (formula: Formula.t) =
   match formula with

@@ -1,9 +1,11 @@
 open Analysis_Prelude
+open NormalForm
 open Ast.HeapRegularCommands
+open Analysis_TestUtils
 
 (** Computes the pre-condition of the given atomic command and post-condition *)
-let compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: NormalForm.t) =
-  let precondition =
+let compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: NormalForm.t) : NormalForm.t =
+  let precondition = 
     match command.node with
     | Skip ->
       post_condition

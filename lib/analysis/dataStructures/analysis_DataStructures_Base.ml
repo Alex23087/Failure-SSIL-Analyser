@@ -1,6 +1,6 @@
 open Base
 
-type identifier = Ast.identifier [@@deriving show]
+type identifier = Ast.identifier [@@deriving show, sexp, compare, eq]
 module AnnotatedNode = struct include Ast.AnnotatedNode end [@@deriving show]
 module IdentifierSet = struct include Ast.IdentifierSet end [@@deriving show]
 

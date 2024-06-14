@@ -14,8 +14,8 @@ doc:
 
 install: build doc
 	mkdir -p _install
-	cp -r _build/default/_doc/_html/ _install/doc
-	cp _build/default/bin/main.exe _install/main.exe
+	cp -rf _build/default/_doc/_html/ _install/doc
+	cp -f _build/default/bin/main.exe _install/main.exe
 
 docopen: doc
 	open _build/default/_doc/_html/index.html

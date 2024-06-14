@@ -51,4 +51,6 @@ module Node : sig
 
   (** Given a nodes' tree only composed of valid successor lists, computes the precedessors identifiers. *)
   val compute_pred : 'a t -> unit
+  
+  val to_string : 'a t -> ('a -> string) -> string
 end

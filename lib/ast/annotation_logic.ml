@@ -23,7 +23,7 @@ module AnnotationLogic = struct
       | Times
       | Division
       | Modulo
-    [@@deriving show, sexp, compare]
+    [@@deriving show, sexp, compare, eq]
   end
 
   module ArithmeticExpression = struct
@@ -43,7 +43,7 @@ module AnnotationLogic = struct
       | GreaterOrEqual
       | Equals
       | NotEquals
-    [@@deriving show, sexp, compare]
+    [@@deriving show, sexp, compare, eq]
   end
 
   module Formula = struct

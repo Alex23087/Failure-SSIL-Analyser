@@ -1,14 +1,7 @@
 open ExpressionSubstitutionBase
 open Normalization
 open DataStructures.Analysis.NormalForm
-
-(* Alias for better readability *)
-module PFormula = DataStructures.Parser.LogicFormulas.Formula
-module PBinaryComparison = DataStructures.Parser.LogicFormulas.BinaryComparison
-module PArithmeticExpression = DataStructures.Parser.LogicFormulas.ArithmeticExpression
-module PBinaryOperator = DataStructures.Parser.LogicFormulas.BinaryOperator
-
-open Analysis_TestCommon
+open Analysis_TestUtils
 
 let%test "substitute identifer only expression" =
   let formula = annot (PFormula.Or(
