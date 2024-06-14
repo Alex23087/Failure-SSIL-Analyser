@@ -3,17 +3,19 @@
     Note that the logic formula annotates after the command, not before. *)
 
 open Analysis_DataStructures_Base
+open Sexplib.Std
+open Base
 
 include Ast.HeapRegularCommands
 
 type annotation = {
-  position: position;
+  position: (position [@sexp.opaque]);
   logic_formula: LogicFormulas.t option
 }
-[@@deriving show]
+[@@deriving show, sexp, compare]
 
 type t = annotation Ast.HeapRegularCommands.HeapRegularCommand.t
-[@@deriving show]
+[@@deriving show, sexp, compare]
 
 type atomic_t = annotation Ast.HeapRegularCommands.HeapAtomicCommand.t
 [@@deriving show]

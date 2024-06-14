@@ -5,12 +5,12 @@ open Analysis_DataStructures_Base
 include Ast.AnnotationLogic
 
 type annotation = {
-  position: position;
+  position: (position [@sexp.opaque]);
 }
-[@@deriving show]
+[@@deriving show, sexp, compare]
 
 type t = annotation Ast.AnnotationLogic.Formula.t
-[@@deriving show]
+[@@deriving show, sexp, compare]
 
 type arithmetic_t = annotation Ast.AnnotationLogic.ArithmeticExpression.t
 [@@deriving show]
