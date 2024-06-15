@@ -69,7 +69,7 @@ let read_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (l_id : i
           (normal_form_of (Allocation(r_id, Variable(fresh))))
         )
     else normal_form_of False
-  | [Allocation(_,a) as matched] -> 
+  | [Allocation(id,a) as matched] when id = r_id-> 
     let t' = 
       substitute_expression_in_normalized_formula (
         normal_form_of t
@@ -77,6 +77,9 @@ let read_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (l_id : i
     let formula = normal_form_of matched in
     let fv_a = get_free_identifiers a vars in 
     if check_frame_rule_side_condition t vars l_id && is_identifier_free l_id fv_a
+      (* non controlliamo che l_id compaia *libero* nella post !
+      Però questo controllo è fatto (al contrario) dalla side condition della frame rule...
+      Da togliere la frame rule ? *)
       then separate_conjunction_of_normalized_formulas formula t'
     else normal_form_of False
   | _ -> normal_form_of False
@@ -135,16 +138,18 @@ let apply_write (vars : IdentifierSet.t) (mem_id : identifier) (expr : 'a Ast.He
 
 (* apply read semantics to single formula *)
 let apply_read (vars : IdentifierSet.t) (l_id : identifier) (r_id : identifier) (fresh : identifier) (last_id : NormalForm.id_generator) (post : Formula.t) : NormalForm.t = 
+  let normal_form_of formula = NormalForm.make vars [formula] last_id in 
   match post with
-  | True -> NormalForm.make vars [True] last_id
-  | Allocation(y, _) as formula when y = r_id -> 
-    if is_identifier_free y vars 
-      then NormalForm.make vars [formula] last_id 
-    else NormalForm.make vars [False] last_id
+  | True -> normal_form_of True
+  | Allocation(y, a) as formula when y = r_id -> 
+    let fv_a = get_free_identifiers a vars in 
+    if is_identifier_free y vars && is_identifier_free l_id fv_a
+      then normal_form_of formula
+    else normal_form_of False
   | AndSeparately(_, _) as formula -> 
     let f = function
       | Allocation(y, _) when y = r_id ->
         if is_identifier_free y vars then true else false
       | _ -> false
     in read_heap_partition formula vars l_id r_id fresh f last_id
-  | _ -> NormalForm.make vars [False] last_id
+  | _ -> normal_form_of False
