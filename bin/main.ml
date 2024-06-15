@@ -84,8 +84,15 @@ let () =
         DataStructures.Parser.Commands.show ast |> print_endline
       );
 
+  (* AST Validation *)
+  if_verbose (fun _ -> print_endline ("[2] Program validation..."));
+  if Prelude.validate_ast ast |> not then (
+    print_endline "The given program violates some semantic rules...";
+    exit(1)
+  );
+
   (* Cfg building *)
-  if_verbose (fun _ -> print_endline ("[2] Constructing Control Flow Graph..."));
+  if_verbose (fun _ -> print_endline ("[3] Constructing Control Flow Graph..."));
   let nodes = Converter.convert ast in
       if_debug (fun _ ->
         print_endline "[*] Debug Nodes structure: ";
@@ -100,7 +107,7 @@ let () =
       );
 
   (* Analysis Step *)
-  if_verbose (fun _ -> print_endline ("[3] Analysis..."));
+  if_verbose (fun _ -> print_endline ("[4] Analysis..."));
   let final_states = CfgAnalysis.analyze_program cfg in
       if_debug (fun _ ->
         print_endline "[*] Debug analysis final states before reconciliation: ";
