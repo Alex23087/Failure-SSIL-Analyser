@@ -16,6 +16,9 @@ module CFG : sig
 
   (** returns the id of a given item in the CFG *)
   val get_id : 'a item -> int
+  
+  (** apply a mapping function to all the data items in the CFG, and returns the updated CFG *)
+  val map : 'a t -> ('a -> 'b) -> 'b t
 
   (** recursively fold on all the items in the CFG *)
   val fold : 'a t -> ('a t -> 'a item -> 'b -> 'b) -> 'b -> 'b
@@ -34,4 +37,6 @@ module CFG : sig
 
   (** updates the data structure bound with id in the CFG, or raises Not_found if no such id exists *)
   val set_data : 'a t -> int -> 'a -> 'a t
+
+  val to_string : 'a t -> ('a -> string) -> string
 end

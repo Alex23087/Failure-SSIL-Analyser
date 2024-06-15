@@ -17,8 +17,8 @@
     let b_neg_guard = HeapAtomicCommand.Guard(annotateEmptyCommand (BooleanExpression.Not(_guard)) _guard_pos) in
     let b_neg_guard_atom = annotateEmptyCommand b_neg_guard _guard_pos in
     let b_neg_guard_command = annotateEmptyCommand (HeapRegularCommand.Command(b_neg_guard_atom)) _guard_pos in
-    let then_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_neg_guard_command, _then)) _then_pos in
-    let else_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _else)) _else_pos in
+    let then_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _then)) _then_pos in
+    let else_command = annotateEmptyCommand (HeapRegularCommand.Sequence(b_neg_guard_command, _else)) _else_pos in
     annotateCommand (HeapRegularCommand.NondeterministicChoice(then_command, else_command)) overall_pos formula
 
   (* (b?; body)*; ¬b? *)
@@ -32,6 +32,29 @@
     let guard_body = annotateEmptyCommand (HeapRegularCommand.Sequence(b_guard_command, _body)) _body_pos in
     let guard_body_star = annotateEmptyCommand (HeapRegularCommand.Star(guard_body)) _body_pos in
     annotateCommand (HeapRegularCommand.Sequence(guard_body_star, b_neg_guard_command)) overall_pos formula
+
+  let negate_formula_arithmetic_expression e =
+    match AnnotatedNode.node e with
+    | Prelude.Analysis.Parser.LogicFormulas.ArithmeticExpression.Literal i ->
+      let synthesized_neg = Prelude.Analysis.Parser.LogicFormulas.ArithmeticExpression.Literal (-i) in
+      synthesized_neg
+    | _ ->
+      let pos = AnnotatedNode.annotation e in
+      let zero = AnnotatedNode.make (Prelude.Analysis.Parser.LogicFormulas.ArithmeticExpression.Literal 0) pos in
+      let synthesized_neg = Prelude.Analysis.Parser.LogicFormulas.ArithmeticExpression.Operation(Prelude.Analysis.Parser.LogicFormulas.BinaryOperator.Minus, zero, e) in
+      synthesized_neg
+
+  let negate_command_arithmetic_expression e new_pos =
+    match AnnotatedNode.node e with
+    | ArithmeticExpression.Literal i ->
+      let synthesized_neg = ArithmeticExpression.Literal (-i) in
+      annotateEmptyCommand synthesized_neg new_pos
+    | _ ->
+      let formula = (AnnotatedNode.annotation e).logic_formula in
+      let new_e = annotateEmptyCommand (AnnotatedNode.node e) new_pos in
+      let zero = annotateEmptyCommand (ArithmeticExpression.Literal 0) new_pos in
+      let synthesized_neg = ArithmeticExpression.BinaryOperation(ArithmeticOperation.Minus, zero, new_e) in
+      annotateCommand synthesized_neg new_pos formula
 %}
 
 %token EqualEqual
@@ -160,6 +183,8 @@ arithmetic_expression:
     { annotateEmptyCommand (ArithmeticExpression.BinaryOperation(o, a1, a2)) $startpos }
   | LParen a = arithmetic_expression RParen
     { a }
+  | Minus arithmetic_expression
+    { negate_command_arithmetic_expression $2 $startpos }
 ;
 
 %inline arithmetic_operator:
@@ -266,6 +291,8 @@ arithmetic_expression_of_formula:
       { annotateFormula (Prelude.Analysis.Parser.LogicFormulas.ArithmeticExpression.Operation($2, $1, $3)) $startpos }
     | LParen arithmetic_expression_of_formula RParen
       { $2 }
+    | Minus arithmetic_expression_of_formula
+      { annotateFormula (negate_formula_arithmetic_expression $2) $startpos }
 
 %inline binary_comparison_of_formula:
   | LessThan { Prelude.Analysis.Parser.LogicFormulas.BinaryComparison.LessThan }

@@ -1,11 +1,15 @@
 open In_channel
+open Out_channel
+open Lisproject.Cfg
 open Lisproject.Parserlexer
-open Lisproject.Prelude.Analysis.Parser
+open Lisproject.Analysis
+open Lisproject.Analysis.DataStructures.Analysis
 
 (* Command Line Arguments *)
-let usage_message = "Usage: " ^ Sys.argv.(0) ^ " [-v|--verbose] <input file> [-o <output file>]"
+let usage_message = "Usage: " ^ Sys.argv.(0) ^ " [-v|--verbose] [--debug] <input file> [-o <output file>]"
 
 let verbose = ref false
+let debug = ref false
 let input_file = ref ""
 let output_file = ref ""
 
@@ -14,13 +18,26 @@ let anon_fun filename =
 
 let speclist = [
   ("-v", Arg.Set verbose, "Verbose - Print processing status to stdout");
+  ("--debug", Arg.Set debug, "Debug - Print debug informations between steps");
   ("--verbose", Arg.Set verbose, "");
   ("-o", Arg.Set_string output_file, "Set output file")
 ]
 
 (* Utility Functions *)
-let if_verbose fn = if !verbose then fn
+let if_verbose fn = if (!verbose || !debug) then fn ()
+let if_debug fn = if (!debug) then fn ()
 let fail message = prerr_string message; exit(1)
+let build_final_formula final_states =
+  let final_formula =
+    List.fold_left
+    (fun acc x ->
+      let formula = Prelude.get_last_block_precondition x in
+      Option.fold ~none:acc ~some:(Prelude.disjunction_of_normalized_formulas acc) formula
+    )
+    (NormalForm.make_from_formula (NormalForm.Formula.False))
+    final_states
+  in
+  Prelude.simplify_formula final_formula
 
 let parse_input source =
   let handle_error source lexeme_pos msg =
@@ -54,19 +71,55 @@ let () =
     exit(0)
   );
 
-  if String.equal !output_file "" then (
-    output_file := !input_file ^ ".out"
-  );
-
-  if_verbose (print_endline ("[0] Reading input file: " ^ !input_file));
-  let input = input_all (open_gen [Open_rdonly] 0 !input_file) in
+      if_verbose (fun _ -> print_endline ("[0] Reading input file: " ^ !input_file));
+  let input = input_all (In_channel.open_gen [Open_rdonly] 0 !input_file) in
   if String.equal input "" then
     fail ("Error: empty input file\n" ^ usage_message);
   
-  if_verbose (print_endline ("[1] Parsing input..."));
-  let _ast = parse_input input in
-  
-  if_verbose (print_endline ("[2] Constructing Control Flow Graph..."));
-  if_verbose (print_endline ("[3] Analysis..."));
-  if_verbose (print_endline ("[4] Writing output to file: " ^ !output_file));
+  (* Parsing *)
+  if_verbose (fun _ -> print_endline ("[1] Parsing input..."));
+  let ast = parse_input input in
+      if_debug (fun _ ->
+        print_endline "[*] Debug AST: ";
+        DataStructures.Parser.Commands.show ast |> print_endline
+      );
+
+  (* AST Validation *)
+  if_verbose (fun _ -> print_endline ("[2] Program validation..."));
+  if Prelude.validate_ast ast |> not then (
+    print_endline "The given program violates some semantic rules...";
+    exit(1)
+  );
+
+  (* Cfg building *)
+  if_verbose (fun _ -> print_endline ("[3] Constructing Control Flow Graph..."));
+  let nodes = Converter.convert ast in
+      if_debug (fun _ ->
+        print_endline "[*] Debug Nodes structure: ";
+        Node.to_string nodes Prelude.Print.Parser.show_atomic_list |> print_endline
+      );
+
+  let cfg = Cfg.make nodes in
+  let cfg = Cfg.map cfg Prelude.from_ast_commands in
+      if_debug (fun _ ->
+        print_endline "[*] Debug CFG: ";
+        Cfg.to_string cfg CfgBlock.show |> print_endline
+      );
+
+  (* Analysis Step *)
+  if_verbose (fun _ -> print_endline ("[4] Analysis..."));
+  let final_states = CfgAnalysis.analyze_program cfg in
+      if_debug (fun _ ->
+        print_endline "[*] Debug analysis final states before reconciliation: ";
+        List.iter (fun x -> x |> Prelude.show_analysis_state |> print_endline) final_states
+      );
+
+  let final_formula = final_states |> build_final_formula in
+  print_endline (final_formula |> Prelude.Print.Analysis.pretty_print_normal_form);
+
+  if not (String.equal !output_file "") then (
+    if_verbose (fun _ -> print_endline ("[4] Writing output to file: " ^ !output_file));
+    output_string (Out_channel.open_gen [Open_wronly] 0440 !output_file) (final_formula |> Prelude.Print.Analysis.pretty_print_normal_form) 
+  );
+
   ()

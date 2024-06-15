@@ -4,7 +4,7 @@ open Ppx_compare_lib.Builtin
 (**{1 Support data structures}*)
 
 (**Identifier type*)
-type identifier = string [@@deriving show, sexp, compare]
+type identifier = string [@@deriving show, sexp, compare, eq]
 
 module AnnotatedNode = struct
   type ('a, 'b) t = {

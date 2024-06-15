@@ -137,4 +137,17 @@ module Node = struct
     let rec helper_compute_pred (node : 'a t) : unit =
       List.iter (fun x -> (add_pred x node.id); helper_compute_pred x) node.succ;
     in helper_compute_pred node
+
+  let to_string (node: 'a t) (pp: 'a -> string) =
+    let already_visited = ref [] in
+    let rec to_string node pp already_visited =
+      if List.mem node.id !already_visited then
+        ""
+      else (
+        already_visited := node.id :: !already_visited;
+        "node: " ^ string_of_int node.id ^ "\n" ^
+        "exp:" ^ pp node.exp ^ "\n" ^
+        "succ: [ " ^ List.fold_left (fun acc x -> acc ^ to_string x pp already_visited) "" node.succ ^ "]"
+      )
+    in to_string node pp already_visited 
 end

@@ -27,6 +27,7 @@ module CfgBlock = struct
     precondition: NormalForm.t option;
     statements: Commands.t list;
   }
+  [@@deriving show]
 
   (** Update a block's precondition *)
   let update_precondition (block: t) (formula: NormalForm.t option) = 

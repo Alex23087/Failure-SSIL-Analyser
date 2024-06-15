@@ -44,10 +44,13 @@ module CFG = struct
     helper_make initial_node;
     {cfg = h; root_id = Node.get_id initial_node}
 
-  let get      (cfg : 'a t) (id : int) : 'a item   = Hashtbl.find cfg.cfg id
+  let get      (cfg : 'a t) (id : int) : 'a item  =
+    match Hashtbl.find_opt cfg.cfg id with
+    | Some(item) -> item
+    | None -> raise (Failure ("CFG.get - Not found - Item id: " ^ string_of_int id))
   let succ_of  (cfg : 'a t) (id : int) : int list = (get cfg id).succ
   let pred_of  (cfg : 'a t) (id : int) : int list = (get cfg id).pred
-  let get_data (cfg : 'a t) (id : int) : 'a        = (get cfg id).exp
+  let get_data (cfg : 'a t) (id : int) : 'a       = (get cfg id).exp
 
   let get_id (item : 'a item) : int = item.id
 
@@ -66,6 +69,14 @@ module CFG = struct
     let compare = compare
   end)
 
+  let map (cfg : 'a t) (fn: 'a -> 'b) : 'b t =
+    let convert_item (item: 'a item) =
+      make_item item.id (fn item.exp) item.pred item.succ
+    in
+    let f key value acc = Hashtbl.add acc key (convert_item value); acc in
+    let new_cfg = Hashtbl.fold f cfg.cfg (Hashtbl.create (Hashtbl.length cfg.cfg)) in
+    {cfg = new_cfg; root_id = cfg.root_id}
+
   let fold (cfg : 'a t) (fn: 'a t -> 'a item -> 'b -> 'b) (acc: 'b) : 'b =
     (* performs a depth first visit of the graph *)
     let visited = IntSet.empty in
@@ -81,4 +92,16 @@ module CFG = struct
       )
     in
     helper_fold to_visit visited acc
+
+  let to_string (cfg: 'a t) (pp: 'a -> string) =
+    let int_list_pp list =
+      "[ " ^ List.fold_left (fun acc x -> (string_of_int x) ^ " " ^ acc) "" list ^ "]"
+    in
+    let item_pp key value =
+      string_of_int key ^ ": {\n" ^
+        "succ: " ^ int_list_pp value.succ ^ "\n" ^
+        "pred: " ^ int_list_pp value.pred ^ "\n" ^
+        "data: " ^ pp value.exp ^ "}"
+    in
+    Hashtbl.fold (fun key value acc -> acc ^ "\n" ^ item_pp key value) cfg.cfg ""
 end
