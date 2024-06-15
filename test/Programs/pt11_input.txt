@@ -1,0 +1,6 @@
+n = nondet();
+while (n > 0 && even(x)) {
+    x = x + n;
+    n = nondet();
+}
+<<x >= 2147483647>>
