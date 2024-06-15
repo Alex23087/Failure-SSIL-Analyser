@@ -39,8 +39,37 @@ module Analysis = struct
       | AndSeparately(lformula, rformula) -> expand_conjuncts lformula @ expand_conjuncts rformula
       | _ -> [formula]
     in
+    let rec comparison_op_to_string (op: BinaryComparison.t) =
+      match op with
+      | Equals -> "="
+      | NotEquals -> "!="
+      | LessThan -> "<"
+      | LessOrEqual -> "<="
+      | GreaterThan -> ">"
+      | GreaterOrEqual -> ">="
+    in
+    let rec binary_op_to_string (op: BinaryOperator.t) =
+      match op with
+      | Plus -> "+"
+      | Minus -> "-"
+      | Times -> "*"
+      | Division -> "/"
+      | Modulo -> "%"
+    in
     let rec expression_to_string (expr: ArithmeticExpression.t) =
-      ""
+      match expr with
+      | Literal(value) -> string_of_int value
+      | Variable(id) -> id
+      | Operation(op, lexpr, rexpr) -> 
+        let lexpr = match lexpr with
+          | Operation(_) -> "(" ^ expression_to_string lexpr ^ ")"
+          | _ -> expression_to_string lexpr
+        in
+        let rexpr = match rexpr with
+          | Operation(_) -> "(" ^ expression_to_string rexpr ^ ")"
+          | _ -> expression_to_string rexpr
+        in
+        lexpr ^ " " ^ binary_op_to_string op ^ " " ^ rexpr
     in
     let rec disjoint_to_string (formula: Formula.t) =
       match formula with
@@ -49,7 +78,16 @@ module Analysis = struct
       | EmptyHeap -> "emp"
       | Allocation(id, expr) -> id ^ " -> " ^ expression_to_string expr
       | NonAllocated(id) -> id ^ " -/>"
-      | Comparison(op, lexpr, rexpr) -> ""
+      | Comparison(op, lexpr, rexpr) ->
+        let lexpr = match lexpr with
+          | Operation(_) -> "(" ^ expression_to_string lexpr ^ ")"
+          | _ -> expression_to_string lexpr
+        in
+        let rexpr = match rexpr with
+          | Operation(_) -> "(" ^ expression_to_string rexpr ^ ")"
+          | _ -> expression_to_string rexpr
+        in
+        lexpr ^ " " ^ comparison_op_to_string op ^ " " ^ rexpr
       | And(_) -> expand_conjuncts formula |> (fun x -> join_list x conjunct_to_string "&&")
       | AndSeparately(_) -> expand_separate_conjuncts formula |> (fun x -> join_list x conjunct_to_string "*")
     and conjunct_to_string (conjunct: Formula.t) =
