@@ -43,6 +43,7 @@ module Converter = struct
     let rec remove_and_recurse (root: 'a HeapAtomicCommand.t list Node.t) (succ: 'a HeapAtomicCommand.t list Node.t) (keep_structure: bool) : unit =
       Node.set_exp root ((Node.get_exp root) @ (Node.get_exp succ));
       Node.set_succ root (Node.get_succ succ);
+      List.iter (fun x -> Node.remove_pred x (Node.get_id succ)) (Node.get_succ succ);
       help_simplify keep_structure root
     and help_simplify (keep_structure: bool) (root: 'a HeapAtomicCommand.t list Node.t) : unit =
       (* check that we haven't already visited the node *)
