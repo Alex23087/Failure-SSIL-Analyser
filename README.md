@@ -9,6 +9,7 @@
 - `opam init`
 - `opam update`
 - `opam install dune ppx_deriving odoc ppx_inline_test menhirLib sexplib menhir`
+- `git submodule update --init --recursive`
 
 ### Building and running
 - `make build`
