@@ -581,3 +581,27 @@ let expected_disjoints =
 test_expected_bound_variables pre_condition 1 &&
 test_expected_disjoints pre_condition expected_disjoints ["w"]
 
+(* << false >> [x] := y << Exists x . x -> y * v = 5 >> *)
+let%test "precondition on [x] := y, post-condition = << Exists x . x -> y * v = 5 >>" =
+  let command = annot_cmd (
+    Commands.HeapAtomicCommand.WriteHeap("x", 
+      (annot_cmd (Commands.ArithmeticExpression.Variable("y")))
+    )
+  ) in
+  let post_condition =
+    annot (PFormula.AndSeparately(
+      annot (PFormula.Exists("x", 
+        annot (PFormula.Allocation(
+          "x",
+          annot (PArithmeticExpression.Variable("y"))
+          )
+        )
+      ) ),
+      annot (PFormula.Allocation("v", (annot (PArithmeticExpression.Literal(5) ) ) ) )
+    ) )
+  in
+  let post_condition = existential_disjuntive_normal_form post_condition in
+  let pre_condition = compute_precondition command post_condition in
+  let expected_disjoints = Formula.False :: [] in
+  test_expected_bound_variables pre_condition 0 &&
+  test_expected_disjoints pre_condition expected_disjoints []

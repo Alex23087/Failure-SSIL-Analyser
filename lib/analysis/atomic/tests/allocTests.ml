@@ -354,3 +354,24 @@ let expected_disjoints =
   ) :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
+
+(* << false >> x := alloc() << Exists x . x -> v * v = 5 >> *)
+let%test "precondition on x := alloc(), post-condition = << Exists x . x -> v * v = 5 >>" =
+  let command = annot_cmd (Commands.HeapAtomicCommand.Allocation("x")) in
+  let post_condition =
+    annot (PFormula.AndSeparately(
+      annot (PFormula.Exists("x", 
+        annot (PFormula.Allocation(
+          "x",
+          annot (PArithmeticExpression.Variable("v"))
+          )
+        )
+      ) ),
+      annot (PFormula.Allocation("v", (annot (PArithmeticExpression.Literal(5) ) ) ) )
+    ) )
+  in
+  let post_condition = existential_disjuntive_normal_form post_condition in
+  let pre_condition = compute_precondition command post_condition in
+  let expected_disjoints = Formula.False :: [] in
+  test_expected_bound_variables pre_condition 0 &&
+  test_expected_disjoints pre_condition expected_disjoints []
