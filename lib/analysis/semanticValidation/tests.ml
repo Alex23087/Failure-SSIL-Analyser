@@ -1,7 +1,7 @@
 open Analysis_SemanticValidation_Base
 open DataStructures.Parser.Commands
 
-open Analysis_TestCommon
+open Analysis_TestUtils
 
 let%test "illegal read" =
   (* x = [x] *)
