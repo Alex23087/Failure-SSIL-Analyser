@@ -11,15 +11,14 @@ module Analysis = struct
 
   let pretty_print_normal_form (formula: NormalForm.t) =
     let join_list (formulas: Formula.t list) (f: Formula.t -> string) (sep: string) =
-      let rec join_list (acc: string) (formulas: Formula.t list) (f: Formula.t -> string) (sep: string) =
+      let rec join_list (formulas: Formula.t list) (f: Formula.t -> string) (sep: string) =
         match formulas with
         | [] -> ""
         | [x] -> f x
-        | x::xs ->
-          let new_acc = acc ^ f x ^ sep in
-          join_list new_acc xs f sep
+        | x::xs -> f x ^ sep ^ join_list xs f sep
       in
-      join_list "" formulas f (" " ^ sep ^ " ")
+      let sep = " " ^ sep ^ " " in
+      join_list formulas f sep
     in
 
     let bound_identifier_to_string(var: identifier) =

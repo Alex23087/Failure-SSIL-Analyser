@@ -115,11 +115,11 @@ let () =
       );
 
   let final_formula = final_states |> build_final_formula in
-  print_endline (final_formula |> NormalForm.show);
+  print_endline (final_formula |> Prelude.Print.Analysis.pretty_print_normal_form);
 
   if not (String.equal !output_file "") then (
     if_verbose (fun _ -> print_endline ("[4] Writing output to file: " ^ !output_file));
-    output_string (Out_channel.open_gen [Open_wronly] 0440 !output_file) (final_formula |> NormalForm.show)
+    output_string (Out_channel.open_gen [Open_wronly] 0440 !output_file) (final_formula |> Prelude.Print.Analysis.pretty_print_normal_form) 
   );
 
   ()
