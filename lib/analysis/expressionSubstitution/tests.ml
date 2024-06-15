@@ -1,83 +1,88 @@
 open ExpressionSubstitutionBase
 open Normalization
-open DataStructures.Parser.LogicFormulas
-
-open Analysis_TestCommon
+open DataStructures.Analysis.NormalForm
+open Analysis_TestUtils
 
 let%test "substitute identifer only expression" =
-  let formula = annot (Formula.Or(
-    annot(Formula.NonAllocated("x")),
-    annot (Formula.Comparison(
-        BinaryComparison.Equals,
-        annot (ArithmeticExpression.Operation(
-          BinaryOperator.Plus,
-          annot (ArithmeticExpression.Literal(5)),
-          annot (ArithmeticExpression.Variable("x"))
+  let formula = annot (PFormula.Or(
+    annot (PFormula.NonAllocated("x")),
+    annot (PFormula.Comparison(
+        PBinaryComparison.Equals,
+        annot (PArithmeticExpression.Operation(
+          PBinaryOperator.Plus,
+          annot (PArithmeticExpression.Literal(5)),
+          annot (PArithmeticExpression.Variable("x"))
         )),
-        annot (ArithmeticExpression.Variable("y"))
+        annot (PArithmeticExpression.Variable("y"))
     ))
   )) in
-  let normalized = existential_disjuntive_normal_form formula 0 in
+  let normalized = existential_disjuntive_normal_form formula in
   let substituted_id = "x" in
-  let substituting_expression = annot (ArithmeticExpression.Variable("z")) in
+  let substituting_expression = ArithmeticExpression.Variable("z") in
   let normalized = substitute_expression_in_normalized_formula normalized substituting_expression substituted_id in
   let expected_disjoints =
-    annot(Formula.NonAllocated("z")) ::
-    annot (Formula.Comparison(
+    Formula.NonAllocated("z") ::
+    Formula.Comparison(
         BinaryComparison.Equals,
-        annot (ArithmeticExpression.Operation(
+        ArithmeticExpression.Operation(
           BinaryOperator.Plus,
-          annot (ArithmeticExpression.Literal(5)),
-          annot (ArithmeticExpression.Variable("z"))
-        )),
-        annot (ArithmeticExpression.Variable("y"))
-    )) :: []
+          ArithmeticExpression.Literal(5),
+          ArithmeticExpression.Variable("z")
+        ),
+        ArithmeticExpression.Variable("y")
+    ) :: []
   in
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 0 &&
+  test_expected_disjoints normalized expected_disjoints []
 
+(* substitute '17 - z' to 'x' in the formula
+   << x -/> or 5 + x = y >>, which results into
+   << Exists a. (a -/> and a = 17 - z) or (5 + (17 - z) = y) >>
+*)
 let%test "substitute non identifier only expression" = 
-  let formula = annot (Formula.Or(
-    annot (Formula.NonAllocated("x")),
-    annot (Formula.Comparison(
-        BinaryComparison.Equals,
-        annot (ArithmeticExpression.Operation(
-          BinaryOperator.Plus,
-          annot (ArithmeticExpression.Literal(5)),
-          annot (ArithmeticExpression.Variable("x"))
+  let formula = annot (PFormula.Or(
+    annot (PFormula.NonAllocated("x")),
+    annot (PFormula.Comparison(
+        PBinaryComparison.Equals,
+        annot (PArithmeticExpression.Operation(
+          PBinaryOperator.Plus,
+          annot (PArithmeticExpression.Literal(5)),
+          annot (PArithmeticExpression.Variable("x"))
         )),
-        annot (ArithmeticExpression.Variable("y"))
+        annot (PArithmeticExpression.Variable("y"))
     ))
   )) in
-  let normalized = existential_disjuntive_normal_form formula 0 in
+  let normalized = existential_disjuntive_normal_form formula in
   let substituted_id = "x" in
   let substituting_expression =
-    annot (ArithmeticExpression.Operation(
+    ArithmeticExpression.Operation(
       BinaryOperator.Minus,
-      annot (ArithmeticExpression.Literal(17)),
-      annot (ArithmeticExpression.Variable("z"))
-    ))
+      ArithmeticExpression.Literal(17),
+      ArithmeticExpression.Variable("z")
+    )
   in
   let renamed_equal_formula =
-    annot (Formula.Comparison(
+    Formula.Comparison(
       BinaryComparison.Equals,
-      annot (ArithmeticExpression.Variable("0$x")),
+      ArithmeticExpression.Variable("a"),
       substituting_expression
-    ))
+    )
   in
   let normalized = substitute_expression_in_normalized_formula normalized substituting_expression substituted_id in
   let expected_disjoints =
-    annot (Formula.And(
-      annot (Formula.NonAllocated("0$x")),
+    Formula.And(
+      Formula.NonAllocated("a"),
       renamed_equal_formula
-    )) ::
-    annot (Formula.Comparison(
+    ) ::
+    Formula.Comparison(
       BinaryComparison.Equals,
-      annot (ArithmeticExpression.Operation(
+      ArithmeticExpression.Operation(
         BinaryOperator.Plus,
-        annot (ArithmeticExpression.Literal(5)),
+        ArithmeticExpression.Literal(5),
         substituting_expression
-      )),
-      annot (ArithmeticExpression.Variable("y"))
-    )) :: []
+      ),
+      ArithmeticExpression.Variable("y")
+    ) :: []
   in
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 1 &&
+  test_expected_disjoints normalized expected_disjoints ["a"]

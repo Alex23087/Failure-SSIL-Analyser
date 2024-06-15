@@ -1,144 +1,153 @@
 open NormalizationBase
-open DataStructures.Parser.LogicFormulas
+open DataStructures.Analysis.NormalForm
 
-open Analysis_TestCommon
+open Analysis_TestUtils
+
+(* Alias for better readability *)
+module PFormula = DataStructures.Parser.LogicFormulas.Formula
 
 let%test "existentialized non bound variable" =
   let formula = annot (
-    Formula.Exists("x", annot (
-      Formula.Exists("y", annot (
-        Formula.NonAllocated("x")
+    PFormula.Exists("x", annot (
+      PFormula.Exists("y", annot (
+        PFormula.NonAllocated("x")
       ))
     ))
   )
   in
-  let normalized = existential_disjuntive_normal_form formula 0 in
-  test_expected_free_variables normalized ("x"::[])
+  let normalized = existential_disjuntive_normal_form formula in
+  let expected_disjoints =
+    Formula.NonAllocated("x") :: []
+  in
+  test_expected_bound_variables normalized 1 &&
+  test_expected_disjoints normalized expected_disjoints ["x"]
 
 let%test "disjoint merging" =
   let formula = annot (
-    Formula.Or(annot(
-      Formula.Or(annot (
-        Formula.NonAllocated("x")
+    PFormula.Or(annot(
+      PFormula.Or(annot (
+        PFormula.NonAllocated("x")
       ), annot (
-        Formula.NonAllocated("y")
+        PFormula.NonAllocated("y")
       ))
-    ), annot (Formula.Or(annot (
-        Formula.NonAllocated("z")
+    ), annot (PFormula.Or(annot (
+      PFormula.NonAllocated("z")
       ), annot (
-        Formula.NonAllocated("w")
+        PFormula.NonAllocated("w")
       ))
     ))
   ) in
-  let normalized = existential_disjuntive_normal_form formula 0 in
+  let normalized = existential_disjuntive_normal_form formula in
   let expected_disjoints = 
-    annot (Formula.NonAllocated("x")) :: 
-    annot (Formula.NonAllocated("y")) :: 
-    annot (Formula.NonAllocated("z")) :: 
-    annot (Formula.NonAllocated("w")) :: []
+    Formula.NonAllocated("x") :: 
+    Formula.NonAllocated("y") :: 
+    Formula.NonAllocated("z") :: 
+    Formula.NonAllocated("w") :: []
   in
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 0 &&
+  test_expected_disjoints normalized expected_disjoints []
 
 let%test "and distribution" =
   let formula = annot (
-    Formula.And(annot(
-      Formula.Or(annot (
-        Formula.NonAllocated("x")
+    PFormula.And(annot(
+      PFormula.Or(annot (
+        PFormula.NonAllocated("x")
       ), annot (
-        Formula.NonAllocated("y")
+        PFormula.NonAllocated("y")
       ))
-    ), annot (Formula.Or(annot (
-        Formula.NonAllocated("z")
+    ), annot (PFormula.Or(annot (
+      PFormula.NonAllocated("z")
       ), annot (
-        Formula.NonAllocated("w")
+        PFormula.NonAllocated("w")
       ))
     ))
   ) in 
-  let normalized = existential_disjuntive_normal_form formula 0 in
-  let expected_disjoints = annot ( Formula.And(
-    annot (Formula.NonAllocated("x")),
-    annot (Formula.NonAllocated("z"))
-  )) :: annot ( Formula.And(
-    annot (Formula.NonAllocated("x")),
-    annot (Formula.NonAllocated("w"))
-  )) :: annot ( Formula.And(
-    annot (Formula.NonAllocated("y")),
-    annot (Formula.NonAllocated("z"))
-  )) :: annot ( Formula.And(
-    annot (Formula.NonAllocated("y")),
-    annot (Formula.NonAllocated("w"))
-  )) :: []
+  let normalized = existential_disjuntive_normal_form formula in
+  let expected_disjoints = Formula.And(
+    Formula.NonAllocated("x"),
+    Formula.NonAllocated("z")
+  ) ::  Formula.And(
+    Formula.NonAllocated("x"),
+    Formula.NonAllocated("w")
+  ) ::  Formula.And(
+    Formula.NonAllocated("y"),
+    Formula.NonAllocated("z")
+  ) ::  Formula.And(
+    Formula.NonAllocated("y"),
+    Formula.NonAllocated("w")
+  ) :: []
   in
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 0 &&
+  test_expected_disjoints normalized expected_disjoints []
 
 let%test "and separately distribution" =
   let formula = annot (
-    Formula.AndSeparately(annot(
-      Formula.Or(annot (
-        Formula.NonAllocated("x")
+    PFormula.AndSeparately(annot(
+      PFormula.Or(annot (
+        PFormula.NonAllocated("x")
       ), annot (
-        Formula.NonAllocated("y")
+        PFormula.NonAllocated("y")
       ))
-    ), annot (Formula.Or(annot (
-        Formula.NonAllocated("z")
+    ), annot (PFormula.Or(annot (
+      PFormula.NonAllocated("z")
       ), annot (
-        Formula.NonAllocated("w")
+        PFormula.NonAllocated("w")
       ))
     ))
   ) in 
-  let normalized = existential_disjuntive_normal_form formula 0 in
-  let expected_disjoints = annot ( Formula.AndSeparately(
-    annot (Formula.NonAllocated("x")),
-    annot (Formula.NonAllocated("z"))
-  )) :: annot ( Formula.AndSeparately(
-    annot (Formula.NonAllocated("x")),
-    annot (Formula.NonAllocated("w"))
-  )) :: annot ( Formula.AndSeparately(
-    annot (Formula.NonAllocated("y")),
-    annot (Formula.NonAllocated("z"))
-  )) :: annot ( Formula.AndSeparately(
-    annot (Formula.NonAllocated("y")),
-    annot (Formula.NonAllocated("w"))
-  )) :: []
+  let normalized = existential_disjuntive_normal_form formula in
+  let expected_disjoints = Formula.AndSeparately(
+    Formula.NonAllocated("x"),
+    Formula.NonAllocated("z")
+  ) ::  Formula.AndSeparately(
+    Formula.NonAllocated("x"),
+    Formula.NonAllocated("w")
+  ) ::  Formula.AndSeparately(
+    Formula.NonAllocated("y"),
+    Formula.NonAllocated("z")
+  ) ::  Formula.AndSeparately(
+    Formula.NonAllocated("y"),
+    Formula.NonAllocated("w")
+  ) :: []
   in
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 0 &&
+  test_expected_disjoints normalized expected_disjoints []
 
 let%test "variables renaming when merging normalized forms" =
   let formula = annot (
-    Formula.AndSeparately(
-      annot (Formula.Exists("y",
-        annot (Formula.Exists("x", 
-          annot (Formula.And(
-            annot (Formula.NonAllocated("x")), 
-            annot (Formula.NonAllocated("y"))
+    PFormula.AndSeparately(
+      annot (PFormula.Exists("y",
+        annot (PFormula.Exists("x", 
+          annot (PFormula.And(
+            annot (PFormula.NonAllocated("x")), 
+            annot (PFormula.NonAllocated("y"))
           ))
         ))
       )),
-      annot (Formula.Or(
-        annot (Formula.Exists("x",
-          annot (Formula.NonAllocated("x"))
+      annot (PFormula.Or(
+        annot (PFormula.Exists("x",
+          annot (PFormula.NonAllocated("x"))
         )),
-        annot (Formula.NonAllocated("y"))
+        annot (PFormula.NonAllocated("y"))
       ))
     )
   ) in 
-  let normalized = existential_disjuntive_normal_form formula 0 in
-  let expected_identifiers = "x" :: "0$y" :: "1$x" :: [] in
+  let normalized = existential_disjuntive_normal_form formula in
   let expected_disjoints =
-    annot (Formula.AndSeparately(
-      annot (Formula.And(
-        annot (Formula.NonAllocated("x")),
-        annot (Formula.NonAllocated("0$y"))
-      )),
-      annot (Formula.NonAllocated("1$x"))
-    )) ::
-    annot (Formula.AndSeparately(
-      annot (Formula.And(
-        annot (Formula.NonAllocated("x")),
-        annot (Formula.NonAllocated("0$y"))
-      )),
-      annot (Formula.NonAllocated("y"))
-    )) :: []
+    Formula.AndSeparately(
+      Formula.And(
+        Formula.NonAllocated("x"),
+        Formula.NonAllocated("a")
+      ),
+      Formula.NonAllocated("b")
+    ) ::
+    Formula.AndSeparately(
+      Formula.And(
+        Formula.NonAllocated("x"),
+        Formula.NonAllocated("a")
+      ),
+      Formula.NonAllocated("y")
+    ) :: []
   in
-  test_expected_free_variables normalized expected_identifiers &&
-  test_expected_disjoints normalized expected_disjoints
+  test_expected_bound_variables normalized 3 &&
+  test_expected_disjoints normalized expected_disjoints ["a"; "b"; "x"]
