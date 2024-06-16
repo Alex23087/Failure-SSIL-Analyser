@@ -45,6 +45,9 @@ module Node : sig
   (** Replace the succ list of the node *)
   val set_succ : 'a t -> 'a t list -> unit
 
+  (** Remove a node from the predecessors *)
+  val remove_pred : 'a t -> int -> unit
+
   (** Modifies the succ lists such that no loops are present, destroyes
       the original topology, pred lists are not modified *)
   val structure_without_loops_destructive : 'a t -> unit

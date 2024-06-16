@@ -121,6 +121,9 @@ module Node = struct
       ) succ;
     node.succ <- succ
 
+  let remove_pred (node : 'a t) (pred : int) : unit =
+    node.pred <- List.filter ((!=) pred) node.pred
+
   let structure_without_loops_destructive (node : 'a t) : unit =
     (* recursive protection *)
     let alreadyvisited = ref [] in
