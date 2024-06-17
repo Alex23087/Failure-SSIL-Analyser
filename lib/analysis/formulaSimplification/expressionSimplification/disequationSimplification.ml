@@ -1,21 +1,29 @@
+open DataStructures
 open DataStructures.Analysis
 open NormalForm
 open ExpressionSimplificationUtils
 
 let disequation_simplification (formula: NormalForm.t) =
+  let bool_to_formula bool = if bool then Formula.True else Formula.False in
   let disequation_simplification (formula: Formula.t) =
     match formula with
     | Comparison(op, lexpr, rexpr) -> (
       match op with
       | Equals | NotEquals -> formula
-      | _ ->
-        let expr = ArithmeticExpression.Operation(
-          BinaryOperator.Minus,
-          lexpr,
-          rexpr
-        ) in
+      | _ when IdentifierSet.is_empty (Analysis_Utils.get_normal_form_disjoint_identifiers formula) -> (
+        let expr = ArithmeticExpression.Operation(BinaryOperator.Minus, lexpr, rexpr) in
         let expr = simplify_expression expr in
-        Formula.Comparison(op, expr, ArithmeticExpression.Literal(0))
+        let result =
+          match expr, op with
+          | Literal(value), LessThan -> value < 0
+          | Literal(value), LessOrEqual -> value <= 0
+          | Literal(value), GreaterThan -> value > 0
+          | Literal(value), GreaterOrEqual -> value >= 0
+          | _ -> failwith "unexpected"
+        in
+        bool_to_formula result
+      )
+      | _ -> formula        
     )
     | _ -> formula
   in
