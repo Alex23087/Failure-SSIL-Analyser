@@ -2,7 +2,6 @@ open AtomicBase
 open Normalization
 open DataStructures.Analysis.NormalForm
 open Analysis_TestUtils
-open DataStructures
 
 (* << y -> a >> x := [y] << y -> a >> *)
 let%test "precondition on x := [y], post-condition = << x -> y >>" =
@@ -305,7 +304,7 @@ let expected_disjoints =
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << False >> x := [y] << y -> v * x -> 5 >> *)
+(* << y -> v * v -> 5 >> x := [y] << y -> v * x -> 5 >> *)
 let%test "precondition on x := [y], post-condition = << y -> v * x -> 5 >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","y")) in
 let post_condition = 
@@ -325,31 +324,16 @@ let post_condition =
   ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = Formula.False :: [] in
+let expected_disjoints = 
+  Formula.AndSeparately(
+    Formula.Allocation("y", Variable("v")),
+    Formula.Allocation("v", Literal(5))
+  ) 
+  :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << Exists x . y -> 6 * x -> 6 >> x := [y] << Exists x . y -> 6 * x -> 5 >> *)
-(*
-
-(NormalizedFormulas.NormalForm.Formula.AndSeparately (
-  (NormalizedFormulas.NormalForm.Formula.Allocation ("y",
-    (NormalizedFormulas.NormalForm.ArithmeticExpression.Literal 6))
-  ),
-  (NormalizedFormulas.NormalForm.Formula.And (
-    (NormalizedFormulas.NormalForm.Formula.Allocation ("1$x",
-        (NormalizedFormulas.NormalForm.ArithmeticExpression.Literal 5))
-    ),
-    (NormalizedFormulas.NormalForm.Formula.Comparison (
-      Annotation_logic.AnnotationLogic.BinaryComparison.Equals,
-      (NormalizedFormulas.NormalForm.ArithmeticExpression.Variable "1$x"),
-      (NormalizedFormulas.NormalForm.ArithmeticExpression.Literal 6))
-    ))
-  ))
-)
-y -> 6 * 1$x -> 5 && 1$x = 6
-
-
+(* << Exists x . y -> 6 * x -> 5 >> x := [y] << Exists x . y -> 6 * x -> 5 >> *)
 let%test "precondition on x := [y], post-condition = << Exists x . y -> 6 * x -> 5 >>" =
 let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","y")) in
 let post_condition = 
@@ -371,72 +355,109 @@ let post_condition =
   )) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-print_formulas pre_condition.disjoints;
 let expected_disjoints = 
   Formula.AndSeparately(
     Formula.Allocation("y", Literal(6)),
-    Formula.Allocation("x", Literal(6))
+    Formula.Allocation("x", Literal(5))
   )
    :: [] in
 test_expected_bound_variables pre_condition 1 &&
 test_expected_disjoints pre_condition expected_disjoints ["x"]
 
-(*
-(* << false >> x := [y] << x -/> * x -> v >> *)
-let%test "precondition on x := [y], post-condition = << x -/> * x -> v >>" =
-let command = annot_cmd (
-  Commands.HeapAtomicCommand.ReadHeap("x","y")
-    (annot_cmd (Commands.ArithmeticExpression.Variable("y")))
-  )
-) in
+(* << Exists v . y -> 6 * (v -> 5 && v = 6) >> x := [y] << y -> 6 * x -> 5 >> *)
+let%test "precondition on x := [y], post-condition = << y -> 6 * x -> 5 >>" =
+let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","y")) in
 let post_condition = 
-  annot ( 
-    PFormula.AndSeparately(
-      annot (PFormula.NonAllocated("x")),
-      annot (
-        PFormula.Allocation(
-        "x",
-        annot (PArithmeticExpression.Variable("v"))
-      ))
-    )
-  ) in
+    annot ( 
+      PFormula.AndSeparately(
+        annot (
+          PFormula.Allocation(
+          "y",
+          annot (PArithmeticExpression.Literal(6))
+        )),
+        annot (
+          PFormula.Allocation(
+          "x",
+          annot (PArithmeticExpression.Literal(5))
+        ))
+      )
+    ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = Formula.False :: [] in
-test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints []
-*)
-(* << false >> x := [y] << x -/> * x -> y >> *)
-let%test "precondition on x := [y], post-condition = << x -/> * x -> v >>" =
-let command = annot_cmd (
-  Commands.HeapAtomicCommand.ReadHeap("x","y")
-    (annot_cmd (Commands.ArithmeticExpression.Variable("y")))
+print_formulas pre_condition.disjoints;
+let expected_disjoints = 
+  Formula.AndSeparately(
+    Formula.Allocation("y", Literal(6)),
+    Formula.And(
+      Formula.Allocation("v", Literal(5)), 
+      Formula.Comparison(BinaryComparison.Equals, Variable("v"), Literal(6))
+      )
   )
-) in
-let post_condition = 
-  annot ( 
-    PFormula.AndSeparately(
-      annot (PFormula.NonAllocated("x")),
-      annot (
-        PFormula.Allocation(
-        "x",
-        annot (PArithmeticExpression.Variable("y"))
-      ))
-    )
-  ) in
-let post_condition = existential_disjuntive_normal_form post_condition in
-let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = Formula.False :: [] in
-test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints []
+   :: [] in
+test_expected_bound_variables pre_condition 1 &&
+test_expected_disjoints pre_condition expected_disjoints ["v"]
 
-(* << true >> x := [y] << emp * true >> *)
-let%test "precondition on x := [y], post-condition = << emp * true >>" =
-let command = annot_cmd (
-  Commands.HeapAtomicCommand.ReadHeap("x","y")
-    (annot_cmd (Commands.ArithmeticExpression.Variable("y")))
+(* << Exists x . y -> 6 * x -> 5 || y -> 6 * (v -> 12 && v = 5) >> 
+      x := [y] 
+   << Exists x . y -> 6 * x -> 5 || y -> 6 * x -> 12 >> 
+ *)
+let%test "precondition on x := [y], post-condition = << Exists x . y -> 6 * x -> 5 || y -> 6 * x -> 12 >>" =
+let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","y")) in
+let post_condition = 
+  annot ( PFormula.Or(
+    annot ( PFormula.Exists("x", 
+      annot ( 
+        PFormula.AndSeparately(
+          annot (
+            PFormula.Allocation(
+            "y",
+            annot (PArithmeticExpression.Literal(6))
+          )),
+          annot (
+            PFormula.Allocation(
+            "x",
+            annot (PArithmeticExpression.Literal(5))
+          ))
+        )
+      )
+    )),
+   annot ( 
+        PFormula.AndSeparately(
+          annot (
+            PFormula.Allocation(
+            "y",
+            annot (PArithmeticExpression.Literal(6))
+          )),
+          annot (
+            PFormula.Allocation(
+            "x",
+            annot (PArithmeticExpression.Literal(12))
+          ))
+        )
+      )
+    )
+   ) in
+let post_condition = existential_disjuntive_normal_form post_condition in
+let pre_condition = compute_precondition command post_condition in
+let expected_disjoints = 
+  Formula.AndSeparately(
+    Formula.Allocation("y", Literal(6)),
+    Formula.Allocation("x", Literal(5))
+  ) :: 
+  Formula.AndSeparately(
+    Formula.Allocation("y", Literal(6)),
+    Formula.And(
+      Formula.Allocation("v", Literal(12)), 
+      Formula.Comparison(BinaryComparison.Equals, Variable("v"), Literal(6))
+      )
   )
-) in
+   :: [] in
+test_expected_bound_variables pre_condition 2 &&
+test_expected_disjoints pre_condition expected_disjoints ["x"; "v"]
+
+(* << True >> x := [y] << emp * true >> *)
+let%test "precondition on x := [y], post-condition = << emp * true >>" =
+let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","y")) in
 let post_condition = 
   annot ( 
     PFormula.AndSeparately(
@@ -446,17 +467,17 @@ let post_condition =
   ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = Formula.True :: [] in
-test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints []
+let expected_disjoints = 
+  Formula.AndSeparately(
+    Formula.True,
+    Formula.Allocation("y", Variable("fresh"))
+  ) :: [] in
+test_expected_bound_variables pre_condition 1 &&
+test_expected_disjoints pre_condition expected_disjoints ["fresh"]
 
-(* << Exists v . true * x -> v >> x := [y] << true * x -> y >> *)
+(* << Exists v . True * y -> v * v -> y >> x := [y] << true * x -> y >> *)
 let%test "precondition on x := [y], post-condition = << true * x -> y >>" =
-let command = annot_cmd (
-  Commands.HeapAtomicCommand.ReadHeap("x","y")
-    (annot_cmd (Commands.ArithmeticExpression.Variable("y")))
-  )
-) in
+let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","y")) in
 let post_condition = 
   annot ( 
     PFormula.AndSeparately(
@@ -473,7 +494,10 @@ let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = 
   Formula.AndSeparately(
     Formula.True,
-    Formula.Allocation("x", Variable("v"))
+    Formula.AndSeparately(
+      Formula.Allocation("y", Variable("v")),
+      Formula.Allocation("v", Variable("y"))
+    )
   )
   :: [] in
 test_expected_bound_variables pre_condition 1 &&
@@ -481,11 +505,7 @@ test_expected_disjoints pre_condition expected_disjoints ["v"]
 
 (* << true * y -> v >> x := [y] << true * y -> v >> *)
 let%test "precondition on x := [y], post-condition = << true * y -> v >>" =
-let command = annot_cmd (
-  Commands.HeapAtomicCommand.ReadHeap("x","y")
-    (annot_cmd (Commands.ArithmeticExpression.Variable("y")))
-  )
-) in
+let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","y")) in
 let post_condition = 
   annot ( 
     PFormula.AndSeparately(
@@ -504,83 +524,59 @@ let expected_disjoints =
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << false >> x := [y] << v = 5 * x -> v * y -> v >> *)
-let%test "precondition on x := [y], post-condition = << v = 5 * x -> v * y -> v >>" =
-let command = annot_cmd (
-  Commands.HeapAtomicCommand.ReadHeap("x","y")
-    (annot_cmd (Commands.ArithmeticExpression.Variable("y")))
-  )
-) in
+(* << Exists v . y -> v * v -> y >> x := [y] << Exists v . y -> v * x -> y >> *)
+let%test "precondition on x := [y], post-condition = << Exists v . y -> v * x -> y >>" =
+let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","y")) in
 let post_condition = 
-  annot ( 
-    PFormula.AndSeparately(
-      annot (PFormula.Allocation("v", (annot (PArithmeticExpression.Literal(5) ) ) ) ),
-      annot (PFormula.AndSeparately(
-        annot (PFormula.Allocation("x", annot (PArithmeticExpression.Variable("v") ) ) ),
-        annot (PFormula.Allocation("y", annot (PArithmeticExpression.Variable("v") ) ) ) 
+  annot ( PFormula.Exists("v", 
+    annot ( 
+      PFormula.AndSeparately(
+        annot (PFormula.Allocation("x", 
+        annot (PArithmeticExpression.Variable("y")))),
+        annot (
+          PFormula.Allocation(
+          "y",
+          annot (PArithmeticExpression.Variable("v"))
+        ))
       )
-    ))
-  ) in
+    ) 
+  ))in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = 
-  Formula.False:: [] in
-test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints []
-
-(* << Exists w . x -> w * v = 5 * y -> v >> x := [y] << v = 5 * x -> y * y -> v >> *)
-let%test "precondition on x := [y], post-condition = << v = 5 * x -> y * y -> v >>" =
-let command = annot_cmd (
-  Commands.HeapAtomicCommand.ReadHeap("x","y")
-    (annot_cmd (Commands.ArithmeticExpression.Variable("y")))
-  )
-) in
-let post_condition = 
-  annot ( 
-    PFormula.AndSeparately(
-      annot (PFormula.Allocation("v", (annot (PArithmeticExpression.Literal(5) ) ) ) ),
-      annot (PFormula.AndSeparately(
-        annot (PFormula.Allocation("x", annot (PArithmeticExpression.Variable("y") ) ) ),
-        annot (PFormula.Allocation("y", annot (PArithmeticExpression.Variable("v") ) ) ) 
-      )
-    ))
-  ) in
-let post_condition = existential_disjuntive_normal_form post_condition in
-let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = 
-  Formula.AndSeparately(
-    Formula.Allocation("v", Literal(5)),
-    Formula.AndSeparately(
-      Formula.Allocation("x", Variable("w")),
-      Formula.Allocation("y", Variable("v"))
-    )
-  ) :: [] in
+  Formula.AndSeparately(Formula.Allocation("v", Variable("y")), 
+  Formula.Allocation("y", Variable("v"))) 
+  :: [] in
 test_expected_bound_variables pre_condition 1 &&
-test_expected_disjoints pre_condition expected_disjoints ["w"]
+test_expected_disjoints pre_condition expected_disjoints ["v"]
 
-(* << false >> x := [y] << Exists x . x -> y * v = 5 >> *)
-let%test "precondition on x := [y], post-condition = << Exists x . x -> y * v = 5 >>" =
-  let command = annot_cmd (
-    Commands.HeapAtomicCommand.ReadHeap("x","y")
-      (annot_cmd (Commands.ArithmeticExpression.Variable("y")))
-    )
-  ) in
-  let post_condition =
-    annot (PFormula.AndSeparately(
-      annot (PFormula.Exists("x", 
-        annot (PFormula.Allocation(
-          "x",
-          annot (PArithmeticExpression.Variable("y"))
-          )
-        )
-      ) ),
-      annot (PFormula.Allocation("v", (annot (PArithmeticExpression.Literal(5) ) ) ) )
-    ) )
-  in
-  let post_condition = existential_disjuntive_normal_form post_condition in
-  let pre_condition = compute_precondition command post_condition in
-  let expected_disjoints = Formula.False :: [] in
-  test_expected_bound_variables pre_condition 0 &&
-  test_expected_disjoints pre_condition expected_disjoints []
-
-*)
+(* << Exists v . (y -> v * v -> y || y -> v * v -> y) >> 
+      x := [y] 
+   << Exists v . (y -> v * x -> y || y -> v * x -> y) >> 
+ *)
+let%test "precondition on x := [y], post-condition = << Exists v . (y -> v * x -> y || y -> v * x -> y) >>" =
+let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","y")) in
+let cmd = annot ( 
+  PFormula.AndSeparately(
+    annot (PFormula.Allocation("x", 
+    annot (PArithmeticExpression.Variable("y")))),
+    annot (
+      PFormula.Allocation(
+      "y",
+      annot (PArithmeticExpression.Variable("v"))
+    ))
+  )) in
+let post_condition = 
+  annot ( PFormula.Exists("v", 
+    annot ( PFormula.Or(cmd, cmd))
+  )) in
+let post_condition = existential_disjuntive_normal_form post_condition in
+let pre_condition = compute_precondition command post_condition in
+let res = Formula.AndSeparately(
+  Formula.Allocation("y", Variable("v")),
+  Formula.Allocation("v", Variable("y"))
+) in 
+let expected_disjoints = 
+  res :: res :: [] in
+test_expected_bound_variables pre_condition 1 &&
+test_expected_disjoints pre_condition expected_disjoints ["v"]

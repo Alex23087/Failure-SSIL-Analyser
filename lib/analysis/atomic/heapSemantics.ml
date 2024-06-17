@@ -48,41 +48,27 @@ let write_heap_partition (formula : Formula.t) (id : identifier) (f : Formula.t 
     ) then t else False
   | [_] -> AndSeparately(Allocation(id, (Variable(fresh_var))), t)
   | _ -> False
-
-let read_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (l_id : identifier) (r_id : identifier) (fresh : identifier) (f : Formula.t -> bool) (last_id : NormalForm.id_generator) : NormalForm.t =  
+  
+let read_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (l_id : identifier) (r_id : identifier) (fresh_1 : identifier) (fresh_2 : identifier) (f : Formula.t -> bool) (is_x_free : bool) : Formula.t =  
   let and_list = expand_andSeparately formula in 
   let (matching_list, non_matching_list) = List.partition f and_list in 
-  let t = compress_andSeparately non_matching_list in 
-  let normal_form_of formula = NormalForm.make vars [formula] last_id in 
   match matching_list with
   | [] -> 
     if ( 
       List.find_opt (function | True -> true | _ -> false ) non_matching_list |> 
       Option.is_some 
     ) then (* True * t[fresh/x] * y -> fresh *)
-      separate_conjunction_of_normalized_formulas
-        (normal_form_of True)
-        (separate_conjunction_of_normalized_formulas
-          (substitute_expression_in_normalized_formula 
-            (normal_form_of t) (Variable(fresh)) l_id
-          )
-          (normal_form_of (Allocation(r_id, Variable(fresh))))
-        )
-    else normal_form_of False
+      let t = (compress_andSeparately ((Allocation(r_id, Variable(fresh_1)))::non_matching_list)) in 
+      substitute_expression_in_formula t (Variable(fresh_1)) l_id fresh_2
+    else False
   | [Allocation(id,a) as matched] when id = r_id-> 
-    let t' = 
-      substitute_expression_in_normalized_formula (
-        normal_form_of t
-      ) a l_id in 
-    let formula = normal_form_of matched in
+    let t = (compress_andSeparately non_matching_list) in
+    let t' = AndSeparately(matched, substitute_expression_in_formula t a l_id fresh_2) in 
     let fv_a = get_free_identifiers a vars in 
-    if check_frame_rule_side_condition t vars l_id && is_identifier_free l_id fv_a
-      (* non controlliamo che l_id compaia *libero* nella post !
-      Però questo controllo è fatto (al contrario) dalla side condition della frame rule...
-      Da togliere la frame rule ? *)
-      then separate_conjunction_of_normalized_formulas formula t'
-    else normal_form_of False
-  | _ -> normal_form_of False
+    if is_identifier_free l_id fv_a
+      then (if is_x_free then t' else formula)
+    else False
+  | _ -> False
 
 (* apply alloc semantics to single formula *)
 let apply_alloc (vars : IdentifierSet.t) (id : identifier) (post : Formula.t) : Formula.t = 
@@ -137,19 +123,20 @@ let apply_write (vars : IdentifierSet.t) (mem_id : identifier) (expr : 'a Ast.He
   | _ -> False
 
 (* apply read semantics to single formula *)
-let apply_read (vars : IdentifierSet.t) (l_id : identifier) (r_id : identifier) (fresh : identifier) (last_id : NormalForm.id_generator) (post : Formula.t) : NormalForm.t = 
-  let normal_form_of formula = NormalForm.make vars [formula] last_id in 
+let apply_read (vars : IdentifierSet.t) (l_id : identifier) (r_id : identifier) (fresh_1 : identifier) (fresh_2 : identifier) (post : Formula.t) : Formula.t = 
   match post with
-  | True -> normal_form_of True
+  | True -> True
   | Allocation(y, a) as formula when y = r_id -> 
     let fv_a = get_free_identifiers a vars in 
     if is_identifier_free y vars && is_identifier_free l_id fv_a
-      then normal_form_of formula
-    else normal_form_of False
+      then formula
+    else False
   | AndSeparately(_, _) as formula -> 
     let f = function
       | Allocation(y, _) when y = r_id ->
         if is_identifier_free y vars then true else false
       | _ -> false
-    in read_heap_partition formula vars l_id r_id fresh f last_id
-  | _ -> normal_form_of False
+    in if is_identifier_free l_id vars 
+      then read_heap_partition formula vars l_id r_id fresh_1 fresh_2 f true
+    else read_heap_partition formula vars l_id r_id fresh_1 fresh_2 f false
+  | _ -> False

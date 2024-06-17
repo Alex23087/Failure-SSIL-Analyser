@@ -44,7 +44,8 @@ let compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: Norm
         List.map (fun (x,y) -> apply_write (fresh_post_condition.variables) mem_id expr x y) l in
       make (fresh_post_condition.variables) disjoints (fresh_post_condition.id_generator)
     | ReadHeap(l_id, r_id) -> 
-      let fn, pc = generate_fresh_existentialized_variable post_condition in 
-      let l = List.map (apply_read pc.variables l_id r_id fn pc.id_generator ) pc.disjoints in
-      List.fold_left disjunction_of_normalized_formulas (List.hd l) (List.tl l)
+      let fn1, pc = generate_fresh_existentialized_variable post_condition in 
+      let fn2, pc = generate_fresh_existentialized_variable pc in 
+      let l = List.map (apply_read pc.variables l_id r_id fn1 fn2 ) pc.disjoints in
+      make (pc.variables) l (pc.id_generator)
   in simplify_formula precondition
