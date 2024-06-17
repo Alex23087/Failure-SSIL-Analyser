@@ -3,8 +3,6 @@ open NormalForm
 open Atomic_Utils
 open Formula
 
-open Analysis_TestUtils
-
 let alloc_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (id : identifier) (f : Formula.t -> bool) : Formula.t =  
   let and_list = expand_andSeparately formula in 
   let (matching_list, non_matching_list) = List.partition f and_list in 
