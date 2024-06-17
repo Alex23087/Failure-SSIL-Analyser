@@ -18,8 +18,8 @@ let equation_simplification (formula: NormalForm.t) =
           let expr = ArithmeticExpression.Operation(BinaryOperator.Minus, lexpr, rexpr) in
           let expr = simplify_expression expr in
           match expr, op with 
-          | Literal(value), Equals -> if value = 0 then Formula.True else Formula.False
-          | Literal(value), NotEquals -> if value <> 0 then Formula.True else Formula.False
+          | Literal(value), Equals -> value = 0 |> bool_to_formula
+          | Literal(value), NotEquals -> value <> 0 |> bool_to_formula
           | _ -> failwith "unexpected"
       )
       | _ -> formula

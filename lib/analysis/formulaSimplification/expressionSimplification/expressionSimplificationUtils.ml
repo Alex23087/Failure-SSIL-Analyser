@@ -23,6 +23,24 @@ let rec pack_conjuncts (formulas: Formula.t list) =
   | [x] -> x
   | x::xs -> Formula.And(x, pack_conjuncts xs)
 
+
+let unpack_simplified_expression (expr: ArithmeticExpression.t) =
+  match expr with
+  | ArithmeticExpression.Operation(op, lexpr, rexpr) -> (
+    match op, lexpr, rexpr with
+    | Plus, Variable(var), Literal(addendum)
+    | Minus, Variable(var), Literal(addendum) -> 
+      Some((1, var, addendum))
+    | Plus, Operation(Times, Literal(multiplier), Variable(var)), Literal(addendum)
+    | Minus, Operation(Times, Literal(multiplier), Variable(var)), Literal(addendum) -> 
+      Some((multiplier, var, addendum))
+    | _ -> None
+  )
+  | Literal(value) -> Some((0, "", value))
+  | Variable(var) -> Some((1, var, 0))
+
+let bool_to_formula bool = if bool then Formula.True else Formula.False
+
 let invert_binary_comparison (op: BinaryComparison.t) =
   match op with
   | LessOrEqual -> BinaryComparison.GreaterOrEqual
