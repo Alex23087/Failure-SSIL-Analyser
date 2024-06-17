@@ -1,5 +1,5 @@
 n = nondet();
-while (n > 0 && x%2) {
+while(n>0 && x%2==0){
     x = x + n;
     n = nondet()
 }
