@@ -30,11 +30,24 @@ let disequation_simplification (formula: NormalForm.t) =
           let rexpr = unpack_simplified_expression rexpr in
           match lexpr, rexpr with
           | Some((lmult, _, laddendum)), Some((rmult, _, raddendum)) ->
-            Formula.Comparison(
-              op,
-              ArithmeticExpression.Variable(var),
-              ArithmeticExpression.Literal( (raddendum - laddendum) / (lmult - rmult) )
-            )
+            let numerator = (raddendum - laddendum) in
+            let denominator = (lmult - rmult) in
+            if numerator mod denominator = 0 then
+              Formula.Comparison(
+                op,
+                ArithmeticExpression.Variable(var),
+                ArithmeticExpression.Literal( numerator / denominator )
+              )
+            else
+              Formula.Comparison(
+                op,
+                ArithmeticExpression.Variable(var),
+                ArithmeticExpression.Operation(
+                  BinaryOperator.Division,
+                  ArithmeticExpression.Literal(numerator),
+                  ArithmeticExpression.Literal(denominator)
+                )
+              )
           | _ -> formula
         )
         else
