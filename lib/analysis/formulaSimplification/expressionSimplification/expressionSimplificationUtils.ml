@@ -8,6 +8,12 @@ let unpack_comparison (formula: Formula.t) =
   | Comparison(op, lexpr, rexpr) -> (op, lexpr, rexpr)
   | _ -> raise (Failure "unexpected")
 
+let rec has_modulo_operator (expr: ArithmeticExpression.t) =
+  match expr with
+  | Operation(op, lexpr, rexpr) ->
+    op = BinaryOperator.Modulo || has_modulo_operator lexpr || has_modulo_operator rexpr
+  | _ -> false
+
 let to_symalg_operator (op: BinaryOperator.t) =
   match op with
   | Plus -> SymAlg.Plus
@@ -134,14 +140,34 @@ let from_symalg_equation ((lexpr, rexpr): SymAlg.eqn) =
   (from_symalg_expression lexpr, from_symalg_expression rexpr)
 
 let simplify_expression (expr: ArithmeticExpression.t) =
-  expr |> to_symalg_expression
-       |> SymAlg.simplify_expr
-       |> from_symalg_expression
+  let simplify_symalg expr =
+    expr |> to_symalg_expression
+         |> SymAlg.simplify_expr
+         |> from_symalg_expression
+  in
+  let rec simplify_expression (expr: ArithmeticExpression.t) =
+    match expr with
+    | Operation(op, expr1, expr2) ->
+      let expr1, modulo_in_1 = simplify_expression expr1 in
+      let expr2, modulo_in_2 = simplify_expression expr2 in
+      if modulo_in_1 || modulo_in_2 || op = BinaryOperator.Modulo then
+        ArithmeticExpression.Operation(op, expr1, expr2), true
+      else
+        let expr = ArithmeticExpression.Operation(op, expr1, expr2) in
+        let expr = simplify_symalg expr in
+        expr, false
+    | _ ->
+      expr, false
+  in
+  simplify_expression expr |> fst
 
 let simplify_equation (lexpr: ArithmeticExpression.t) (rexpr: ArithmeticExpression.t) (var: identifier) =
-  (lexpr, rexpr) |> to_symalg_equation
-                 |> (fun x -> SymAlg.solve x var)
-                 |> from_symalg_equation
+  if has_modulo_operator lexpr || has_modulo_operator rexpr then
+    (lexpr, rexpr)
+  else
+    (lexpr, rexpr) |> to_symalg_equation
+                   |> (fun x -> SymAlg.solve x var)
+                   |> from_symalg_equation
 
 let rec apply_expression_simplification (f: Formula.t -> Formula.t) (formula: Formula.t) =
   match formula with
