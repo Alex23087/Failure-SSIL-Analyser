@@ -549,7 +549,7 @@ let expected_disjoints =
 test_expected_bound_variables pre_condition 1 &&
 test_expected_disjoints pre_condition expected_disjoints ["v"]
 
-(* << Exists v . (y -> v * v -> y || y -> v * v -> y) >> 
+(* << Exists v . (y -> v * v -> y) >> 
       x := [y] 
    << Exists v . (y -> v * x -> y || y -> v * x -> y) >> 
  *)
@@ -576,6 +576,6 @@ let res = Formula.AndSeparately(
   Formula.Allocation("v", Variable("y"))
 ) in 
 let expected_disjoints = 
-  res :: res :: [] in
+  res :: [] in
 test_expected_bound_variables pre_condition 1 &&
 test_expected_disjoints pre_condition expected_disjoints ["v"]
