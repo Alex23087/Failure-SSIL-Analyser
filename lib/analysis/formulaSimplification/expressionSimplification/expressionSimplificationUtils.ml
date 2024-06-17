@@ -145,7 +145,8 @@ let simplify_equation (lexpr: ArithmeticExpression.t) (rexpr: ArithmeticExpressi
 
 let rec apply_comparison_simplification (f: Formula.t -> Formula.t) (formula: Formula.t) =
   match formula with
-  | Comparison(_) -> f formula
+  | Comparison(_) | Allocation(_) ->
+    f formula
   | And(lformula, rformula) ->
     let lformula = apply_comparison_simplification f lformula in
     let rformula = apply_comparison_simplification f rformula in
