@@ -19,7 +19,7 @@ let disequation_simplification (formula: NormalForm.t) =
     )
     | _ -> formula
   in
-  let disequation_simplification = apply_comparison_simplification disequation_simplification in
+  let disequation_simplification = apply_expression_simplification disequation_simplification in
 
   let disjoints = List.map disequation_simplification formula.disjoints in
   NormalForm.make formula.variables disjoints formula.id_generator

@@ -143,16 +143,16 @@ let simplify_equation (lexpr: ArithmeticExpression.t) (rexpr: ArithmeticExpressi
                  |> (fun x -> SymAlg.solve x var)
                  |> from_symalg_equation
 
-let rec apply_comparison_simplification (f: Formula.t -> Formula.t) (formula: Formula.t) =
+let rec apply_expression_simplification (f: Formula.t -> Formula.t) (formula: Formula.t) =
   match formula with
   | Comparison(_) | Allocation(_) ->
     f formula
   | And(lformula, rformula) ->
-    let lformula = apply_comparison_simplification f lformula in
-    let rformula = apply_comparison_simplification f rformula in
+    let lformula = apply_expression_simplification f lformula in
+    let rformula = apply_expression_simplification f rformula in
     Formula.And(lformula, rformula)
   | AndSeparately(lformula, rformula) ->
-    let lformula = apply_comparison_simplification f lformula in
-    let rformula = apply_comparison_simplification f rformula in
+    let lformula = apply_expression_simplification f lformula in
+    let rformula = apply_expression_simplification f rformula in
     Formula.AndSeparately(lformula, rformula)
   | _ -> formula

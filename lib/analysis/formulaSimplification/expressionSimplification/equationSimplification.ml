@@ -20,7 +20,7 @@ let equation_simplification (formula: NormalForm.t) =
     )
     | _ -> formula
   in
-  let equation_simplification = apply_comparison_simplification equation_simplification in
+  let equation_simplification = apply_expression_simplification equation_simplification in
 
   let disjoints = List.map equation_simplification formula.disjoints in
   NormalForm.make formula.variables disjoints formula.id_generator
