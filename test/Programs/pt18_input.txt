@@ -1,2 +1,1 @@
-x = alloc();
-<<emp>>
+x = alloc()<<emp>>
