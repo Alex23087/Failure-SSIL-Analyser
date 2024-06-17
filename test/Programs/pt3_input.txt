@@ -2,5 +2,5 @@ n = nondet();
 x = 0;
 while(n>0){
 	x=n+x;
-	n = nondet();
+	n = nondet()
 } <<x>=10000>>
