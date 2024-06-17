@@ -27,12 +27,13 @@ let speclist = [
 let if_verbose fn = if (!verbose || !debug) then fn ()
 let if_debug fn = if (!debug) then fn ()
 let fail message = prerr_string message; exit(1)
+
 let build_final_formula final_states =
   let final_formula =
     List.fold_left
     (fun acc x ->
-      let formula = Prelude.get_last_block_precondition x in
-      Option.fold ~none:acc ~some:(Prelude.disjunction_of_normalized_formulas acc) formula
+      let formula = Prelude.get_last_block_precondition x |> Option.get in
+      Prelude.disjunction_of_normalized_formulas acc formula
     )
     (NormalForm.make_from_formula (NormalForm.Formula.False))
     final_states
@@ -111,7 +112,10 @@ let () =
   let final_states = CfgAnalysis.analyze_program cfg in
       if_debug (fun _ ->
         print_endline "[*] Debug analysis final states before reconciliation: ";
-        List.iter (fun x -> x |> Prelude.show_analysis_state |> print_endline) final_states
+        List.iteri (fun i x -> x |> Prelude.get_last_block_precondition |> Option.get
+          |> Prelude.Print.Analysis.pretty_print_normal_form |> (fun x -> "[" ^ string_of_int i ^ "] " ^ x)
+          |> print_endline
+        ) final_states
       );
 
   let final_formula = final_states |> build_final_formula in
