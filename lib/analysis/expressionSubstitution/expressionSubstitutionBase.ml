@@ -26,6 +26,10 @@ let substitute_expression_in_normalized_formula (formula: NormalForm.t) (changin
   let variables = if renamed_used then IdentifierSet.add renamed_var formula.variables else formula.variables in
   NormalForm.make variables disjoints id_generator
 
+(** [substitute_expression_in_formula formula expr id fresh_id] substitutes every occurrence of
+the identifier [id] with the expression [expr] in every expression in the normalized [formula].
+It uses the [fresh_id] identifier only if aliases are needed.
+*)
 let substitute_expression_in_formula (formula: Formula.t) (changing_expr: ArithmeticExpression.t) (changed_id: identifier) (renamed_id: identifier) = 
   let id_expr = ArithmeticExpression.Variable(renamed_id) in
   let renamed_equal_formula = Formula.Comparison(BinaryComparison.Equals, id_expr, changing_expr) in
