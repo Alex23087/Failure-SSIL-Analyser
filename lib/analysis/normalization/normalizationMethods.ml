@@ -2,7 +2,6 @@ open DataStructures
 open DataStructures.Analysis
 open NormalForm
 
-open Utils
 open Analysis_Utils
 open NormalizationUtils
 

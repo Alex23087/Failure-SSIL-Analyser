@@ -33,12 +33,12 @@ module Analysis = struct
       | And(lformula, rformula) -> expand_conjuncts lformula @ expand_conjuncts rformula
       | _ -> [formula]
     in
-    let rec expand_separate_conjuncts (formula: Formula.t) =
+    let expand_separate_conjuncts (formula: Formula.t) =
       match formula with
       | AndSeparately(lformula, rformula) -> expand_conjuncts lformula @ expand_conjuncts rformula
       | _ -> [formula]
     in
-    let rec comparison_op_to_string (op: BinaryComparison.t) =
+    let comparison_op_to_string (op: BinaryComparison.t) =
       match op with
       | Equals -> "="
       | NotEquals -> "!="
@@ -47,7 +47,7 @@ module Analysis = struct
       | GreaterThan -> ">"
       | GreaterOrEqual -> ">="
     in
-    let rec binary_op_to_string (op: BinaryOperator.t) =
+    let binary_op_to_string (op: BinaryOperator.t) =
       match op with
       | Plus -> "+"
       | Minus -> "-"

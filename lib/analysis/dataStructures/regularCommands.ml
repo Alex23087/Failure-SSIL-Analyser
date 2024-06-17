@@ -3,7 +3,6 @@
     Note that the logic formula annotates after the command, not before. *)
 
 open Analysis_DataStructures_Base
-open Sexplib.Std
 open Base
 
 include Ast.HeapRegularCommands
