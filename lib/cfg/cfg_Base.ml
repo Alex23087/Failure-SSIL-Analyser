@@ -44,10 +44,13 @@ module CFG = struct
     helper_make initial_node;
     {cfg = h; root_id = Node.get_id initial_node}
 
-  let get      (cfg : 'a t) (id : int) : 'a item   = Hashtbl.find cfg.cfg id
+  let get      (cfg : 'a t) (id : int) : 'a item  =
+    match Hashtbl.find_opt cfg.cfg id with
+    | Some(item) -> item
+    | None -> raise (Failure ("CFG.get - Not found - Item id: " ^ string_of_int id))
   let succ_of  (cfg : 'a t) (id : int) : int list = (get cfg id).succ
   let pred_of  (cfg : 'a t) (id : int) : int list = (get cfg id).pred
-  let get_data (cfg : 'a t) (id : int) : 'a        = (get cfg id).exp
+  let get_data (cfg : 'a t) (id : int) : 'a       = (get cfg id).exp
 
   let get_id (item : 'a item) : int = item.id
 
