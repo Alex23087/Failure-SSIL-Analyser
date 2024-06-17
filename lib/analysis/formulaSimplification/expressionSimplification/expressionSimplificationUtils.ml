@@ -8,6 +8,29 @@ let unpack_comparison (formula: Formula.t) =
   | Comparison(op, lexpr, rexpr) -> (op, lexpr, rexpr)
   | _ -> raise (Failure "unexpected")
 
+let rec unpack_conjuncts (formula: Formula.t) =
+  match formula with
+  | Comparison(_) -> [formula], []
+  | And(lformula, rformula) ->
+    let lcomparisons, lothers = unpack_conjuncts lformula in
+    let rcomparisons, rothers = unpack_conjuncts rformula in
+    lcomparisons @ rcomparisons, lothers @ rothers
+  | _ -> [], [formula]
+
+let rec pack_conjuncts (formulas: Formula.t list) =
+  match formulas with
+  | [] -> failwith "unexpected"
+  | [x] -> x
+  | x::xs -> Formula.And(x, pack_conjuncts xs)
+
+let invert_binary_comparison (op: BinaryComparison.t) =
+  match op with
+  | LessOrEqual -> BinaryComparison.GreaterOrEqual
+  | LessThan -> BinaryComparison.GreaterThan
+  | GreaterThan -> BinaryComparison.LessThan
+  | GreaterOrEqual -> BinaryComparison.LessOrEqual
+  | _  -> op
+
 let rec has_modulo_operator (expr: ArithmeticExpression.t) =
   match expr with
   | Operation(op, lexpr, rexpr) ->

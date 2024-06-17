@@ -5,6 +5,7 @@ let expression_simplification (formula: NormalForm.t) =
     ExpressionSimplificationBase.f;
     EquationSimplification.f;
     DisequationSimplification.f;
+    DisequationSolver.f;
   ] in
   List.fold_left (|>) formula simplification_functs
 

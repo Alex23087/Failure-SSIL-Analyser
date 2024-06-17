@@ -126,9 +126,9 @@ let%test "weakest precondition on guard" =
   let expected_disjoints =
     Formula.And(
       Formula.Comparison(
-        BinaryComparison.LessOrEqual,
+        BinaryComparison.LessThan,
         ArithmeticExpression.Variable("x"),
-        ArithmeticExpression.Literal(17)
+        ArithmeticExpression.Literal(18)
       ),
       Formula.NonAllocated("y")
     ) :: []
