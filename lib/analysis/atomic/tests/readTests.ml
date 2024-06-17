@@ -384,7 +384,6 @@ let post_condition =
     ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-print_formulas pre_condition.disjoints;
 let expected_disjoints = 
   Formula.AndSeparately(
     Formula.Allocation("y", Literal(6)),
