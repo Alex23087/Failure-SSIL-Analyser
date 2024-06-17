@@ -94,7 +94,7 @@ let () =
 
   (* Cfg building *)
   if_verbose (fun _ -> print_endline ("[3] Constructing Control Flow Graph..."));
-  let nodes = Converter.convert ast in
+  let nodes = Converter.convert ~keep_structure:false ast in
       if_debug (fun _ ->
         print_endline "[*] Debug Nodes structure: ";
         Node.to_string nodes Prelude.Print.Parser.show_atomic_list |> print_endline
