@@ -13,6 +13,7 @@ let simplify_formula (formula: NormalForm.t) =
     ExpressionSimplification.f;
     RemoveIdentityComparisons.f;
     RemoveBoundNonAllocations.f;
+    DuplicateDisjoints.f;
     BoundVariableCleanup.f;
   ] in
   let rec simplify formula =

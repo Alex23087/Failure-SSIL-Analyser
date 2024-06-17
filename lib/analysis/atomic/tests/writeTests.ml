@@ -2,7 +2,6 @@ open AtomicBase
 open Normalization
 open DataStructures.Analysis.NormalForm
 open Analysis_TestUtils
-open DataStructures
 
 (* << Exists v . x -> v >> [x] := y << x -> y >> *)
 let%test "precondition on [x] := y, post-condition = << x -> y >>" =

@@ -2,7 +2,6 @@ open Analysis_Prelude
 open NormalForm
 open HeapSemantics
 open Ast.HeapRegularCommands
-open Analysis_TestUtils
 
 (** Computes the pre-condition of the given atomic command and post-condition.
     Each disjunction is handled indipendentely (disj rule)

@@ -84,8 +84,15 @@ let () =
         DataStructures.Parser.Commands.show ast |> print_endline
       );
 
+  (* AST Validation *)
+  if_verbose (fun _ -> print_endline ("[2] Program validation..."));
+  if Prelude.validate_ast ast |> not then (
+    print_endline "The given program violates some semantic rules...";
+    exit(1)
+  );
+
   (* Cfg building *)
-  if_verbose (fun _ -> print_endline ("[2] Constructing Control Flow Graph..."));
+  if_verbose (fun _ -> print_endline ("[3] Constructing Control Flow Graph..."));
   let nodes = Converter.convert ast in
       if_debug (fun _ ->
         print_endline "[*] Debug Nodes structure: ";
@@ -100,7 +107,7 @@ let () =
       );
 
   (* Analysis Step *)
-  if_verbose (fun _ -> print_endline ("[3] Analysis..."));
+  if_verbose (fun _ -> print_endline ("[4] Analysis..."));
   let final_states = CfgAnalysis.analyze_program cfg in
       if_debug (fun _ ->
         print_endline "[*] Debug analysis final states before reconciliation: ";
@@ -108,11 +115,11 @@ let () =
       );
 
   let final_formula = final_states |> build_final_formula in
-  print_endline (final_formula |> NormalForm.show);
+  print_endline (final_formula |> Prelude.Print.Analysis.pretty_print_normal_form);
 
   if not (String.equal !output_file "") then (
     if_verbose (fun _ -> print_endline ("[4] Writing output to file: " ^ !output_file));
-    output_string (Out_channel.open_gen [Open_wronly] 0440 !output_file) (final_formula |> NormalForm.show)
+    output_string (Out_channel.open_gen [Open_wronly] 0440 !output_file) (final_formula |> Prelude.Print.Analysis.pretty_print_normal_form) 
   );
 
   ()
