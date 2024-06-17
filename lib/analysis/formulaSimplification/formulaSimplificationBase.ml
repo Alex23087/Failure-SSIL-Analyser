@@ -8,6 +8,7 @@ let simplify_formula (formula: NormalForm.t) =
     UnitAnd.f;
     UnitOr.f;
     UnitAndSep.f;
+    RemoveDuplicateTrueInAndSep.f;
     NoSharedIdentifierAndSep.f;
     ZeroAnd.f;
     ExpressionSimplification.f;

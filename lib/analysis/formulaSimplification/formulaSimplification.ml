@@ -1,1 +1,3 @@
 include FormulaSimplificationBase
+
+module ExpressionSimplification = ExpressionSimplification

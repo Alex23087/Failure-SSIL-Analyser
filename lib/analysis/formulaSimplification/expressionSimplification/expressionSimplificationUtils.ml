@@ -8,6 +8,53 @@ let unpack_comparison (formula: Formula.t) =
   | Comparison(op, lexpr, rexpr) -> (op, lexpr, rexpr)
   | _ -> raise (Failure "unexpected")
 
+let rec unpack_conjuncts (formula: Formula.t) =
+  match formula with
+  | Comparison(_) -> [formula], []
+  | And(lformula, rformula) ->
+    let lcomparisons, lothers = unpack_conjuncts lformula in
+    let rcomparisons, rothers = unpack_conjuncts rformula in
+    lcomparisons @ rcomparisons, lothers @ rothers
+  | _ -> [], [formula]
+
+let rec pack_conjuncts (formulas: Formula.t list) =
+  match formulas with
+  | [] -> failwith "unexpected"
+  | [x] -> x
+  | x::xs -> Formula.And(x, pack_conjuncts xs)
+
+
+let unpack_simplified_expression (expr: ArithmeticExpression.t) =
+  match expr with
+  | ArithmeticExpression.Operation(op, lexpr, rexpr) -> (
+    match op, lexpr, rexpr with
+    | Plus, Variable(var), Literal(addendum)
+    | Minus, Variable(var), Literal(addendum) -> 
+      Some((1, var, addendum))
+    | Plus, Operation(Times, Literal(multiplier), Variable(var)), Literal(addendum)
+    | Minus, Operation(Times, Literal(multiplier), Variable(var)), Literal(addendum) -> 
+      Some((multiplier, var, addendum))
+    | _ -> None
+  )
+  | Literal(value) -> Some((0, "", value))
+  | Variable(var) -> Some((1, var, 0))
+
+let bool_to_formula bool = if bool then Formula.True else Formula.False
+
+let invert_binary_comparison (op: BinaryComparison.t) =
+  match op with
+  | LessOrEqual -> BinaryComparison.GreaterOrEqual
+  | LessThan -> BinaryComparison.GreaterThan
+  | GreaterThan -> BinaryComparison.LessThan
+  | GreaterOrEqual -> BinaryComparison.LessOrEqual
+  | _  -> op
+
+let rec has_modulo_operator (expr: ArithmeticExpression.t) =
+  match expr with
+  | Operation(op, lexpr, rexpr) ->
+    op = BinaryOperator.Modulo || has_modulo_operator lexpr || has_modulo_operator rexpr
+  | _ -> false
+
 let to_symalg_operator (op: BinaryOperator.t) =
   match op with
   | Plus -> SymAlg.Plus
@@ -134,24 +181,45 @@ let from_symalg_equation ((lexpr, rexpr): SymAlg.eqn) =
   (from_symalg_expression lexpr, from_symalg_expression rexpr)
 
 let simplify_expression (expr: ArithmeticExpression.t) =
-  expr |> to_symalg_expression
-       |> SymAlg.simplify_expr
-       |> from_symalg_expression
+  let simplify_symalg expr =
+    expr |> to_symalg_expression
+         |> SymAlg.simplify_expr
+         |> from_symalg_expression
+  in
+  let rec simplify_expression (expr: ArithmeticExpression.t) =
+    match expr with
+    | Operation(op, expr1, expr2) ->
+      let expr1, modulo_in_1 = simplify_expression expr1 in
+      let expr2, modulo_in_2 = simplify_expression expr2 in
+      if modulo_in_1 || modulo_in_2 || op = BinaryOperator.Modulo then
+        ArithmeticExpression.Operation(op, expr1, expr2), true
+      else
+        let expr = ArithmeticExpression.Operation(op, expr1, expr2) in
+        let expr = simplify_symalg expr in
+        expr, false
+    | _ ->
+      expr, false
+  in
+  simplify_expression expr |> fst
 
 let simplify_equation (lexpr: ArithmeticExpression.t) (rexpr: ArithmeticExpression.t) (var: identifier) =
-  (lexpr, rexpr) |> to_symalg_equation
-                 |> (fun x -> SymAlg.solve x var)
-                 |> from_symalg_equation
+  if has_modulo_operator lexpr || has_modulo_operator rexpr then
+    (lexpr, rexpr)
+  else
+    (lexpr, rexpr) |> to_symalg_equation
+                   |> (fun x -> SymAlg.solve x var)
+                   |> from_symalg_equation
 
-let rec apply_comparison_simplification (f: Formula.t -> Formula.t) (formula: Formula.t) =
+let rec apply_expression_simplification (f: Formula.t -> Formula.t) (formula: Formula.t) =
   match formula with
-  | Comparison(_) -> f formula
+  | Comparison(_) | Allocation(_) ->
+    f formula
   | And(lformula, rformula) ->
-    let lformula = apply_comparison_simplification f lformula in
-    let rformula = apply_comparison_simplification f rformula in
+    let lformula = apply_expression_simplification f lformula in
+    let rformula = apply_expression_simplification f rformula in
     Formula.And(lformula, rformula)
   | AndSeparately(lformula, rformula) ->
-    let lformula = apply_comparison_simplification f lformula in
-    let rformula = apply_comparison_simplification f rformula in
+    let lformula = apply_expression_simplification f lformula in
+    let rformula = apply_expression_simplification f rformula in
     Formula.AndSeparately(lformula, rformula)
   | _ -> formula

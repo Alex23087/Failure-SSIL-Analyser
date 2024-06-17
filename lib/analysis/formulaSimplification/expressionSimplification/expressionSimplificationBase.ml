@@ -11,7 +11,7 @@ let simplify_arithmetic_expressions (formula: NormalForm.t) =
       Formula.Allocation(id, simplify_expression expr)
     | _ -> conjunct
   in
-  let simplify_formula = apply_comparison_simplification simplify_formula in
+  let simplify_formula = apply_expression_simplification simplify_formula in
 
   let disjoints = List.map simplify_formula formula.disjoints in
   NormalForm.make formula.variables disjoints formula.id_generator
