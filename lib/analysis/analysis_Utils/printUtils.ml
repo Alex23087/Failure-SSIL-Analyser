@@ -119,4 +119,79 @@ module Analysis = struct
 
     let disjoints_print = join_list formula.disjoints disjoint_to_string "||" in
     "<< " ^ bound_identifiers_to_string formula.variables ^ disjoints_print ^ " >>"
+
+  let pretty_print_command (command: Commands.t) =
+    let pretty_print_binary_operator (op: Ast.HeapRegularCommands.ArithmeticOperation.t) =
+      match op with
+      | Plus -> "+"
+      | Minus -> "-"
+      | Times -> "*"
+      | Division -> "/"
+      | Modulo -> "%"
+    in
+    let pretty_print_boolean_comparison (op: Ast.HeapRegularCommands.BooleanComparison.t) =
+      match op with
+      | Equal -> "=="
+      | NotEqual -> "!="
+      | LessThan -> "<"
+      | LessOrEqual -> "<="
+      | GreaterThan -> ">"
+      | GreaterOrEqual -> ">="
+    in
+
+    let rec pretty_print_expr (expr: Commands.arithmetic_t) =
+      match expr.node with
+      | Literal(int) -> string_of_int int
+      | Variable(id) -> id
+      | BinaryOperation(op, lexpr, rexpr) ->
+        let lexpr = pretty_print_expr_parenthesized lexpr in
+        let rexpr = pretty_print_expr_parenthesized rexpr in
+        lexpr ^ " " ^ pretty_print_binary_operator op ^ " " ^ rexpr
+    and pretty_print_expr_parenthesized (expr: Commands.arithmetic_t) =
+      match expr.node with
+      | BinaryOperation(_) -> "("  ^ pretty_print_expr expr  ^ ")"
+      | _ -> pretty_print_expr expr
+    in
+
+    let rec pretty_print_bexpr (expr: Commands.boolean_t) =
+      match expr.node with
+      | True -> "true"
+      | False -> "false"
+      | Not(expr) -> "!" ^ pretty_print_bexpr expr
+      | Or(lexpr, rexpr) ->
+        let lexpr = pretty_print_bexpr_parenthesized lexpr in
+        let rexpr = pretty_print_bexpr_parenthesized rexpr in
+        lexpr  ^ " || "  ^ rexpr
+      | And(lexpr, rexpr) ->
+        let lexpr = pretty_print_bexpr_parenthesized lexpr in
+        let rexpr = pretty_print_bexpr_parenthesized rexpr in
+        lexpr  ^ " && "  ^ rexpr
+      | Comparison(op, lexpr, rexpr) ->
+        let lexpr = pretty_print_expr_parenthesized lexpr in
+        let rexpr = pretty_print_expr_parenthesized rexpr in
+        lexpr ^ " " ^ pretty_print_boolean_comparison op  ^ " " ^ rexpr
+    and pretty_print_bexpr_parenthesized (expr: Commands.boolean_t) =
+      match expr.node with
+      | Or(_) | And(_) | Comparison(_) -> "("  ^ pretty_print_bexpr expr  ^ ")"
+      | _ -> pretty_print_bexpr expr
+    in
+
+    match command.node with
+    | Skip -> "skip"
+    | Assignment(id, expr) -> id ^ " = " ^ pretty_print_expr expr
+    | NonDet(id) -> id ^ " = nondet()"
+    | Guard(bexpr) -> pretty_print_bexpr bexpr
+    | Allocation(id) -> id ^ " = alloc()"
+    | Free(id) -> "free(" ^ id ^ ")"
+    | ReadHeap(id, heap) -> id ^ " = [" ^ heap ^ "]"
+    | WriteHeap(heap, expr) -> "[" ^ heap ^ "] = " ^ pretty_print_expr expr
+
+  let pretty_print_analysis_trace (trace: analysis_trace) =
+    let print_cmd (command: Commands.t) =
+      pretty_print_command command ^ "\n" ^ 
+      pretty_print_normal_form (Option.get command.annotation.postcondition)
+    in
+
+    let acc = pretty_print_normal_form trace.precondition in
+    List.fold_left (fun acc x -> acc ^ "\n" ^ print_cmd x) acc trace.trace
 end
