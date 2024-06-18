@@ -1,4 +1,6 @@
-if (x < -1) then
-		x = x*(-1)
-else
-		{x = x} <<x<0>>
+if (x < -1) then {
+	x = -x
+} else {
+	x = x
+};
+skip << x < 0 >>

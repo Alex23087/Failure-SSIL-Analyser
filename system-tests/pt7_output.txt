@@ -1,1 +1,1 @@
-<<v->z * exists w. v -> w * true>>
+<< exists a. true * (v -> a) * (a -/>) >>

@@ -1,2 +1,2 @@
 y = [x];
-free(x) <<y=v>>
+free(x) << y = v >>
