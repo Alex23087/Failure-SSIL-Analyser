@@ -128,7 +128,7 @@ let () =
     List.iteri (fun i final_state -> 
       ("Trace " ^ string_of_int i ^ ": \n") |> output_string file;
       (Prelude.Print.Analysis.pretty_print_analysis_trace final_state.trace) |> output_string file;
-      "\n" |> output_string file;
+      "\n\n" |> output_string file;
     ) final_states;
     Out_channel.close file;
   );

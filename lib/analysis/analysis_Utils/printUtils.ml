@@ -157,7 +157,7 @@ module Analysis = struct
       match expr.node with
       | True -> "true"
       | False -> "false"
-      | Not(expr) -> "!" ^ pretty_print_bexpr expr
+      | Not(expr) -> "!" ^ pretty_print_bexpr_parenthesized expr
       | Or(lexpr, rexpr) ->
         let lexpr = pretty_print_bexpr_parenthesized lexpr in
         let rexpr = pretty_print_bexpr_parenthesized rexpr in
@@ -172,7 +172,7 @@ module Analysis = struct
         lexpr ^ " " ^ pretty_print_boolean_comparison op  ^ " " ^ rexpr
     and pretty_print_bexpr_parenthesized (expr: Commands.boolean_t) =
       match expr.node with
-      | Or(_) | And(_) | Comparison(_) -> "("  ^ pretty_print_bexpr expr  ^ ")"
+      | Or(_) | And(_) | Comparison(_) -> "(" ^ pretty_print_bexpr expr ^ ")"
       | _ -> pretty_print_bexpr expr
     in
 
@@ -180,7 +180,7 @@ module Analysis = struct
     | Skip -> "skip"
     | Assignment(id, expr) -> id ^ " = " ^ pretty_print_expr expr
     | NonDet(id) -> id ^ " = nondet()"
-    | Guard(bexpr) -> pretty_print_bexpr bexpr
+    | Guard(bexpr) -> "(" ^ pretty_print_bexpr bexpr ^ ")?"
     | Allocation(id) -> id ^ " = alloc()"
     | Free(id) -> "free(" ^ id ^ ")"
     | ReadHeap(id, heap) -> id ^ " = [" ^ heap ^ "]"
