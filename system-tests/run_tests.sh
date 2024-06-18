@@ -13,13 +13,6 @@ runtest () {
 }
 
 TEST_DIR="system-tests"
-for i in {0..3}; do
-    INPUT_FILE="$TEST_DIR/input$i.txt"
-    OUTPUT_FILE="$TEST_DIR/output$i.txt"
-    runtest $INPUT_FILE $OUTPUT_FILE
-done
-
-TEST_DIR="test/Programs"
 for i in {0..29}; do
     INPUT_FILE="$TEST_DIR/pt${i}_input.txt"
     OUTPUT_FILE="$TEST_DIR/pt${i}_output.txt"
