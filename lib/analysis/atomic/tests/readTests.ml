@@ -18,8 +18,8 @@ let%test "precondition on x := [y], post-condition = << x -> y >>" =
   test_expected_bound_variables pre_condition 0 &&
   test_expected_disjoints pre_condition expected_disjoints []
 
-(* << Exists v . y -> v ^ v -> 5+5 >> x := [y] << y -> 5+5 >> *)
-let%test "precondition on x := [y], post-condition = << x -> y >>" =
+(* << y -> 10 >> x := [y] << y -> 5 + 5 >> *)
+let%test "precondition on x := [y], post-condition = << y -> 5 + 5 >>" =
   let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","y")) in
   let post_condition =
     annot (PFormula.Allocation(

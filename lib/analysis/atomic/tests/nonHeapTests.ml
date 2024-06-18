@@ -47,8 +47,8 @@ let%test "weakest precondition on assignment" =
     ) ::
     Formula.Comparison(
       BinaryComparison.Equals,
-      ArithmeticExpression.Literal(5),
-      ArithmeticExpression.Variable("y")
+      ArithmeticExpression.Variable("y"),
+      ArithmeticExpression.Literal(5)
     ) :: []
   in
   test_expected_bound_variables pre_condition 1 &&
@@ -75,13 +75,6 @@ let%test "weakest precondition on assignment 2" =
       annot (PFormula.NonAllocated("x"))
     ))
   in
-  let substituting_expression =
-    ArithmeticExpression.Operation(
-      BinaryOperator.Plus,
-      ArithmeticExpression.Variable("w"),
-      ArithmeticExpression.Literal(5)
-    )
-  in
   let post_condition = existential_disjuntive_normal_form post_condition in
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints =
@@ -90,13 +83,21 @@ let%test "weakest precondition on assignment 2" =
       Formula.Comparison(
         BinaryComparison.Equals,
         ArithmeticExpression.Variable("a"),
-        substituting_expression
+        ArithmeticExpression.Operation(
+          BinaryOperator.Plus,
+          ArithmeticExpression.Variable("w"),
+          ArithmeticExpression.Literal(5)
+        )
       )
     ) ::
     Formula.Comparison(
       BinaryComparison.Equals,
-      substituting_expression,
-      ArithmeticExpression.Variable("y")
+      ArithmeticExpression.Variable("w"),
+      ArithmeticExpression.Operation(
+        BinaryOperator.Plus,
+        ArithmeticExpression.Variable("y"),
+        ArithmeticExpression.Literal(-5)
+      )
     ) :: []
   in
   test_expected_bound_variables pre_condition 1 &&
@@ -125,9 +126,9 @@ let%test "weakest precondition on guard" =
   let expected_disjoints =
     Formula.And(
       Formula.Comparison(
-        BinaryComparison.LessOrEqual,
+        BinaryComparison.LessThan,
         ArithmeticExpression.Variable("x"),
-        ArithmeticExpression.Literal(17)
+        ArithmeticExpression.Literal(18)
       ),
       Formula.NonAllocated("y")
     ) :: []

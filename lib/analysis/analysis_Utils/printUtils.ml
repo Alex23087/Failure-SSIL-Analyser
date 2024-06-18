@@ -20,12 +20,31 @@ module Analysis = struct
       let sep = " " ^ sep ^ " " in
       join_list formulas f sep
     in
-
-    let bound_identifier_to_string(var: identifier) =
-      "exists " ^ var ^ "."
-    in
     let bound_identifiers_to_string (vars: IdentifierSet.t) = 
-      IdentifierSet.fold (fun acc x -> acc ^ bound_identifier_to_string x) vars ""
+      IdentifierSet.fold (fun x acc -> acc ^ "exists " ^ x ^ ".") vars ""
+    in
+    let bound_identifiers_better_names (formula: NormalForm.t) =
+      let new_id_name last_name =
+        if last_name.[0] = 'z' then
+          "a" ^ last_name
+        else
+          let last_part = String.sub last_name 1 (String.length last_name - 1) in
+          let ch = last_name.[0] |> Char.code |> ((+) 1) |> Char.chr |> (String.make 1) in
+          ch ^ last_part
+      in
+      let rec new_id_name_in_vars old_id last_name (vars: IdentifierSet.t) =
+        let new_name = new_id_name last_name in
+        if IdentifierSet.find_opt last_name vars |> Option.is_none then
+          new_name, vars |> IdentifierSet.remove old_id |> IdentifierSet.add last_name
+        else
+          new_id_name_in_vars old_id new_name vars
+      in
+
+      IdentifierSet.fold (fun id (name, formula) ->
+        let next_name, variables = new_id_name_in_vars id name formula.variables in
+        let disjoints = List.map (fun x -> RenameVariable.rename_variable_in_formula x id name) formula.disjoints in
+        next_name, NormalForm.make variables disjoints formula.id_generator
+      ) formula.variables ("a", formula) |> snd
     in
 
     let rec expand_conjuncts (formula: Formula.t) =
@@ -33,12 +52,12 @@ module Analysis = struct
       | And(lformula, rformula) -> expand_conjuncts lformula @ expand_conjuncts rformula
       | _ -> [formula]
     in
-    let rec expand_separate_conjuncts (formula: Formula.t) =
+    let expand_separate_conjuncts (formula: Formula.t) =
       match formula with
       | AndSeparately(lformula, rformula) -> expand_conjuncts lformula @ expand_conjuncts rformula
       | _ -> [formula]
     in
-    let rec comparison_op_to_string (op: BinaryComparison.t) =
+    let comparison_op_to_string (op: BinaryComparison.t) =
       match op with
       | Equals -> "="
       | NotEquals -> "!="
@@ -47,7 +66,7 @@ module Analysis = struct
       | GreaterThan -> ">"
       | GreaterOrEqual -> ">="
     in
-    let rec binary_op_to_string (op: BinaryOperator.t) =
+    let binary_op_to_string (op: BinaryOperator.t) =
       match op with
       | Plus -> "+"
       | Minus -> "-"
@@ -95,6 +114,8 @@ module Analysis = struct
       | And(_) -> "( " ^ disjoint_to_string conjunct ^ ")"
       | _ -> disjoint_to_string conjunct
     in
+
+    let formula = bound_identifiers_better_names formula in
 
     let disjoints_print = join_list formula.disjoints (fun x -> "(" ^ disjoint_to_string x ^ ")") "||" in
     bound_identifiers_to_string formula.variables ^ disjoints_print
