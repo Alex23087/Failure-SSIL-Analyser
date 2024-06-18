@@ -32,6 +32,7 @@ let disequation_simplification (formula: NormalForm.t) =
           | Some((lmult, _, laddendum)), Some((rmult, _, raddendum)) ->
             let numerator = (raddendum - laddendum) in
             let denominator = (lmult - rmult) in
+            let op = if denominator >= 0 then op else invert_binary_comparison op in
             if numerator mod denominator = 0 then
               Formula.Comparison(
                 op,
