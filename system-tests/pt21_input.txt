@@ -1,1 +1,1 @@
-x = alloc()<<x -> v>>
+x = alloc() << x -> v >>
