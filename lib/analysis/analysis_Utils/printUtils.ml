@@ -117,6 +117,6 @@ module Analysis = struct
 
     let formula = bound_identifiers_better_names formula in
 
-    let disjoints_print = join_list formula.disjoints (fun x -> "(" ^ disjoint_to_string x ^ ")") "||" in
-    bound_identifiers_to_string formula.variables ^ disjoints_print
+    let disjoints_print = join_list formula.disjoints disjoint_to_string "||" in
+    "<< " ^ bound_identifiers_to_string formula.variables ^ disjoints_print ^ " >>"
 end
