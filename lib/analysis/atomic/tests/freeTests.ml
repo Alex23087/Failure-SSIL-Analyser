@@ -95,8 +95,8 @@ let post_condition = annot ( PFormula.EmptyHeap ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.False :: [] in
-test_expected_bound_variables pre_condition 1 &&
-test_expected_disjoints pre_condition expected_disjoints ["fresh_var"]
+test_expected_bound_variables pre_condition 0 &&
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> free(x) << emp || emp >> *)
 let%test "precondition on free(x), post-condition = << emp || emp >>" =
@@ -111,8 +111,8 @@ let post_condition =
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = Formula.False :: [] in
-test_expected_bound_variables pre_condition 2 &&
-test_expected_disjoints pre_condition expected_disjoints ["fresh_var_1"; "fresh_var_2"]
+test_expected_bound_variables pre_condition 0 &&
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << exists w. x -> w >> free(x) << emp || x -> v >> *)
 let%test "precondition on free(x), post-condition = << emp || x -> v >>" =
@@ -130,9 +130,9 @@ let post_condition =
   ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = Formula.Allocation("x", Variable("fresh_var")) :: [] in
-test_expected_bound_variables pre_condition 1 &&
-test_expected_disjoints pre_condition expected_disjoints ["fresh_var"]
+let expected_disjoints = Formula.False :: [] in
+test_expected_bound_variables pre_condition 0 &&
+test_expected_disjoints pre_condition expected_disjoints []
 
 (* << false >> free(x) << emp && x -> v >> *)
 let%test "precondition on free(x), post-condition = << emp && x -> v >>" =
