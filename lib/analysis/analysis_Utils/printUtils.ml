@@ -9,17 +9,17 @@ module Analysis = struct
   open DataStructures.Analysis
   open NormalForm
 
-  let pretty_print_normal_form (formula: NormalForm.t) =
-    let join_list (formulas: Formula.t list) (f: Formula.t -> string) (sep: string) =
-      let rec join_list (formulas: Formula.t list) (f: Formula.t -> string) (sep: string) =
-        match formulas with
-        | [] -> ""
-        | [x] -> f x
-        | x::xs -> f x ^ sep ^ join_list xs f sep
-      in
-      let sep = " " ^ sep ^ " " in
-      join_list formulas f sep
+  let join_list (formulas: 'a list) (f: 'a -> string) (sep: string) =
+    let rec join_list (formulas: 'a list) (f: 'a -> string) (sep: string) =
+      match formulas with
+      | [] -> ""
+      | [x] -> f x
+      | x::xs -> f x ^ sep ^ join_list xs f sep
     in
+    let sep = " " ^ sep ^ " " in
+    join_list formulas f sep
+
+  let pretty_print_normal_form (formula: NormalForm.t) =
     let bound_identifiers_to_string (vars: IdentifierSet.t) = 
       IdentifierSet.fold (fun x acc -> acc ^ "exists " ^ x ^ ".") vars ""
     in
@@ -57,6 +57,11 @@ module Analysis = struct
       | AndSeparately(lformula, rformula) -> expand_separate_conjuncts lformula @ expand_separate_conjuncts rformula
       | _ -> [formula]
     in
+    let rec expand_expressions_on_op (expr: ArithmeticExpression.t) (out_op: BinaryOperator.t) =
+      match expr with
+      | Operation(op, lexpr, rexpr) when op = out_op -> expand_expressions_on_op lexpr op @ expand_expressions_on_op rexpr op
+      | _ -> [expr]
+    in
     let comparison_op_to_string (op: BinaryComparison.t) =
       match op with
       | Equals -> "="
@@ -78,10 +83,9 @@ module Analysis = struct
       match expr with
       | Literal(value) -> string_of_int value
       | Variable(id) -> id
-      | Operation(op, lexpr, rexpr) -> 
-        let lexpr = expression_to_string_parenthesized lexpr in
-        let rexpr = expression_to_string_parenthesized rexpr in
-        lexpr ^ " " ^ binary_op_to_string op ^ " " ^ rexpr
+      | Operation(op, _, _) -> 
+        expand_expressions_on_op expr op |>
+        (fun x -> join_list x expression_to_string_parenthesized (binary_op_to_string op))
     and expression_to_string_parenthesized (expr: ArithmeticExpression.t) =
       match expr with
       | Operation(_) -> "(" ^ expression_to_string expr ^ ")"
