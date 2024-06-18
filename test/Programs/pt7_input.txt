@@ -1,7 +1,0 @@
-x = [v];
-{y=[v];
- free(y);
- y = alloc();
-[v] = y}
-+
-{skip} <<(x-/>)*true>>
