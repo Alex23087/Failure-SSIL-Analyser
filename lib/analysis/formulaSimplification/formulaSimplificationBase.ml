@@ -13,7 +13,6 @@ let simplify_formula (formula: NormalForm.t) =
     ZeroAnd.f;
     ExpressionSimplification.f;
     RemoveIdentityComparisons.f;
-    RemoveBoundNonAllocations.f;
     DuplicateDisjoints.f;
     BoundVariableCleanup.f;
   ] in

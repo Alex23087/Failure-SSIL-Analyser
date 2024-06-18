@@ -13,9 +13,9 @@ let%test "weakest precondition on skip" =
   in
   let post_condition = existential_disjuntive_normal_form post_condition in
   let pre_condition = compute_precondition command post_condition in
-  let expected_disjoints = Formula.EmptyHeap :: [] in
-  test_expected_bound_variables pre_condition 0 &&
-  test_expected_disjoints pre_condition expected_disjoints []
+  let expected_disjoints = Formula.NonAllocated("x") :: [] in
+  test_expected_bound_variables pre_condition 1 &&
+  test_expected_disjoints pre_condition expected_disjoints ["x"]
 
 let%test "weakest precondition on assignment" =
   let command =
@@ -38,7 +38,7 @@ let%test "weakest precondition on assignment" =
   let pre_condition = compute_precondition command post_condition in
   let expected_disjoints =
     Formula.And(
-      Formula.EmptyHeap,
+      Formula.NonAllocated("a"),
       Formula.Comparison(
         BinaryComparison.Equals,
         ArithmeticExpression.Variable("a"),
