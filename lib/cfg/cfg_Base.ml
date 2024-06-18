@@ -56,6 +56,7 @@ module CFG = struct
 
   (** Replace the data inside the node id. *)
   let set_data (cfg : 'a t) (id : int) (expr: 'a) : 'a t =
+    let cfg = {cfg = Hashtbl.copy cfg.cfg; root_id = cfg.root_id} in
     let item = get cfg id in
     Hashtbl.replace cfg.cfg id (make_item item.id expr item.pred item.succ);
     cfg
