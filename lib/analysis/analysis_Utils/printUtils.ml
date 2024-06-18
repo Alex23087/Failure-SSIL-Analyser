@@ -52,9 +52,9 @@ module Analysis = struct
       | And(lformula, rformula) -> expand_conjuncts lformula @ expand_conjuncts rformula
       | _ -> [formula]
     in
-    let expand_separate_conjuncts (formula: Formula.t) =
+    let rec expand_separate_conjuncts (formula: Formula.t) =
       match formula with
-      | AndSeparately(lformula, rformula) -> expand_conjuncts lformula @ expand_conjuncts rformula
+      | AndSeparately(lformula, rformula) -> expand_separate_conjuncts lformula @ expand_separate_conjuncts rformula
       | _ -> [formula]
     in
     let comparison_op_to_string (op: BinaryComparison.t) =
@@ -79,15 +79,13 @@ module Analysis = struct
       | Literal(value) -> string_of_int value
       | Variable(id) -> id
       | Operation(op, lexpr, rexpr) -> 
-        let lexpr = match lexpr with
-          | Operation(_) -> "(" ^ expression_to_string lexpr ^ ")"
-          | _ -> expression_to_string lexpr
-        in
-        let rexpr = match rexpr with
-          | Operation(_) -> "(" ^ expression_to_string rexpr ^ ")"
-          | _ -> expression_to_string rexpr
-        in
+        let lexpr = expression_to_string_parenthesized lexpr in
+        let rexpr = expression_to_string_parenthesized rexpr in
         lexpr ^ " " ^ binary_op_to_string op ^ " " ^ rexpr
+    and expression_to_string_parenthesized (expr: ArithmeticExpression.t) =
+      match expr with
+      | Operation(_) -> "(" ^ expression_to_string expr ^ ")"
+      | _ -> expression_to_string expr
     in
     let rec disjoint_to_string (formula: Formula.t) =
       match formula with
@@ -97,21 +95,23 @@ module Analysis = struct
       | Allocation(id, expr) -> id ^ " -> " ^ expression_to_string expr
       | NonAllocated(id) -> id ^ " -/>"
       | Comparison(op, lexpr, rexpr) ->
-        let lexpr = match lexpr with
-          | Operation(_) -> "(" ^ expression_to_string lexpr ^ ")"
-          | _ -> expression_to_string lexpr
-        in
-        let rexpr = match rexpr with
-          | Operation(_) -> "(" ^ expression_to_string rexpr ^ ")"
-          | _ -> expression_to_string rexpr
-        in
+        let lexpr = expression_to_string_parenthesized lexpr in
+        let rexpr = expression_to_string_parenthesized rexpr in
         lexpr ^ " " ^ comparison_op_to_string op ^ " " ^ rexpr
       | And(_) -> expand_conjuncts formula |> (fun x -> join_list x conjunct_to_string "&&")
-      | AndSeparately(_) -> expand_separate_conjuncts formula |> (fun x -> join_list x conjunct_to_string "*")
+      | AndSeparately(_) -> expand_separate_conjuncts formula |> (fun x -> join_list x separate_conjunct_to_string "*")      
     and conjunct_to_string (conjunct: Formula.t) =
       match conjunct with
-      | AndSeparately(_)
-      | And(_) -> "( " ^ disjoint_to_string conjunct ^ ")"
+      | And(_) -> failwith "unexpected and"
+      | AndSeparately(_) -> "(" ^ disjoint_to_string conjunct ^ ")"
+      | _ -> disjoint_to_string conjunct
+    and separate_conjunct_to_string (conjunct: Formula.t) =
+      match conjunct with
+      | AndSeparately(_) -> failwith "unexpected andsep"
+      | Allocation(_)
+      | NonAllocated(_)
+      | Comparison(_)
+      | And(_) -> "(" ^ disjoint_to_string conjunct ^ ")"
       | _ -> disjoint_to_string conjunct
     in
 
