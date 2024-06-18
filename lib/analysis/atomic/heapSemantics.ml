@@ -43,13 +43,13 @@ let write_heap_partition (formula : Formula.t) (id : identifier) (f : Formula.t 
     if ( 
       List.find_opt (function | True -> true | _ -> false ) non_matching_list |> 
       Option.is_some
-    ) then t else False
+    ) then AndSeparately(Allocation(id, (Variable(fresh_var))), t) else False
   | [_] -> AndSeparately(Allocation(id, (Variable(fresh_var))), t)
   | _ -> False
   
 let read_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (l_id : identifier) (r_id : identifier) (fresh_1 : identifier) (fresh_2 : identifier) (f : Formula.t -> bool) (is_x_free : bool) : Formula.t =  
   let and_list = expand_andSeparately formula in 
-  let (matching_list, non_matching_list) = List.partition f and_list in 
+  let (matching_list, non_matching_list) = List.partition f and_list in
   match matching_list with
   | [] -> 
     if ( 
