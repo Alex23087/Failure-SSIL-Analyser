@@ -579,3 +579,31 @@ let expected_disjoints =
   res :: [] in
 test_expected_bound_variables pre_condition 1 &&
 test_expected_disjoints pre_condition expected_disjoints ["v"]
+
+(* << false >> x := [v] << Exists a . Exists b . true * v -> a * a -> b * x -/> >>
+
+  The computed precondition should be: << Exists a . Exists b . true * v -> a * a -> b * a -/> >>
+  but there is the contradiction << Exists a . Exists b . a -> b * a -/> >>, thus simplified to << false >>
+*)
+let%test "precondition on x := [v], post-condition = << Exists a . Exists b . true * v -> a * a -> b * x -/> >>" =
+  let command = annot_cmd (Commands.HeapAtomicCommand.ReadHeap("x","v")) in
+  let post_condition = 
+    annot (PFormula.Exists("a",
+      annot (PFormula.Exists("b", 
+        annot (PFormula.AndSeparately(
+          annot (PFormula.AndSeparately(
+            annot (PFormula.True),
+            annot (PFormula.Allocation("v", annot (PArithmeticExpression.Variable("a"))))
+          )),
+          annot( PFormula.AndSeparately(
+            annot (PFormula.Allocation("a", annot (PArithmeticExpression.Variable("b")))),
+            annot (PFormula.NonAllocated("x"))
+          ))
+        ))
+      )) 
+    )) in
+  let post_condition = existential_disjuntive_normal_form post_condition in
+  let pre_condition = compute_precondition command post_condition in
+  let expected_disjoints = Formula.False :: [] in
+  test_expected_bound_variables pre_condition 0 &&
+  test_expected_disjoints pre_condition expected_disjoints []

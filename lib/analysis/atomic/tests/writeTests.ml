@@ -452,7 +452,7 @@ let expected_disjoints = Formula.False :: [] in
 test_expected_bound_variables pre_condition 0 &&
 test_expected_disjoints pre_condition expected_disjoints []
 
-(* << true >> [x] := y << emp * true >> *)
+(* << Exists v . x -> v * true >> [x] := y << emp * true >> *)
 let%test "precondition on [x] := y, post-condition = << emp * true >>" =
 let command = annot_cmd (
   Commands.HeapAtomicCommand.WriteHeap("x", 
@@ -468,9 +468,13 @@ let post_condition =
   ) in
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
-let expected_disjoints = Formula.True :: [] in
-test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints []
+let expected_disjoints =
+  Formula.AndSeparately(
+    Formula.True, 
+    Formula.Allocation("x", Variable("v"))
+  ) :: [] in
+test_expected_bound_variables pre_condition 1 &&
+test_expected_disjoints pre_condition expected_disjoints ["v"]
 
 (* << Exists v . true * x -> v >> [x] := y << true * x -> y >> *)
 let%test "precondition on [x] := y, post-condition = << true * x -> y >>" =
@@ -501,7 +505,7 @@ let expected_disjoints =
 test_expected_bound_variables pre_condition 1 &&
 test_expected_disjoints pre_condition expected_disjoints ["v"]
 
-(* << true * y -> v >> [x] := y << true * y -> v >> *)
+(* << Exists w . true * y -> v * x -> w >> [x] := y << true * y -> v >> *)
 let%test "precondition on [x] := y, post-condition = << true * y -> v >>" =
 let command = annot_cmd (
   Commands.HeapAtomicCommand.WriteHeap("x", 
@@ -522,9 +526,15 @@ let post_condition =
 let post_condition = existential_disjuntive_normal_form post_condition in
 let pre_condition = compute_precondition command post_condition in
 let expected_disjoints = 
-  Formula.AndSeparately(Formula.True, Formula.Allocation("y", Variable("v"))) :: [] in
-test_expected_bound_variables pre_condition 0 &&
-test_expected_disjoints pre_condition expected_disjoints []
+  Formula.AndSeparately(
+    Formula.True,
+    Formula.AndSeparately(
+      Formula.Allocation("y", Variable("v")),
+      Formula.Allocation("x", Variable("w"))
+    )
+  ) :: [] in
+test_expected_bound_variables pre_condition 1 &&
+test_expected_disjoints pre_condition expected_disjoints ["w"]
 
 (* << false >> [x] := y << v = 5 * x -> v * y -> v >> *)
 let%test "precondition on [x] := y, post-condition = << v = 5 * x -> v * y -> v >>" =
