@@ -32,15 +32,24 @@ module Analysis = struct
           let ch = last_name.[0] |> Char.code |> ((+) 1) |> Char.chr |> (String.make 1) in
           ch ^ last_part
       in
-      let new_id_name_in_vars old_id last_name (vars: IdentifierSet.t) =
+      let new_id_name_in_vars old_id last_name (bound_vars: IdentifierSet.t) =
         let new_name = new_id_name last_name in
-        if IdentifierSet.find_opt last_name vars |> Option.is_none then
-          new_name, vars |> IdentifierSet.remove old_id |> IdentifierSet.add last_name
+        if IdentifierSet.find_opt last_name bound_vars |> Option.is_none then
+          new_name, bound_vars |> IdentifierSet.remove old_id |> IdentifierSet.add last_name
         else
-          new_name, vars
+          new_name, bound_vars
       in
 
       IdentifierSet.fold (fun id (name, formula) ->
+        let free_vars = NormalFormUtils.normal_form_free_variables formula in
+        let rec gen_valid_var name free_vars =
+          if IdentifierSet.find_opt name free_vars |> Option.is_some then
+            gen_valid_var (new_id_name name) free_vars
+          else
+            name
+        in
+        let name = gen_valid_var name free_vars in
+
         let next_name, variables = new_id_name_in_vars id name formula.variables in
         let disjoints =
           if name <> id then
