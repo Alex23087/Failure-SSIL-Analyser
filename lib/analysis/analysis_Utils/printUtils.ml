@@ -37,12 +37,17 @@ module Analysis = struct
         if IdentifierSet.find_opt last_name vars |> Option.is_none then
           new_name, vars |> IdentifierSet.remove old_id |> IdentifierSet.add last_name
         else
-          new_id_name_in_vars old_id new_name vars
+          new_name, vars
       in
 
       IdentifierSet.fold (fun id (name, formula) ->
         let next_name, variables = new_id_name_in_vars id name formula.variables in
-        let disjoints = List.map (fun x -> RenameVariable.rename_variable_in_formula x id name) formula.disjoints in
+        let disjoints =
+          if name <> id then
+            List.map (fun x -> RenameVariable.rename_variable_in_formula x id name) formula.disjoints
+          else
+            formula.disjoints
+        in
         next_name, NormalForm.make variables disjoints formula.id_generator
       ) formula.variables ("a", formula) |> snd
     in
