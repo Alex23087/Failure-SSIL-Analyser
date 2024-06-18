@@ -192,3 +192,53 @@ let%test "precondition on assignment from tests [0]" =
   in
   test_expected_bound_variables pre_condition 0 &&
   test_expected_disjoints pre_condition expected_disjoints []
+
+(* << exists a1. a + x > 9999 && a1 < 1 >> x = a + x << exists a.x > 9999 && a < 1 >> *)
+let%test "precondition on assignment from tests [1]" =
+  let command =
+    annot_cmd (Commands.HeapAtomicCommand.Assignment("x",
+      annot_cmd (Commands.ArithmeticExpression.BinaryOperation(
+        Commands.ArithmeticOperation.Plus,
+        annot_cmd (Commands.ArithmeticExpression.Variable("a")),
+        annot_cmd (Commands.ArithmeticExpression.Variable("x"))
+      ))
+    ))
+  in
+  let post_condition =
+    annot (PFormula.Exists("a",
+      annot (PFormula.And(
+        annot (PFormula.Comparison(
+          PBinaryComparison.GreaterThan,
+          annot (PArithmeticExpression.Variable("x")),
+          annot (PArithmeticExpression.Literal(9999))
+        )),
+        annot (PFormula.Comparison(
+          PBinaryComparison.LessThan,
+          annot (PArithmeticExpression.Variable("a")),
+          annot (PArithmeticExpression.Literal(1))
+        ))
+      ))
+    ))
+  in
+  let post_condition = existential_disjuntive_normal_form post_condition in
+  let pre_condition = compute_precondition command post_condition in
+  let expected_disjoints =
+    Formula.And(
+      Formula.Comparison(
+        BinaryComparison.GreaterThan,
+        ArithmeticExpression.Operation(
+          BinaryOperator.Plus,
+          ArithmeticExpression.Variable("a"),
+          ArithmeticExpression.Variable("x")
+        ),
+        ArithmeticExpression.Literal(9999)
+      ),
+      Formula.Comparison(
+        BinaryComparison.LessThan,
+        ArithmeticExpression.Variable("a1"),
+        ArithmeticExpression.Literal(1)
+      )
+    ) :: []
+  in
+  test_expected_bound_variables pre_condition 1 &&
+  test_expected_disjoints pre_condition expected_disjoints ["a1"]
