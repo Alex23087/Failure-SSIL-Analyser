@@ -32,7 +32,7 @@ module Analysis = struct
           let ch = last_name.[0] |> Char.code |> ((+) 1) |> Char.chr |> (String.make 1) in
           ch ^ last_part
       in
-      let rec new_id_name_in_vars old_id last_name (vars: IdentifierSet.t) =
+      let new_id_name_in_vars old_id last_name (vars: IdentifierSet.t) =
         let new_name = new_id_name last_name in
         if IdentifierSet.find_opt last_name vars |> Option.is_none then
           new_name, vars |> IdentifierSet.remove old_id |> IdentifierSet.add last_name
@@ -126,8 +126,11 @@ module Analysis = struct
 
     let formula = bound_identifiers_better_names formula in
 
+    let bound_vars_print = bound_identifiers_to_string formula.variables in
     let disjoints_print = join_list formula.disjoints disjoint_to_string "||" in
-    "<< " ^ bound_identifiers_to_string formula.variables ^ disjoints_print ^ " >>"
+    match bound_vars_print with
+    | "" -> "<< " ^ disjoints_print ^ " >>"
+    | _ -> "<< " ^ bound_vars_print ^ "(" ^ disjoints_print ^ ") >>"
 
   let pretty_print_command (command: Commands.t) =
     let pretty_print_binary_operator (op: Ast.HeapRegularCommands.ArithmeticOperation.t) =
