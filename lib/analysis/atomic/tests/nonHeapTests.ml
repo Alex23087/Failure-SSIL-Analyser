@@ -159,3 +159,36 @@ let%test "weakest precondition on non deterministic assignment" =
   in
   test_expected_bound_variables pre_condition 1 &&
   test_expected_disjoints pre_condition expected_disjoints ["x"]
+
+(* << x1 != y1 >> y = y1 << y != y1 || x1 != y >> *)
+let%test "precondition on assignment from tests [0]" =
+  let command =
+    annot_cmd (Commands.HeapAtomicCommand.Assignment("y",
+      annot_cmd (Commands.ArithmeticExpression.Variable("y1"))
+    ))
+  in
+  let post_condition =
+    annot (PFormula.Or(
+      annot (PFormula.Comparison(
+        PBinaryComparison.NotEquals,
+        annot (PArithmeticExpression.Variable("y")),
+        annot (PArithmeticExpression.Variable("y1"))
+      )),
+      annot (PFormula.Comparison(
+        PBinaryComparison.NotEquals,
+        annot (PArithmeticExpression.Variable("x1")),
+        annot (PArithmeticExpression.Variable("y"))
+      ))
+    ))
+  in
+  let post_condition = existential_disjuntive_normal_form post_condition in
+  let pre_condition = compute_precondition command post_condition in
+  let expected_disjoints =
+    Formula.Comparison(
+      BinaryComparison.NotEquals,
+      ArithmeticExpression.Variable("x1"),
+      ArithmeticExpression.Variable("y1")
+    ) :: []
+  in
+  test_expected_bound_variables pre_condition 0 &&
+  test_expected_disjoints pre_condition expected_disjoints []

@@ -11,9 +11,15 @@ let equation_simplification (formula: NormalForm.t) =
       | Equals
       | NotEquals -> (
         let any_var = IdentifierSet.choose_opt (Analysis_Utils.get_normal_form_disjoint_identifiers formula) in
-        if Option.is_some any_var then
-          let lexpr, rexpr = simplify_equation lexpr rexpr (Option.get any_var) in
-          Formula.Comparison(op, lexpr, rexpr)
+        if Option.is_some any_var then (
+          (* SymAlg simplifies to one of the many solutions of the equation a = a, specifically a = 0
+             instead of leaving it as is or writing 0 = 0 *)
+          if lexpr = rexpr then
+            formula
+          else
+            let lexpr, rexpr = simplify_equation lexpr rexpr (Option.get any_var) in
+            Formula.Comparison(op, lexpr, rexpr)
+        )
         else
           let expr = ArithmeticExpression.Operation(BinaryOperator.Minus, lexpr, rexpr) in
           let expr = simplify_expression expr in
