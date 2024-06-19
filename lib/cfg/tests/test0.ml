@@ -55,9 +55,14 @@ let%test "test ast to cfg Star" =
     ))
   in
   let expected: ((unit HeapAtomicCommand.t) list Node.t) =
-    Node.make [ annotate (HeapAtomicCommand.Allocation "x") ] [] []
+    Node.make [] [] []
   in
-  Node.add_succ expected expected;
+  let second_node = Node.make [ annotate (HeapAtomicCommand.Allocation "x") ] [] [] in
+  let third_node = Node.make [] [] [] in
+  Node.add_succ second_node second_node;
+  Node.add_succ second_node third_node;
+  Node.add_succ expected third_node;
+  Node.add_succ expected second_node;
   Node.compare (Converter.convert source) expected
 
 
