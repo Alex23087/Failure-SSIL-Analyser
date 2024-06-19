@@ -30,8 +30,14 @@ module Converter = struct
        (dummyentry, ref dummyexit)
     | Star(comm) ->
        let (root1, end1) = convert_helper comm in
+       let dummyentry = Node.make [] [] [] in
+       let dummyexit  = Node.make [] [] [] in
+       Node.add_succ dummyentry dummyexit;
+       Node.add_succ dummyentry root1;
+       Node.add_succ !end1 dummyexit;
        Node.add_succ !end1 root1;
-       (root1, end1)
+       (dummyentry, ref dummyexit)
+       (* (root1, end1) *)
 
   (** Groups up consecutive nodes by appending the exp to the first.
       If keep_structure == true then only if the exp have the same instruction
@@ -44,6 +50,7 @@ module Converter = struct
       Node.set_exp root ((Node.get_exp root) @ (Node.get_exp succ));
       Node.set_succ root (Node.get_succ succ);
       List.iter (fun x -> Node.remove_pred x (Node.get_id succ)) (Node.get_succ succ);
+      (* alreadyvisited := List.filter ((!=) (Node.get_id root)) !alreadyvisited; *)
       help_simplify keep_structure root
     and help_simplify (keep_structure: bool) (root: 'a HeapAtomicCommand.t list Node.t) : unit =
       (* check that we haven't already visited the node *)
@@ -63,27 +70,31 @@ module Converter = struct
              raise (Invalid_argument "Your graph is very wrong")
 
           | [pred_node_id] when pred_node_id = (Node.get_id root) -> (
-            (* the only predecessor is root, we can simplify *)
-            match (keep_structure, Node.get_exp root, Node.get_exp succ) with
-            | (true, [], []) (* both have no exp (should never happen) *)
-            | (true, [], _::_) (* root has no exp *)
-            | (true, _::_, []) -> (* succ has no exp *)
-               (remove_and_recurse root succ keep_structure)
-            | (true, root_exp::_, succ_exp::_) -> (
-              (* no need to check every element, only the first of each node *)
-              match (root_exp.node, succ_exp.node) with
-              | (Skip, Skip)
-              | (Assignment(_, _), Assignment(_, _))
-              | (NonDet(_), NonDet(_))
-              | (Guard(_), Guard(_))
-              | (Allocation(_), Allocation(_))
-              | (Free(_), Free(_))
-              | (ReadHeap(_, _), ReadHeap(_, _))
-              | (WriteHeap(_, _), WriteHeap(_, _)) -> (remove_and_recurse root succ keep_structure)
-              | _ -> help_simplify keep_structure succ
-            )
-            | (false, _, _) -> ( (* we don't need to check the exp, always simplify *)
-              remove_and_recurse root succ keep_structure
+            if List.mem (Node.get_id succ) (Node.get_pred root) then
+              help_simplify keep_structure succ
+            else (
+              (* the only predecessor is root, we can simplify *)
+              match (keep_structure, Node.get_exp root, Node.get_exp succ) with
+              | (true, [], []) (* both have no exp (should never happen) *)
+                | (true, [], _::_) (* root has no exp *)
+                | (true, _::_, []) -> (* succ has no exp *)
+                 (remove_and_recurse root succ keep_structure)
+              | (true, root_exp::_, succ_exp::_) -> (
+                (* no need to check every element, only the first of each node *)
+                match (root_exp.node, succ_exp.node) with
+                | (Skip, Skip)
+                  | (Assignment(_, _), Assignment(_, _))
+                  | (NonDet(_), NonDet(_))
+                  | (Guard(_), Guard(_))
+                  | (Allocation(_), Allocation(_))
+                  | (Free(_), Free(_))
+                  | (ReadHeap(_, _), ReadHeap(_, _))
+                  | (WriteHeap(_, _), WriteHeap(_, _)) -> (remove_and_recurse root succ keep_structure)
+                | _ -> help_simplify keep_structure succ
+              )
+              | (false, _, _) -> ( (* we don't need to check the exp, always simplify *)
+                remove_and_recurse root succ keep_structure
+              )
             )
           )
           | _ -> ( (* We have more than one predecessor, so we can't remove the
@@ -98,6 +109,7 @@ module Converter = struct
       )
     in
     help_simplify keep_structure root
+
 
   (** The module Converter provides a method [convert], that given an AST, it
       converts it into a CFG composed by nodes from the {{! Cfg.Node}Node} module.
