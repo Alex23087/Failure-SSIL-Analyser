@@ -28,12 +28,16 @@ let unpack_simplified_expression (expr: ArithmeticExpression.t) =
   match expr with
   | ArithmeticExpression.Operation(op, lexpr, rexpr) -> (
     match op, lexpr, rexpr with
-    | Plus, Variable(var), Literal(addendum)
-    | Minus, Variable(var), Literal(addendum) -> 
+    | Plus, Variable(var), Literal(addendum) -> 
       Some((1, var, addendum))
-    | Plus, Operation(Times, Literal(multiplier), Variable(var)), Literal(addendum)
-    | Minus, Operation(Times, Literal(multiplier), Variable(var)), Literal(addendum) -> 
+    | Minus, Variable(var), Literal(addendum) -> 
+      Some((1, var, -addendum))
+    | Plus, Operation(Times, Literal(multiplier), Variable(var)), Literal(addendum) -> 
       Some((multiplier, var, addendum))
+    | Minus, Operation(Times, Literal(multiplier), Variable(var)), Literal(addendum) -> 
+      Some((multiplier, var, -addendum))
+    | Times, Literal(multiplier), Variable(var) ->
+      Some((multiplier, var, 0))
     | _ -> None
   )
   | Literal(value) -> Some((0, "", value))

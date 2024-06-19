@@ -5,23 +5,25 @@ let update_postcondition = Commands.update_postcondition
 
 let starting_states (cfg: Cfg.t) =
   let block_start_postconditions (block: CfgBlock.t) =
-    let fold_fun (start_indices, command_index) statement =
+    let fold_fun (start_data, command_index) statement =
       match get_postcondition statement with
-      | Some(_) -> command_index :: start_indices, command_index + 1
-      | None -> start_indices, command_index + 1
+      | Some(formula) -> (command_index, formula) :: start_data, command_index + 1
+      | None -> start_data, command_index + 1
     in
-    let start_indices =
+    let start_data =
       match block.precondition with
-      | Some(_) -> [ 0 ]
+      | Some(formula) -> [ 0, formula ]
       | None -> []
     in
-    let start_indices, _ = List.fold_left fold_fun (start_indices, 1) block.statements in
-    start_indices
+    let start_data, _ = List.fold_left fold_fun (start_data, 1) block.statements in
+    start_data
   in
   let starting_states (cfg: Cfg.t) (item: Cfg.item) =
     let idx = Cfg.get_id item in
     let block = Cfg.get_data cfg idx in
-    let map_fun x = {cfg; last_block = idx; last_statement = x} in
+    let map_fun (statement_idx, postcondition) = 
+      {cfg; last_block = idx; last_statement = statement_idx; trace = new_analysis_trace postcondition}
+    in
     let start_postconditions = block_start_postconditions block in
     List.map map_fun start_postconditions
   in
@@ -42,15 +44,26 @@ let analysis_step (state: analysis_state) : analysis_state list * analysis_state
     {
       cfg = cfg;
       last_block = last_block;
-      last_statement = List.length block.statements
+      last_statement = List.length block.statements;
+      trace = state.trace
     }
   in
   let block_analysis_state (cfg: Cfg.t) (last_block: int) (last_statement: int) (block: CfgBlock.t) =
     let cfg = Cfg.set_data cfg last_block block in
+    let statement = unwrap_option (List.nth_opt block.statements (last_statement)) "unexpected" in
+    let precondition = 
+      match last_statement with
+      | 0 -> 
+        unwrap_option block.precondition "unexpected"
+      | _ ->
+        let statement = unwrap_option (List.nth_opt block.statements (last_statement - 1)) "unexpected" in
+        unwrap_option (get_postcondition statement) "unexpected"
+    in
     {
       cfg = cfg;
       last_block = last_block;
-      last_statement = last_statement
+      last_statement = last_statement;
+      trace = update_trace state.trace statement precondition
     }
   in
   let cfg = state.cfg in

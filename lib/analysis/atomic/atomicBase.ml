@@ -14,6 +14,9 @@ let compute_precondition (command: 'a HeapAtomicCommand.t) (post_condition: Norm
     | Assignment(id, expr) ->
       let expr = command_expression_to_logic_expression expr (fun _ -> ()) in
       let expr = existential_disjuntive_normal_expr expr in
+      let expr_vars = Analysis_Utils.get_normal_form_expr_identifiers expr in
+      let rename_vars = IdentifierSet.inter post_condition.variables expr_vars |> IdentifierSet.elements in
+      let post_condition = Analysis_Utils.rename_variables_in_normal_form post_condition rename_vars in
       substitute_expression_in_normalized_formula post_condition expr id
     | NonDet(id) ->
       existentialization_of_identifier id post_condition

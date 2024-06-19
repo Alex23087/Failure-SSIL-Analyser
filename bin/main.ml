@@ -12,6 +12,7 @@ let verbose = ref false
 let debug = ref false
 let input_file = ref ""
 let output_file = ref ""
+let traces_file = ref ""
 
 let anon_fun filename =
   input_file := filename
@@ -20,7 +21,8 @@ let speclist = [
   ("-v", Arg.Set verbose, "Verbose - Print processing status to stdout");
   ("--debug", Arg.Set debug, "Debug - Print debug informations between steps");
   ("--verbose", Arg.Set verbose, "");
-  ("-o", Arg.Set_string output_file, "Set output file")
+  ("-o", Arg.Set_string output_file, "Set output file");
+  ("-t", Arg.Set_string traces_file, "Set traces file - Save analysis traces to file")
 ]
 
 (* Utility Functions *)
@@ -72,8 +74,10 @@ let () =
     exit(0)
   );
 
-      if_verbose (fun _ -> print_endline ("[0] Reading input file: " ^ !input_file));
-  let input = input_all (In_channel.open_gen [Open_rdonly] 0 !input_file) in
+  if_verbose (fun _ -> print_endline ("[0] Reading input file: " ^ !input_file));
+  let file = (In_channel.open_gen [Open_rdonly] 0 !input_file) in
+  let input = input_all file in 
+  In_channel.close file;
   if String.equal input "" then
     fail ("Error: empty input file\n" ^ usage_message);
   
@@ -118,12 +122,25 @@ let () =
         ) final_states
       );
 
+  if not (String.equal !traces_file "") then (
+    if_verbose (fun _ -> print_endline ("[5] Dump of analysis traces to file: " ^ !traces_file));
+    let file = (Out_channel.open_gen [Open_wronly; Open_trunc] 0440 !traces_file) in
+    List.iteri (fun i final_state -> 
+      ("Trace " ^ string_of_int i ^ ": \n") |> output_string file;
+      (Prelude.Print.Analysis.pretty_print_analysis_trace final_state.trace) |> output_string file;
+      "\n\n" |> output_string file;
+    ) final_states;
+    Out_channel.close file;
+  );
+
   let final_formula = final_states |> build_final_formula in
   print_endline (final_formula |> Prelude.Print.Analysis.pretty_print_normal_form);
 
   if not (String.equal !output_file "") then (
-    if_verbose (fun _ -> print_endline ("[4] Writing output to file: " ^ !output_file));
-    output_string (Out_channel.open_gen [Open_wronly] 0440 !output_file) (final_formula |> Prelude.Print.Analysis.pretty_print_normal_form) 
+    if_verbose (fun _ -> print_endline ("[5] Writing output to file: " ^ !output_file));
+    let file = Out_channel.open_gen [Open_wronly; Open_trunc] 0440 !output_file in
+    final_formula |> Prelude.Print.Analysis.pretty_print_normal_form |> output_string file;
+    Out_channel.close file;
   );
 
   ()

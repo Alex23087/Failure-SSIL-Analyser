@@ -29,7 +29,7 @@ let free_heap_partition (formula : Formula.t) (id : identifier) (f : Formula.t -
         List.find_opt (function | True -> true | _ -> false ) non_matching_list |> 
         Option.is_some
       ) then AndSeparately(Allocation(id, (Variable(fresh_var))), t)
-      else formula
+      else False
     | _ -> AndSeparately(Allocation(id, (Variable(fresh_var))), t)
   with 
   | Bound_Identifier(_) -> False (* bound identifier -> not handled; under-approximation *)
@@ -43,13 +43,13 @@ let write_heap_partition (formula : Formula.t) (id : identifier) (f : Formula.t 
     if ( 
       List.find_opt (function | True -> true | _ -> false ) non_matching_list |> 
       Option.is_some
-    ) then t else False
+    ) then AndSeparately(Allocation(id, (Variable(fresh_var))), t) else False
   | [_] -> AndSeparately(Allocation(id, (Variable(fresh_var))), t)
   | _ -> False
   
 let read_heap_partition (formula : Formula.t) (vars : IdentifierSet.t) (l_id : identifier) (r_id : identifier) (fresh_1 : identifier) (fresh_2 : identifier) (f : Formula.t -> bool) (is_x_free : bool) : Formula.t =  
   let and_list = expand_andSeparately formula in 
-  let (matching_list, non_matching_list) = List.partition f and_list in 
+  let (matching_list, non_matching_list) = List.partition f and_list in
   match matching_list with
   | [] -> 
     if ( 
@@ -85,8 +85,8 @@ let apply_alloc (vars : IdentifierSet.t) (id : identifier) (post : Formula.t) : 
 (* apply free semantics to single formula *)
 let apply_free (vars : IdentifierSet.t) (id : identifier) (fresh_var : identifier) (post : Formula.t) : Formula.t = 
   match post with
-  | True -> True
-  | EmptyHeap -> Allocation(id, (Variable(fresh_var)))
+  | True -> AndSeparately(True, Allocation(id, (Variable(fresh_var))))
+  | EmptyHeap -> False
   | NonAllocated(x) when x = id -> 
     if is_identifier_free x vars 
       then (Allocation(x, (Variable(fresh_var)))) 
@@ -96,7 +96,6 @@ let apply_free (vars : IdentifierSet.t) (id : identifier) (fresh_var : identifie
     | NonAllocated(x) when x=id -> 
       if is_identifier_free x vars then true 
       else raise (Bound_Identifier x) (* bound identifier -> not handled; under-approximation *)
-    | EmptyHeap -> true
     | _ -> false in 
     free_heap_partition formula id f fresh_var
   | _ -> False
