@@ -37,7 +37,6 @@ module Converter = struct
        Node.add_succ !end1 dummyexit;
        Node.add_succ !end1 root1;
        (dummyentry, ref dummyexit)
-       (* (root1, end1) *)
 
   (** Groups up consecutive nodes by appending the exp to the first.
       If keep_structure == true then only if the exp have the same instruction
@@ -50,7 +49,7 @@ module Converter = struct
       Node.set_exp root ((Node.get_exp root) @ (Node.get_exp succ));
       Node.set_succ root (Node.get_succ succ);
       List.iter (fun x -> Node.remove_pred x (Node.get_id succ)) (Node.get_succ succ);
-      (* alreadyvisited := List.filter ((!=) (Node.get_id root)) !alreadyvisited; *)
+      alreadyvisited := List.filter ((!=) (Node.get_id root)) !alreadyvisited;
       help_simplify keep_structure root
     and help_simplify (keep_structure: bool) (root: 'a HeapAtomicCommand.t list Node.t) : unit =
       (* check that we haven't already visited the node *)
