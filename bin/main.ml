@@ -6,7 +6,7 @@ open Lisproject.Analysis
 open Lisproject.Analysis.DataStructures.Analysis
 
 (* Command Line Arguments *)
-let usage_message = "Usage: " ^ Sys.argv.(0) ^ " [-v|--verbose] [--debug] <input file> [-o <output file>]"
+let usage_message = "Usage: " ^ Sys.argv.(0) ^ " [-v|--verbose] [-t <traces file>] [--debug] <input file> [-o <output file>]"
 
 let verbose = ref false
 let debug = ref false
@@ -19,10 +19,10 @@ let anon_fun filename =
 
 let speclist = [
   ("-v", Arg.Set verbose, "Verbose - Print processing status to stdout");
-  ("--debug", Arg.Set debug, "Debug - Print debug informations between steps");
   ("--verbose", Arg.Set verbose, "");
   ("-o", Arg.Set_string output_file, "Set output file");
-  ("-t", Arg.Set_string traces_file, "Set traces file - Save analysis traces to file")
+  ("-t", Arg.Set_string traces_file, "Set traces file - Save analysis traces to file");
+  ("--debug", Arg.Set debug, "Debug - Print debug informations between steps")
 ]
 
 (* Utility Functions *)
@@ -124,7 +124,7 @@ let () =
 
   if not (String.equal !traces_file "") then (
     if_verbose (fun _ -> print_endline ("[5] Dump of analysis traces to file: " ^ !traces_file));
-    let file = (Out_channel.open_gen [Open_wronly; Open_trunc] 0440 !traces_file) in
+    let file = (Out_channel.open_gen [Open_wronly; Open_creat; Open_trunc] 0440 !traces_file) in
     List.iteri (fun i final_state -> 
       ("Trace " ^ string_of_int i ^ ": \n") |> output_string file;
       (Prelude.Print.Analysis.pretty_print_analysis_trace final_state.trace) |> output_string file;
@@ -138,7 +138,7 @@ let () =
 
   if not (String.equal !output_file "") then (
     if_verbose (fun _ -> print_endline ("[5] Writing output to file: " ^ !output_file));
-    let file = Out_channel.open_gen [Open_wronly; Open_trunc] 0440 !output_file in
+    let file = Out_channel.open_gen [Open_wronly; Open_creat; Open_trunc] 0440 !output_file in
     final_formula |> Prelude.Print.Analysis.pretty_print_normal_form |> output_string file;
     Out_channel.close file;
   );
