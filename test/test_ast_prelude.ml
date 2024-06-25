@@ -1,5 +1,5 @@
-open Lisproject.Prelude.Analysis
-open Lisproject.Prelude.Analysis.Parser
+open Failure_ssil_analyzer.Prelude.Analysis
+open Failure_ssil_analyzer.Prelude.Analysis.Parser
 
 let annotate_formula node =
   let annotation = LogicFormulas.make_annotation 0 1 in

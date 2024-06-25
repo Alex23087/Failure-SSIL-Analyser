@@ -1,4 +1,4 @@
-open Lisproject.Cfg
+open Failure_ssil_analyzer.Cfg
 
 let n = Node.make "root" [
   (Node.make "left" [] []);

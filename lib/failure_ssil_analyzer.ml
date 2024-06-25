@@ -1,4 +1,4 @@
-(**{1 Lisproject}*)
+(**{1 FAILURE Analyzer}*)
 
 (**Definition of generic Abstract Syntax Trees to represent our programs*)
 module Ast = Ast

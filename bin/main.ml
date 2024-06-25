@@ -1,9 +1,9 @@
 open In_channel
 open Out_channel
-open Lisproject.Cfg
-open Lisproject.Parserlexer
-open Lisproject.Analysis
-open Lisproject.Analysis.DataStructures.Analysis
+open Failure_ssil_analyzer.Cfg
+open Failure_ssil_analyzer.Parserlexer
+open Failure_ssil_analyzer.Analysis
+open Failure_ssil_analyzer.Analysis.DataStructures.Analysis
 
 (* Command Line Arguments *)
 let usage_message = "Usage: " ^ Sys.argv.(0) ^ " [-v|--verbose] [-t <traces file>] [--debug] <input file> [-o <output file>]"
