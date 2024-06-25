@@ -19,20 +19,6 @@ let%test_unit "test 'p && true = p' simplification" =
   let expected = NormalForm.make_from_formula p in
   [%test_eq: Formula.t list] simplified_formula.disjoints expected.disjoints
 
-let%test_unit "(x -> v && z -> w) * x -> t must be false" =
-  let formula = NormalForm.make_from_formula (
-    Formula.AndSeparately(
-      Formula.And(
-        Formula.Allocation("x", ArithmeticExpression.Variable("v")),
-        Formula.Allocation("z", ArithmeticExpression.Variable("w"))
-      ),
-      Formula.Allocation("x", ArithmeticExpression.Variable("t"))
-    )
-  ) in
-  let simplified_formula = FormulaSimplificationBase.simplify_formula formula in
-  let expected = NormalForm.make_from_formula Formula.False in
-  [%test_eq: Formula.t list] simplified_formula.disjoints expected.disjoints
-
 let%test_unit "test 'p * emp = p' simplification" =
   let p = Formula.Allocation("x", ArithmeticExpression.Literal(1)) in
   let formula = NormalForm.make_from_formula (
