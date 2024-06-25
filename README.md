@@ -1,9 +1,13 @@
-# LIS-Project
+# FAILURE Analyzer
+**FAILURE Analyzer** is a tool for static analysis and bug detection which implements *Separation Sufficient Incorrectness Logic* as the base logic on which the analysis is driven, as described in this [paper](https://arxiv.org/pdf/2310.18156).
+
+## Building, Running, Installing
 
 ### Dependencies
 - [OCaml](https://ocaml.org/) - OCaml Version 4.14
 - [OPAM](https://opam.ocaml.org/) - OCaml Package Manager
 - [Dune](https://dune.build/) - build system
+- [SymAlg](https://github.com/jrk/symalg) - symbolic algebra library.
 
 ### Installing the dependencies
 - `bash -c "sh <(curl -fsSL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)"`
@@ -32,7 +36,10 @@
 ### Troubleshooting
 -   Dune not found after successful installation
     ```
-    dune build
+    make build
     make: dune: No such file or directory
     ```
     solution: `eval $(opam env)`
+
+## Trivia
+**FAILURE** is an italian achronim for **F**orse **A**lessandro **S**i **L**a**URE**a, which translates to "Alessandro maybe graduates", a running joke between the developers of the tool.
