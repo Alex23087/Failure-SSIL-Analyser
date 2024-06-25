@@ -1,6 +1,7 @@
 open DataStructures.Analysis
 open NormalForm
 
+(** Remove duplicate disjoints that are exactly the same *)
 let remove_duplicate_disjoints (formula: NormalForm.t) =
   let rec remove_duplicates (acc: Formula.t list) (disjoints: Formula.t list) =
     match disjoints with
