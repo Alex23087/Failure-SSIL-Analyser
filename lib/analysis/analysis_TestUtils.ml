@@ -11,6 +11,10 @@ let annot formula =
   let annotation = LogicFormulas.make_annotation 0 0 in
   annotate formula annotation
 
+let make_normal_form bound_vars disjoints =
+  let bound_vars = IdentifierSet.of_list bound_vars in
+  NormalForm.make bound_vars disjoints {first_id = 0; last_id = 0}
+
 (* Check the number of expected bound variables *)
 let test_expected_bound_variables (normalized: NormalForm.t) (num_bound_vars: int) =
   if IdentifierSet.cardinal normalized.variables = num_bound_vars then
