@@ -10,11 +10,12 @@ let simplify_formula (formula: NormalForm.t) =
     UnitAndSep.f;
     RemoveDuplicateTrueInAndSep.f;
     NoSharedIdentifierAndSep.f;
-    ZeroAnd.f;
+    (* ZeroAnd.f; subsumed by ZeroNormalForm *)
     ExpressionSimplification.f;
     RemoveIdentityComparisons.f;
     DuplicateDisjoints.f;
     BoundVariableCleanup.f;
+    ZeroNormalForm.f;
   ] in
   let rec simplify formula =
     let simplified = List.fold_left (|>) formula simplification_functs in
