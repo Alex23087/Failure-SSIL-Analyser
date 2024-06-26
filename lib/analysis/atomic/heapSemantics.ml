@@ -161,8 +161,6 @@ let apply_write_v2 (x : identifier) (new_name: identifier) (disjoints : Formula.
   |> List.map (fun q' -> Formula.AndSeparately(Allocation(x, ArithmeticExpression.Variable new_name), q'))
 
 (* apply the semantics of read using the extract_alloc util *)
-(* TODO: what does new_name2 does? It's used in substituting the expression, but I'm not sure why and if it's enough for it to be a fresh name
-      Maybe this is the cause of the "clutter" variables?  *)
 let apply_read_v2 (l_id : identifier) (r_id : identifier) (new_name: identifier) (new_name2: identifier) (disjoints : Formula.t list) =
   disjoints
   |> List.map (extract_alloc r_id new_name)

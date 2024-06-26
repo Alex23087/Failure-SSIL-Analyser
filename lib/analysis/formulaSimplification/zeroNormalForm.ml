@@ -14,6 +14,8 @@ let zero_normal_form (formula: NormalForm.t) =
     | Allocation(_) -> false
     | AndSeparately(q1, q2) -> contains_false q1 || contains_false q2
   in
-  NormalForm.make formula.variables (List.filter (fun q -> not (contains_false q)) formula.disjoints) formula.id_generator
+  let simplified_disjoints = List.filter (fun q -> not (contains_false q)) formula.disjoints in
+  let simplified_disjoints = if List.length simplified_disjoints = 0 then [Formula.False] else simplified_disjoints in
+  NormalForm.make formula.variables simplified_disjoints formula.id_generator
 
 let f = zero_normal_form
