@@ -3,6 +3,11 @@ open DataStructures.Analysis
 open NormalForm
 open ExpressionSimplificationUtils
 
+(* solve disequations of the form:
+ * literal < literal  ===> true | false  (and other comparison operators)
+ * lexpr < rexpr  ===>  x < expr  (and other comparison operators)
+     where vars(lexpr) union vars(rexpr) = { x } 
+*)
 let disequation_simplification (formula: NormalForm.t) =
   let disequation_simplification (formula: Formula.t) =
     match formula with
