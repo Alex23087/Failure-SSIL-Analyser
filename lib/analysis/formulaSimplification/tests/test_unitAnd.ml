@@ -65,3 +65,12 @@ let%test "recursion" =
     ) :: []
   in
   test_expected_disjoints formula expected_disjoints []
+  
+let%test "test 'p && true = p' simplification" =
+  let p = Formula.Allocation("x", ArithmeticExpression.Literal(1)) in
+  let disjoints = [ Formula.And(Formula.True, p); ] in
+  let formula = make_normal_form [] disjoints in
+  let formula = UnitAnd.f formula in
+
+  let expected_disjoints = [ p ] in
+  test_expected_disjoints formula expected_disjoints []
