@@ -1,6 +1,7 @@
 open DataStructures.Analysis
 open NormalForm
 
+(* expr = expr => true, expr != expr => false *)
 let removeIdentityComparisons (formula: NormalForm.t) =
   let is_equality_operator (op: BinaryComparison.t) =
     match op with
