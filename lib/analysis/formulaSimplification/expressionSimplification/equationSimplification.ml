@@ -3,6 +3,11 @@ open DataStructures.Analysis
 open NormalForm
 open ExpressionSimplificationUtils
 
+(* Rewrite all the equations by rewriting it in terms of one of the variables in the
+ * equation. Usually simplifies a lot if the equation has only one variable, as it
+ * allows more simplifications done in other modules.
+ * If the equation contains only literals, then it is fully solved to either true or false.
+ *)
 let equation_simplification (formula: NormalForm.t) =
   let equation_simplification (formula: Formula.t) =
     match formula with

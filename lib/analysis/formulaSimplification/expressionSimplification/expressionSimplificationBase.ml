@@ -2,6 +2,7 @@ open DataStructures.Analysis
 open NormalForm
 open ExpressionSimplificationUtils
 
+(* uses SymAlg to simplify expressions *)
 let simplify_arithmetic_expressions (formula: NormalForm.t) =
   let simplify_formula (conjunct: Formula.t) =
     match conjunct with
