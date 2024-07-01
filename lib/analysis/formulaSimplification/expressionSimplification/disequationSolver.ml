@@ -48,7 +48,7 @@ let disequation_solver (formula: NormalForm.t) =
         match lt_comparisons with
         | [] -> acc
         | xs -> 
-          let lt_comparison = List.fold_left max (Int.min_int) xs in
+          let lt_comparison = List.fold_left min (Int.max_int) xs in
           let lt_comparison = Formula.Comparison(BinaryComparison.LessThan, ArithmeticExpression.Variable(id), ArithmeticExpression.Literal(lt_comparison)) in
           lt_comparison :: acc
       in
@@ -57,7 +57,7 @@ let disequation_solver (formula: NormalForm.t) =
         match gt_comparisons with
         | [] -> acc
         | xs -> 
-          let gt_comparison = List.fold_left min (Int.max_int) xs in
+          let gt_comparison = List.fold_left max (Int.min_int) xs in
           let gt_comparison = Formula.Comparison(BinaryComparison.GreaterThan, ArithmeticExpression.Variable(id), ArithmeticExpression.Literal(gt_comparison)) in
           gt_comparison :: acc
       in
