@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" alt="FAILURE-Analyzer logo"/>
+</p>
+
 # FAILURE Analyzer
 **FAILURE Analyzer** is a tool for static analysis and bug detection which implements *Separation Sufficient Incorrectness Logic* as the base logic on which the analysis is driven, as described in this [paper](https://arxiv.org/pdf/2310.18156).
 
@@ -42,4 +46,4 @@
     solution: `eval $(opam env)`
 
 ## Trivia
-**FAILURE** is an italian achronim for **F**orse **A**lessandro **S**i **L**a**URE**a, which translates to "Alessandro maybe graduates", a running joke between the developers of the tool.
+**FAILURE** is an italian achronim for **F**orse **A**lessandro s**I** **L**a**URE**a, which translates to _"Alessandro maybe graduates"_, a running joke between the developers of the tool.
